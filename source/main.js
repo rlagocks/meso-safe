@@ -46,8 +46,14 @@ async function readLegacy() {
 }
 
 let legacy = {};
+// 예전 기록 옮기기는 한 번만 하면 되므로, 끝나면 표시 파일을 남겨 다음부터는 건너뛴다 (켜는 속도를 위해)
+const legacyMark = () => path.join(app.getPath('userData'), 'legacy-copied');
 // preload.js가 웹 화면을 열기 직전에 물어본다 → 비어 있는 칸에만 채워 넣는다 (덮어쓰지 않음)
-ipcMain.on('legacy-data', e => { e.returnValue = e.senderFrame && e.senderFrame.origin === REMOTE_ORIGIN ? legacy : {}; });
+ipcMain.on('legacy-data', e => {
+  const ok = e.senderFrame && e.senderFrame.origin === REMOTE_ORIGIN;
+  e.returnValue = ok ? legacy : {};
+  if (ok) { try { fs.writeFileSync(legacyMark(), new Date().toISOString()); } catch (x) {} }
+});
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -58,7 +64,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     let serverOk = true;
     try { await startServer(); } catch (e) { serverOk = false; }
-    if (serverOk) legacy = await readLegacy();
+    if (serverOk && !fs.existsSync(legacyMark())) legacy = await readLegacy();
 
     Menu.setApplicationMenu(null);
     win = new BrowserWindow({

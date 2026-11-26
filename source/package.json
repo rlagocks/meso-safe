@@ -1,13 +1,13 @@
 {
   "name": "meso-safe",
   "productName": "메소 금고 가계부",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "메소 금고 가계부",
   "author": "meso-safe",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win portable --x64"
+    "dist": "electron-builder --win nsis --x64"
   },
   "devDependencies": {
     "electron": "39.8.10",
@@ -20,6 +20,6 @@
     "files": ["main.js", "preload.js", "package.json", "app/**/*", "build/icon.png"],
     "directories": { "output": "../release" },
     "win": { "icon": "build/icon.png", "signExecutable": false },
-    "portable": { "artifactName": "메소금고가계부.exe" }
+    "nsis": { "oneClick": true, "perMachine": false, "createDesktopShortcut": "always", "createStartMenuShortcut": true, "shortcutName": "메소 금고 가계부", "runAfterFinish": true, "deleteAppDataOnUninstall": false, "artifactName": "메소금고가계부-설치.exe" }
   }
 }
