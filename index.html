@@ -189,6 +189,14 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .months i.neg{background:var(--minus)}.months button.on i{opacity:1}
 .mlab{display:flex;gap:3px;font-size:11px;color:var(--mute)}.mlab span{flex:1;text-align:center}.mlab span.on{color:var(--ink);font-weight:700}
 .hsearch{margin-bottom:12px}
+/* 넥슨 캐릭터 카드 */
+.char{display:flex;gap:12px;align-items:center;margin-top:12px;background:rgba(255,255,255,.55);border:2px solid var(--ink);border-radius:16px;padding:8px 14px 8px 8px;max-width:420px}
+.chimg{width:76px;height:76px;flex:none;position:relative;overflow:hidden;border-radius:12px}
+.chimg img{position:absolute;width:219px;height:219px;max-width:none;left:-68px;top:-83px}
+.char .cb{flex:1;min-width:0}.char b{font-size:16px}.char .small{color:var(--ink);opacity:.8}
+.xpbar{height:8px;border-radius:99px;background:var(--sun2);border:1.5px solid var(--ink);overflow:hidden;margin:4px 0 2px}.xpbar i{display:block;height:100%;background:var(--ink)}
+.char .btn.link{min-height:36px;padding:4px;font-size:13px;align-self:flex-start}
+@media (prefers-color-scheme:dark){.char{background:rgba(0,0,0,.2)}}
 /* 계정 */
 .pwf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin-bottom:18px}
 .acct3 h3{font-size:16px;margin:16px 0 8px}
@@ -229,7 +237,15 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   <div><h1>메소 금고 가계부</h1>
     <div class="small" id="sub">매일 번 메소를 상자에 담아 금고에 넣어요</div>
     <div class="acct" id="acct" hidden><span class="sync" id="sync"><i></i><span id="syncT">동기화됨</span></span><b id="who"></b><button class="btn" type="button" id="logout">로그아웃</button></div>
-    <div class="install"><button class="btn dark" id="appBtn" type="button" hidden>홈 화면에 설치</button><span class="small" id="iosHint" hidden>공유 버튼 → '홈 화면에 추가'를 누르면 앱처럼 쓸 수 있어요</span></div>
+    <div class="char" id="charCard" hidden>
+      <div class="chimg"><img id="chImg" alt=""></div>
+      <div class="cb"><b id="chName"></b> <span class="small" id="chLv"></span>
+        <div class="small" id="chInfo"></div>
+        <div class="xpbar" aria-hidden="true"><i id="chXp" style="width:0"></i></div>
+        <div class="small" id="chXpT"></div></div>
+      <button class="btn link" type="button" id="chSet">변경</button>
+    </div>
+    <div class="install"><button class="btn dark" id="appBtn" type="button" hidden>홈 화면에 설치</button><button class="btn" type="button" id="chConnect" hidden>넥슨 캐릭터 연결</button><span class="small" id="iosHint" hidden>공유 버튼 → '홈 화면에 추가'를 누르면 앱처럼 쓸 수 있어요</span></div>
   </div>
   <div class="goal">
     <div class="goalrow"><span class="goalname" id="gName">목표를 정해 보세요</span><span class="goalnum" id="gNum"></span></div>
@@ -375,7 +391,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   </div>
 </div></section>
 </main>
-<footer>메소 금고 가계부 · 개인이 만든 비공식 도구로, 넥슨이나 메이플스토리와는 관계가 없어요.<br><a href="privacy.html">개인정보처리방침</a> · <a href="delete-account.html">계정 삭제 안내</a></footer>
+<footer>메소 금고 가계부 · 개인이 만든 비공식 도구로, 넥슨이나 메이플스토리와는 관계가 없어요. 캐릭터 정보: Data based on NEXON Open API<br><a href="privacy.html">개인정보처리방침</a> · <a href="delete-account.html">계정 삭제 안내</a></footer>
 </div>
 <dialog class="edlg" id="eDlg" aria-labelledby="eTitle">
   <form id="eForm" method="dialog" novalidate>
@@ -384,6 +400,18 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <div id="eFields"></div>
     <div class="gerr" id="eErr" role="alert"></div>
     <div class="acts"><button class="btn" type="button" id="eCancel">취소</button><button class="btn dark" type="submit" id="eSave">저장</button></div>
+  </form>
+</dialog>
+<dialog class="edlg" id="nDlg" aria-labelledby="nTitle">
+  <form id="nForm" novalidate>
+    <h2 id="nTitle">넥슨 캐릭터 연결</h2>
+    <p class="small sub"><a href="https://openapi.nexon.com/ko/my-application/" target="_blank" rel="noopener">넥슨 Open API</a>에서 발급받은 API 키를 넣어 주세요. 키는 내 계정에만 저장되고 다른 사람은 볼 수 없어요.</p>
+    <div class="f"><label for="nKey">넥슨 API 키</label><input id="nKey" type="password" autocomplete="off" spellcheck="false" placeholder="test_ 또는 live_로 시작하는 키"></div>
+    <button class="btn" type="button" id="nLoad" style="width:100%;margin-bottom:14px">캐릭터 불러오기</button>
+    <div class="f" id="nCharBox" hidden><label for="nChar">가계부에 보여 줄 캐릭터</label><select id="nChar" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)"></select></div>
+    <div class="gerr" id="nErr" role="alert"></div>
+    <div class="acts"><button class="btn" type="button" id="nClose">취소</button><button class="btn dark" type="submit" id="nSave">저장</button></div>
+    <button class="btn link" type="button" id="nUnlink" style="margin-top:8px;color:var(--minus)" hidden>연결 끊기</button>
   </form>
 </dialog>
 <dialog class="edlg" id="bDlg" aria-labelledby="bTitle">
@@ -404,8 +432,8 @@ const FB='https://www.gstatic.com/firebasejs/10.12.2/';
 const E={};for(const n of document.querySelectorAll('[id]'))E[n.id]=n;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=['도핑','에픽던전','템 구매'];
-const PAGE=50,KEY='meso-safe-v1';
-let entries=[],goal={name:'',amount:0},bosses=[],viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
+const PAGE=50,KEY='meso-safe-v1',NKEY='meso-safe-nexon',CKEY='meso-safe-char';
+let entries=[],goal={name:'',amount:0},bosses=[],nexon={},viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
 const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const today=()=>ymd(new Date());
 const parse=s=>{s=String(s||'').replace(/[,\s]/g,'').replace(/메소$/,'');if(!s)return 0;if(!/^([\d.]+(억|만)?)+$/.test(s))return NaN;let t=0;for(const m of s.matchAll(/([\d.]+)(억|만)?/g)){const v=parseFloat(m[1]);if(isNaN(v))return NaN;t+=v*(m[2]==='억'?1e8:m[2]==='만'?1e4:1)}return Math.round(t)};
@@ -437,12 +465,14 @@ function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(![
   return o}
 const body=e=>{const{id,...rest}=e;return rest};
 function cleanBosses(l){return(Array.isArray(l)?l:[]).slice(0,30).map(b=>({name:String(b&&b.name||'').trim().slice(0,20),amount:Math.max(0,num(b&&b.amount))})).filter(b=>b.name&&b.amount)}
+function cleanNexon(n){n=n&&typeof n==='object'?n:{};const key=String(n.key||'').trim().slice(0,200),ocid=String(n.ocid||'').replace(/[^\w]/g,'').slice(0,80);return key&&ocid?{key,ocid,name:String(n.name||'').slice(0,40)}:{}}
 function cleanGoal(g){return g&&typeof g==='object'?{name:String(g.name||'').slice(0,40),amount:Math.max(0,num(g.amount))}:{name:'',amount:0}}
 function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');return d?{entries:(Array.isArray(d.entries)?d.entries:[]).map(clean).filter(Boolean),goal:cleanGoal(d.goal),bosses:cleanBosses(d.bosses)}:null}catch(e){return null}}
 
 // 저장소 1: 이 기기에만 저장 (Firebase 설정 전)
 function localStore(){
   const d=readLocal();if(d){entries=d.entries;goal=d.goal;bosses=d.bosses;renderBossChips()}
+  try{nexon=cleanNexon(JSON.parse(localStorage.getItem(NKEY)||'{}'))}catch(e){nexon={}}loadChar();
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({v:1,entries,goal,bosses}))}catch(e){note('저장하지 못했어요. 저장 공간이 부족하거나 시크릿 모드일 수 있어요.');throw e}};
   const tx=fn=>{const prev={entries:entries.slice(),goal};fn();try{save()}catch(e){entries=prev.entries;goal=prev.goal;throw e}changed()};
   window.addEventListener('storage',e=>{if(e.key===KEY){const d=readLocal();if(d){entries=d.entries;goal=d.goal;changed()}}});
@@ -451,6 +481,7 @@ function localStore(){
     remove:id=>tx(()=>{entries=entries.filter(e=>e.id!==id)}),
     setGoal:g=>tx(()=>{goal=g}),
     setBosses:l=>tx(()=>{bosses=l;renderBossChips()}),
+    setNexon:n=>{nexon=n;try{n.key?localStorage.setItem(NKEY,JSON.stringify(n)):localStorage.removeItem(NKEY)}catch(e){}loadChar()},
     bulk:(adds,removeAll)=>tx(()=>{if(removeAll)entries=[];const have=new Set(entries.map(e=>e.id));for(const e of adds)if(!have.has(e.id))entries.push(e)})
   }}
 
@@ -470,7 +501,7 @@ function cloudErr(e){const c=e&&e.code||'';note(c.includes('permission')?'저장
 function startCloud(u){
   stopCloud(false);
   E.acct.hidden=false;E.delBox.hidden=false;setText(E.who,emailToId(u.email)||u.displayName||'로그인됨');show('app');
-  const col=F.collection(fs,'users',u.uid,'entries'),gref=F.doc(fs,'users',u.uid,'meta','goal'),bref=F.doc(fs,'users',u.uid,'meta','bosses');
+  const col=F.collection(fs,'users',u.uid,'entries'),gref=F.doc(fs,'users',u.uid,'meta','goal'),bref=F.doc(fs,'users',u.uid,'meta','bosses'),nref=F.doc(fs,'users',u.uid,'meta','nexon');
   E.pwUser.value=emailToId(u.email);
   let first=true,timer=setTimeout(()=>note('기록을 불러오는 중이에요. 연결이 느리면 잠시 기다려 주세요.'),10000);
   unsubs.push(F.onSnapshot(col,{includeMetadataChanges:true},snap=>{
@@ -481,18 +512,20 @@ function startCloud(u){
     changed()},e=>{cloudErr(e)}));
   unsubs.push(F.onSnapshot(gref,s=>{goal=s.exists()?cleanGoal(s.data()):{name:'',amount:0};render()},()=>{}));
   unsubs.push(F.onSnapshot(bref,s=>{bosses=s.exists()?cleanBosses(s.data().list):[];renderBossChips()},()=>{}));
+  unsubs.push(F.onSnapshot(nref,s=>{const n=s.exists()?cleanNexon(s.data()):{};if(n.key!==nexon.key||n.ocid!==nexon.ocid){nexon=n;loadChar()}},()=>{}));
   const w=p=>p.catch(cloudErr);
   store={
     put:(id,data)=>{w(F.setDoc(F.doc(col,id),data))},
     remove:id=>{w(F.deleteDoc(F.doc(col,id)))},
     setGoal:g=>{goal=g;render();w(g.amount?F.setDoc(gref,g):F.deleteDoc(gref))},
     setBosses:l=>{bosses=l;renderBossChips();w(l.length?F.setDoc(bref,{list:l}):F.deleteDoc(bref))},
+    setNexon:n=>{nexon=n;loadChar();w(n.key?F.setDoc(nref,n):F.deleteDoc(nref))},
     bulk:async(adds,removeAll)=>{const ops=[];if(removeAll)for(const e of entries)ops.push(b=>b.delete(F.doc(col,e.id)));
       const have=new Set(removeAll?[]:entries.map(e=>e.id));for(const e of adds)if(!have.has(e.id))ops.push(b=>b.set(F.doc(col,e.id),body(e)));
       for(let i=0;i<ops.length;i+=400){const b=F.writeBatch(fs);ops.slice(i,i+400).forEach(f=>f(b));w(b.commit())}}
   };
 }
-function stopCloud(toGate=true){unsubs.forEach(f=>{try{f()}catch(e){}});unsubs=[];entries=[];goal={name:'',amount:0};bosses=[];renderBossChips();changed();
+function stopCloud(toGate=true){unsubs.forEach(f=>{try{f()}catch(e){}});unsubs=[];entries=[];goal={name:'',amount:0};bosses=[];nexon={};loadChar();renderBossChips();changed();
   if(toGate){E.acct.hidden=true;E.delBox.hidden=true;store=null;show('gate')}}
 // 로그인 전 이 기기에 적어 둔 기록이 있으면 계정으로 옮길지 묻는다
 function offerLocal(uid){const flag='meso-safe-moved-'+uid;let d=null;try{if(localStorage.getItem(flag))return;d=readLocal()}catch(e){return}
@@ -529,7 +562,7 @@ E.gMail.addEventListener('submit',async ev=>{ev.preventDefault();gErr('');
 E.delBtn.onclick=async()=>{const b=E.delBtn;
   if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='정말 삭제할게요';setTimeout(()=>{if(b.isConnected&&!b.disabled){b.classList.remove('sure');b.textContent='계정 삭제'}},5000);return}
   const u=auth&&auth.currentUser;if(!u)return;b.disabled=true;b.textContent='삭제 중…';
-  try{const refs=entries.map(e=>F.doc(fs,'users',u.uid,'entries',e.id));refs.push(F.doc(fs,'users',u.uid,'meta','goal'),F.doc(fs,'users',u.uid,'meta','bosses'));
+  try{const refs=entries.map(e=>F.doc(fs,'users',u.uid,'entries',e.id));refs.push(F.doc(fs,'users',u.uid,'meta','goal'),F.doc(fs,'users',u.uid,'meta','bosses'),F.doc(fs,'users',u.uid,'meta','nexon'));
     for(let i=0;i<refs.length;i+=400){const bt=F.writeBatch(fs);refs.slice(i,i+400).forEach(r=>bt.delete(r));await bt.commit()}
     await F.deleteUser(u);try{localStorage.removeItem(KEY)}catch(e){}toast('계정과 기록을 모두 지웠어요')}
   catch(e){note(e&&e.code==='auth/requires-recent-login'?'기록은 지웠어요. 보안을 위해 다시 로그인한 뒤 계정 삭제를 한 번 더 눌러 주세요.':'삭제하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');
@@ -679,6 +712,43 @@ E.bForm.addEventListener('submit',ev=>{ev.preventDefault();const list=[];
   for(const r of E.bRows.querySelectorAll('.brow')){const name=r.querySelector('.bN').value.trim(),raw=r.querySelector('.bA').value.trim();if(!name&&!raw)continue;
     const amount=parse(raw);if(!name)return setText(E.bErr,'보스 이름을 적어 주세요.');if(isNaN(amount)||amount<=0)return setText(E.bErr,name+'의 금액을 다시 확인해 주세요. 예: 12억');list.push({name:name.slice(0,20),amount})}
   try{store.setBosses(list);E.bDlg.close();toast(list.length?'보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
+// 넥슨 Open API: 캐릭터 카드 (키는 이 사용자 계정에만 저장, 결과는 10분 동안 이 기기에 캐시)
+const NX='https://open.api.nexon.com/maplestory/v1/';
+async function nx(path,key){const r=await fetch(NX+path,{headers:{'x-nxopen-api-key':key}});let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok){const c=j&&j.error&&j.error.name||'';const m={OPENAPI00005:'API 키가 맞지 않아요. 넥슨 Open API에서 키를 다시 확인해 주세요.',OPENAPI00007:'오늘 넥슨 API 사용량을 다 썼어요. 내일 다시 불러와요.',OPENAPI00009:'넥슨 데이터가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.',OPENAPI00010:'넥슨 API 점검 중이에요.',OPENAPI00011:'넥슨 API 점검 중이에요.'}[c];throw new Error(m||'넥슨 API에서 정보를 불러오지 못했어요.')}return j}
+function showChar(d,errMsg){const on=!!nexon.key;E.chConnect.hidden=on;E.charCard.hidden=!on;if(!on)return;
+  if(!d){setText(E.chName,nexon.name||'캐릭터');setText(E.chLv,'');setText(E.chInfo,errMsg||'불러오는 중…');E.chXp.style.width='0';setText(E.chXpT,'');E.chImg.hidden=true;return}
+  E.chImg.hidden=!d.character_image;if(d.character_image&&E.chImg.src!==d.character_image)E.chImg.src=d.character_image;
+  setText(E.chName,d.character_name||nexon.name);setText(E.chLv,'Lv.'+d.character_level);
+  setText(E.chInfo,[d.world_name,d.character_class,d.character_guild_name?'길드 '+d.character_guild_name:''].filter(Boolean).join(' · ')+(errMsg?' · '+errMsg:''));
+  const xp=parseFloat(d.character_exp_rate)||0;E.chXp.style.width=Math.min(100,xp)+'%';setText(E.chXpT,'경험치 '+xp.toFixed(3)+'%')}
+let charSeq=0;
+async function loadChar(force){const seq=++charSeq;if(!nexon.key){showChar(null);return}
+  let c=null;try{c=JSON.parse(localStorage.getItem(CKEY)||'null')}catch(e){}
+  const fresh=c&&c.ocid===nexon.ocid&&Date.now()-c.at<600000;
+  showChar(c&&c.ocid===nexon.ocid?c.data:null);if(fresh&&!force)return;
+  try{const d=await nx('character/basic?ocid='+encodeURIComponent(nexon.ocid),nexon.key);if(seq!==charSeq)return;
+    try{localStorage.setItem(CKEY,JSON.stringify({ocid:nexon.ocid,at:Date.now(),data:d}))}catch(e){}showChar(d)}
+  catch(e){if(seq===charSeq)showChar(c&&c.ocid===nexon.ocid?c.data:null,e.message)}}
+let nList=[];
+function openNexon(){setText(E.nErr,'');E.nKey.value=nexon.key||'';E.nUnlink.hidden=!nexon.key;
+  if(nexon.ocid){E.nChar.innerHTML=`<option value="${esc(nexon.ocid)}">${esc(nexon.name||'지금 캐릭터')}</option>`;E.nCharBox.hidden=false}else{E.nChar.innerHTML='';E.nCharBox.hidden=true}
+  E.nDlg.showModal();E.nKey.focus()}
+E.chConnect.onclick=openNexon;E.chSet.onclick=openNexon;E.nClose.onclick=()=>E.nDlg.close();
+E.nLoad.onclick=async()=>{const key=E.nKey.value.trim();setText(E.nErr,'');if(!key)return setText(E.nErr,'API 키를 먼저 넣어 주세요.');
+  E.nLoad.disabled=true;setText(E.nLoad,'불러오는 중…');
+  try{const j=await nx('character/list',key);nList=(j.account_list||[]).flatMap(a=>a.character_list||[]).sort((a,b)=>b.character_level-a.character_level);
+    if(!nList.length)throw new Error('이 키의 넥슨 계정에 메이플 캐릭터가 없어요.');
+    E.nChar.innerHTML=nList.map(c=>`<option value="${esc(c.ocid)}"${c.ocid===nexon.ocid?' selected':''}>${esc(c.character_name)} · ${esc(c.world_name)} · ${esc(c.character_class)} · Lv.${esc(c.character_level)}</option>`).join('');E.nCharBox.hidden=false}
+  catch(e){setText(E.nErr,e.message)}
+  E.nLoad.disabled=false;setText(E.nLoad,'캐릭터 불러오기')};
+E.nForm.addEventListener('submit',ev=>{ev.preventDefault();const key=E.nKey.value.trim(),ocid=E.nChar.value;
+  if(!key)return setText(E.nErr,'API 키를 넣어 주세요.');if(!ocid)return setText(E.nErr,'"캐릭터 불러오기"를 눌러 캐릭터를 골라 주세요.');
+  const picked=nList.find(c=>c.ocid===ocid),name=picked?picked.character_name:nexon.name;
+  try{localStorage.removeItem(CKEY)}catch(e){}
+  try{store.setNexon(cleanNexon({key,ocid,name}));E.nDlg.close();toast('캐릭터를 연결했어요')}catch(e){setText(E.nErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
+E.nUnlink.onclick=()=>{try{localStorage.removeItem(CKEY)}catch(e){}try{store.setNexon({});E.nDlg.close();toast('넥슨 캐릭터 연결을 끊었어요')}catch(e){}};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadChar()});
 // 메이플포인트 서랍
 const MP_UI={charge:{mp:'받은 메포',d:'넥슨캐시로 메이플포인트를 충전했을 때 적어요. 쓴 돈(원)을 같이 적으면 이번 달 현금 충전이 보여요.',won:1,btn:'충전 기록하기'},
   event:{mp:'받은 메포',d:'이벤트 보상, 페이백 등으로 받은 메이플포인트예요.',btn:'적립 기록하기'},
