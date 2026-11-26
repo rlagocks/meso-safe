@@ -216,6 +216,12 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .wkb.on{background:var(--box);border-color:var(--lid)}.wkb.on i{background:var(--lid)}.wkb.on i::after{content:"✓"}
 .wkb span{min-width:0;flex:1;line-height:1.2}.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}.wkb small{display:block;color:var(--plus);font-size:12px}
 .edlg .chip{border-color:var(--line)}.edlg .chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;max-height:260px;overflow:auto;margin:-4px 0 12px;padding:2px}
+.itile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;min-height:84px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer;font:inherit;font-size:12px;line-height:1.25;text-align:center}
+.itile img,.itile .ph{width:32px;height:32px;image-rendering:pixelated;flex:none}.itile .ph{display:grid;place-items:center;font-size:22px;border-radius:8px;background:var(--soft)}
+.itile.on{border-color:var(--lid);background:var(--box);box-shadow:0 0 0 2px var(--lid) inset}.itile.custom{border-style:dashed}
+.igrid .empty{grid-column:1/-1;padding:12px;text-align:center}
+.dpick{min-height:44px;display:flex;align-items:center;gap:8px;padding:6px 10px;border:2px solid var(--line);border-radius:12px;font-weight:700;font-size:14px;overflow:hidden}.dpick img,.dpick .ph{width:28px;height:28px;flex:none;font-size:18px}
 #dRef b{color:var(--ink)}#dRef a{color:inherit}
 .drow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}.drow span{flex:1;min-width:0;line-height:1.3}.drow small{display:block;color:var(--mute)}
 .drow .btn{min-height:38px;padding:4px 12px;font-size:14px;flex:none}
@@ -441,7 +447,8 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <h2 id="dTitle">드롭 아이템</h2>
     <p class="small sub" id="dSub">보스에서 돈 되는 아이템이 나왔다면 적어 두세요. 팔기 전에는 메소가 늘지 않고, 팔았을 때 받은 금액이 "아이템 판매" 수익으로 들어가요.</p>
     <div class="two"><div class="f"><label for="dBoss">보스</label><select id="dBoss" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)"></select></div>
-      <div class="f"><label for="dItemSel">아이템</label><select id="dItemSel" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)"></select></div></div>
+      <div class="f"><label>고른 아이템</label><div class="dpick" id="dPicked">아래에서 골라 주세요</div></div></div>
+    <div class="igrid" id="dItemGrid" role="listbox" aria-label="드롭 아이템"></div>
     <div class="f" id="dItemBox"><label for="dItem">아이템 이름</label><input id="dItem" maxlength="40" autocomplete="off" placeholder="예: 몽환의 벨트"></div>
     <div class="small" id="dRef" style="margin:-6px 0 12px"></div>
     <div class="f" id="dEstBox" hidden><label for="dEst">예상 판매 가격 <span class="small" style="font-weight:400">(선택)</span></label><input id="dEst" inputmode="text" autocomplete="off" placeholder="예: 40억"><div class="hint" id="hDEst">적어 두면 수수료를 뺀 금액이 총 자산에 들어가요</div></div>
@@ -804,17 +811,15 @@ const BOSSES=[['자쿰',[['카오스',4040000]]],['피에르',[['카오스',4080
   ['더스크',[['노멀',22000000],['카오스',66300000]]],['듄켈',[['노멀',23700000],['하드',89600000]]],['진 힐라',[['노멀',67600000],['하드',100000000]]],
   ['세렌',[['노멀',167000000],['하드',302000000],['익스트림',1840000000]]],['칼로스',[['이지',238000000],['노멀',479000000],['카오스',1230000000],['익스트림',4104000000]]],
   ['대적자',[['이지',261000000],['노멀',532000000],['하드',1390000000],['익스트림',4712000000]]],['카링',[['이지',320000000],['노멀',576000000],['하드',1560000000],['익스트림',5387000000]]],
-  ['벨로나',[['이지',396000000],['노멀',824000000],['하드',2950000000]]],['흉성',[['노멀',593000000],['하드',2678000000]]],['림보',[['노멀',995000000],['하드',2385000000]]],
-  ['발드릭스',[['노멀',1320000000],['하드',3078000000]]],['유피테르',[['노멀',1560000000],['하드',4845000000]]],['검은 마법사',[['하드',465000000],['익스트림',5680000000]],'m']];
+  ['벨로나',[['이지',396000000],['노멀',824000000],['하드',2950000000]]],['흉성',[['노멀',593000000],['하드',2678000000]]],['림보',[['노멀',995000000],['하드',2385000000],['익스트림',0]]],
+  ['발드릭스',[['노멀',1320000000],['하드',3078000000],['익스트림',0]]],['유피테르',[['노멀',1560000000],['하드',4845000000]]],['검은 마법사',[['하드',465000000],['익스트림',5680000000]],'m']];
 const bossOf=n=>BOSSES.find(x=>x[0]===n);
-// 보스별 주요 드롭 아이템 (나무위키 칠흑·광휘의 보스 세트, 2026-11 기준): [아이템, 드롭 난이도들]
-const DROPS={'스우':[['루즈 컨트롤 머신 마크',['하드','익스트림']],['컴플리트 언더컨트롤',['익스트림']]],'데미안':[['마력이 깃든 안대',['하드']]],
-  '루시드':[['몽환의 벨트',['하드']]],'윌':[['저주받은 마도서',['하드']]],'더스크':[['거대한 공포',['카오스']]],'진 힐라':[['고통의 근원',['하드']]],
-  '듄켈':[['커맨더 포스 이어링',['하드']]],'세렌':[['미트라의 분노',['하드','익스트림']],['익셉셔널 해머 (얼굴장식)',['익스트림']]],
-  '칼로스':[['익셉셔널 해머 (눈장식)',['익스트림']]],'대적자':[['불멸의 유산',['하드','익스트림']],['익셉셔널 해머 (훈장)',['익스트림']]],
-  '카링':[['익셉셔널 해머 (귀고리)',['익스트림']]],'벨로나':[['굶주리는 핏빛 원혼',['하드']]],'흉성':[['황홀한 악몽',['하드']]],
-  '림보':[['근원의 속삭임',['하드','익스트림']],['익셉셔널 해머 (포켓)',['익스트림']]],'발드릭스':[['죽음의 맹세',['하드','익스트림']],['익셉셔널 해머 (펜던트)',['익스트림']]],
-  '유피테르':[['오만의 원죄',['하드']]],'검은 마법사':[['창세의 뱃지',['하드','익스트림']],['익셉셔널 해머 (벨트)',['익스트림']]]};
+// 보스·난이도별 드롭 아이템 (출처: matsu1207.tistory.com/937 "메이플스토리 보스 주요 보상 모음 2026", 2026-10-16 수정본)
+const DROPS={'스우':{'노멀':['특수형 에너지 코어(S)급','스우의 소울 조각','녹옥의 보스 반지 상자'],'하드':['특수형 에너지 코어(S)급','앱솔랩스 방어구 상자','앱솔랩스 무기 상자','스우의 소울 조각','홍옥의 보스 반지 상자','루즈 컨트롤 머신 마크','스우 로이드'],'익스트림':['특수형 에너지 코어(S)급','앱솔랩스 방어구 상자','앱솔랩스 무기 상자','백옥의 보스 반지 상자','루즈 컨트롤 머신 마크','컴플리트 언더컨트롤','섬멸병기 스우로이드','섬멸병기 스우의 소울 조각']},'데미안':{'노멀':['뒤틀린 낙인의 영혼석','루인 포스실드','데미안의 소울 조각','녹옥의 보스 반지 상자'],'하드':['뒤틀린 낙인의 영혼석','루인 포스실드','데미안의 소울 조각','홍옥의 보스 반지 상자','마력이 깃든 안대','데미안로이드','앱솔랩스 방어구 상자','앱솔랩스 무기 상자']},'가디언 엔젤 슬라임':{'노멀':['가디언 엔젤 링','녹옥의 보스 반지 상자'],'카오스':['가디언 엔젤 링','흑옥의 보스 반지 상자']},'루시드':{'이지':['루시드의 소울 조각','녹옥의 보스 반지 상자'],'노멀':['나비날개 물방울석','트와일라이트 마크','루시드의 소울 조각','녹옥의 보스 반지 상자'],'하드':['나비날개 물방울석','트와일라이트 마크','루시드의 소울 조각','홍옥의 보스 반지 상자','몽환의 벨트','루시드로이드','아케인셰이드 방어구 상자','아케인셰이드 무기 상자']},'윌':{'이지':['윌의 소울 조각','녹옥의 보스 반지 상자'],'노멀':['코브웹 물방울석','트와일라이트 마크','윌의 소울 조각','녹옥의 보스 반지 상자'],'하드':['코브웹 물방울석','트와일라이트 마크','윌의 소울 조각','홍옥의 보스 반지 상자','저주받은 마도서 선택 상자','거울세계의 코어 젬스톤','아케인셰이드 방어구 상자','아케인셰이드 무기 상자']},'더스크':{'노멀':['에스텔라 이어링','녹옥의 보스 반지 상자'],'카오스':['에스텔라 이어링','흑옥의 보스 반지 상자','거대한 공포','아케인셰이드 방어구 상자','아케인셰이드 무기 상자']},'진 힐라':{'노멀':['데이브레이크 펜던트','아케인셰이드 방어구 상자','아케인셰이드 무기 상자','진 힐라의 소울 조각','홍옥의 보스 반지 상자'],'하드':['데이브레이크 펜던트','아케인셰이드 방어구 상자','아케인셰이드 무기 상자','진 힐라의 소울 조각','흑옥의 보스 반지 상자','고통의 근원']},'듄켈':{'노멀':['에스텔라 이어링','듄켈의 소울 조각','녹옥의 보스 반지 상자'],'하드':['에스텔라 이어링','듄켈의 소울 조각','흑옥의 보스 반지 상자','커맨더 포스 이어링','아케인셰이드 방어구 상자','아케인셰이드 무기 상자']},'검은 마법사':{'하드':['백옥의 보스 반지 상자','창세의 뱃지','아케인셰이드 방어구 상자','아케인셰이드 무기 상자'],'익스트림':['백옥의 보스 반지 상자','창세의 뱃지','아케인셰이드 방어구 상자','아케인셰이드 무기 상자','익셉셔널 해머 (벨트)']},'세렌':{'노멀':['데이브레이크 펜던트','흑옥의 보스 반지 상자'],'하드':['데이브레이크 펜던트','미트라의 코어 젬스톤','백옥의 보스 반지 상자','미트라의 분노 선택 상자'],'익스트림':['데이브레이크 펜던트','미트라의 코어 젬스톤','백옥의 보스 반지 상자','미트라의 분노 선택 상자','익셉셔널 해머 (얼굴장식)','에리온의 조각','영롱한 달빛 포션']},'칼로스':{'이지':['칼로스의 소울 조각','백옥의 보스 반지 상자'],'노멀':['니키로이드','생명의 연마석','칼로스의 소울 조각','백옥의 보스 반지 상자','남겨진 칼로스의 의지 조각'],'카오스':['니키로이드','생명의 연마석','칼로스의 소울 조각','생명의 보스 반지 상자','남겨진 칼로스의 의지','의지의 에테르넬 방어구 상자'],'익스트림':['니키로이드','생명의 연마석','칼로스의 소울 조각','생명의 보스 반지 상자','남겨진 칼로스의 의지','의지의 에테르넬 방어구 상자','익셉셔널 해머 (눈장식)','에리온의 조각','영롱한 달빛 포션']},'대적자':{'이지':['최초의 대적자 소울 조각','백옥의 보스 반지 상자'],'노멀':['대적자 로이드','생명의 연마석','최초의 대적자 소울 조각','백옥의 보스 반지 상자','이어진 고대의 결의 조각','1단계 소울 에테르'],'하드':['대적자 로이드','생명의 연마석','최초의 대적자 소울 조각','생명의 보스 반지 상자','이어진 고대의 결의','불멸의 유산','고대의 에테르넬 상자','에리온의 조각','1단계 소울 에테르'],'익스트림':['대적자 로이드','생명의 연마석','최초의 대적자 소울 조각','생명의 보스 반지 상자','이어진 고대의 결의','불멸의 유산','고대의 에테르넬 상자','익셉셔널 해머 (훈장)','에리온의 조각','1단계 소울 에테르','영롱한 달빛 포션']},'카링':{'이지':['카링의 소울 조각','백옥의 보스 반지 상자','뒤엉킨 흉수의 고리 조각'],'노멀':['카링로이드','카링의 소울 조각','백옥의 보스 반지 상자','뒤엉킨 흉수의 고리 조각','혼돈의 칠흑 장신구 상자','생명의 연마석','1단계 소울 에테르'],'하드':['카링로이드','신념의 연마석','카링의 소울 조각','생명의 보스 반지 상자','뒤엉킨 흉수의 고리','흉수의 에테르넬 방어구 상자','혼돈의 칠흑 장신구 상자','에리온의 조각','1단계 소울 에테르'],'익스트림':['카링로이드','신념의 연마석','카링의 소울 조각','생명의 보스 반지 상자','뒤엉킨 흉수의 고리','흉수의 에테르넬 방어구 상자','익셉셔널 해머 (귀고리)','혼돈의 칠흑 장신구 상자','에리온의 조각','1단계 소울 에테르','영롱한 달빛 포션']},'벨로나':{'이지':['벨로나의 소울 조각','백옥의 보스 반지 상자'],'노멀':['벨로나로이드','벨로나의 소울 조각','백옥의 보스 반지 상자','저주받은 원혼의 잔재','혼돈의 칠흑 장신구 상자','생명의 연마석','2단계 소울 에테르'],'하드':['벨로나로이드','벨로나의 소울 조각','생명의 보스 반지 상자','저주받은 원혼의 잔재','굶주리는 핏빛 원혼','광기의 에테르넬 방어구 상자','혼돈의 칠흑 장신구 상자','에리온의 조각','신념의 연마석','2단계 소울 에테르']},'흉성':{'노멀':['흉성로이드','혼돈의 칠흑 장신구 상자','찬란한 흉성 소울 조각','백옥의 보스 반지 상자','황홀한 환상의 단편 조각','생명의 연마석','2단계 소울 에테르'],'하드':['흉성로이드','혼돈의 칠흑 장신구 상자','찬란한 흉성 소울 조각','생명의 보스 반지 상자','황홀한 환상의 단편','황홀한 악몽','환상의 에테르넬 방어구 상자','에리온의 조각','신념의 연마석','2단계 소울 에테르']},'림보':{'노멀':['림보로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','림보의 소울 조각','왜곡된 욕망의 결정','3단계 소울 에테르'],'하드':['림보로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','림보의 소울 조각','왜곡된 욕망의 결정','근원의 속삭임','욕망의 에테르넬 방어구 상자','에리온의 조각','3단계 소울 에테르'],'익스트림':['림보로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','림보의 소울 조각','왜곡된 욕망의 결정','근원의 속삭임','욕망의 에테르넬 방어구 상자','에리온의 조각','3단계 소울 에테르','익셉셔널 해머 (포켓)','영롱한 달빛 포션']},'발드릭스':{'노멀':['발드릭스로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','발드릭스의 소울 조각','영원한 충성의 흔적','3단계 소울 에테르'],'하드':['발드릭스로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','발드릭스의 소울 조각','영원한 충성의 흔적','죽음의 맹세','맹세의 에테르넬 방어구 상자','에리온의 조각','3단계 소울 에테르'],'익스트림':['발드릭스로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','발드릭스의 소울 조각','영원한 충성의 흔적','죽음의 맹세','맹세의 에테르넬 방어구 상자','에리온의 조각','3단계 소울 에테르','익셉셔널 해머 (펜던트)','영롱한 달빛 포션']},'유피테르':{'노멀':['유피테르로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','유피테르의 소울 조각','뒤틀린 갈망의 편린','에리온의 조각','4단계 소울 에테르'],'하드':['유피테르로이드','생명의 보스 반지 상자','신념의 연마석','혼돈의 칠흑 장신구 상자','유피테르의 소울 조각','뒤틀린 갈망의 편린','오만의 원죄','갈망의 에테르넬 방어구 상자','에리온의 조각','4단계 소울 에테르']}};
+// 아이템 아이콘 (maplestory.io KMS 데이터에서 한 번 받아 items/ 폴더에 저장). 없는 신규 아이템은 종류별 그림으로 보여 준다
+const ITEM_ICON={'앱솔랩스 방어구 상자':2633913,'앱솔랩스 무기 상자':5680340,'스우의 소울 조각':2433593,'녹옥의 보스 반지 상자':2028407,'홍옥의 보스 반지 상자':2028408,'루즈 컨트롤 머신 마크':1012632,'백옥의 보스 반지 상자':2028410,'뒤틀린 낙인의 영혼석':4001869,'루인 포스실드':1099015,'데미안의 소울 조각':2435369,'마력이 깃든 안대':1022278,'데미안로이드':1662088,'가디언 엔젤 링':1113313,'흑옥의 보스 반지 상자':2028409,'나비날개 물방울석':4001879,'트와일라이트 마크':1012757,'루시드의 소울 조각':2436039,'몽환의 벨트':1132308,'루시드로이드':1662111,'아케인셰이드 방어구 상자':2633915,'아케인셰이드 무기 상자':2630782,'코브웹 물방울석':4001890,'윌의 소울 조각':2438396,'저주받은 마도서 선택 상자':2633926,'거울세계의 코어 젬스톤':2438411,'에스텔라 이어링':1032330,'거대한 공포':1113306,'데이브레이크 펜던트':1122443,'진 힐라의 소울 조각':2439567,'고통의 근원':1122430,'듄켈의 소울 조각':2439568,'커맨더 포스 이어링':1032316,'창세의 뱃지':1182285,'미트라의 코어 젬스톤':2632972,'미트라의 분노 선택 상자':2633927,'영롱한 달빛 포션':2023136,'니키로이드':1662206,'생명의 연마석':2539001,'칼로스의 소울 조각':2634499,'남겨진 칼로스의 의지 조각':2636606,'남겨진 칼로스의 의지':2634472,'카링로이드':1662198,'카링의 소울 조각':2635761,'뒤엉킨 흉수의 고리 조각':2636607,'뒤엉킨 흉수의 고리':2635747,'스우 로이드':1662053};
+const itemIcon=n=>ITEM_ICON[n]?`<img src="items/${ITEM_ICON[n]}.png" alt="" width="32" height="32" loading="lazy">`:
+  `<span class="ph" aria-hidden="true">${/로이드/.test(n)?'🤖':/반지 상자/.test(n)?'💍':/연마석/.test(n)?'💎':/에테르(?!넬)/.test(n)?'✨':/해머/.test(n)?'🔨':/소울/.test(n)?'👻':/상자/.test(n)?'📦':/포션/.test(n)?'🧪':/조각|결정|흔적|편린|잔재|단편|결의|의지|고리/.test(n)?'🧩':esc(n[0])}</span>`;
 // 내가 마지막으로 판 가격 (판매가가 있으면 판매가, 없으면 받은 금액)
 function lastSold(item){let best=null;for(const e of entries)if(e.kind==='in'&&e.sale&&e.item===item&&(!best||(e.at||0)>(best.at||0)))best=e;return best?(best.list||best.sale):0}
 const priceOf=(n,d)=>{const b=bossOf(n);const x=b&&b[1].find(y=>y[0]===d);return x?x[1]:0};
@@ -832,7 +837,7 @@ const bRow=(b={})=>{const pre=!!(b.boss&&bossOf(b.boss)),amt=typeof b.amount==='
 function bFill(r,changedBoss){const n=r.querySelector('.bB').value,pre=!!bossOf(n),D=r.querySelector('.bD'),P=r.querySelector('.bP'),N=r.querySelector('.bN');
   D.hidden=P.hidden=!pre;N.hidden=pre;
   if(!pre)return;if(changedBoss){const b=bossOf(n);D.innerHTML=diffOpts(n,b[1][b[1].length-1][0]);r.querySelector('.bC').value=b[2]==='m'?'m':'w'}
-  const p=priceOf(n,D.value),k=+P.value||1;r.querySelector('.bA').value=mesoTxt(Math.floor(p/k))}
+  const p=priceOf(n,D.value),k=+P.value||1;r.querySelector('.bA').value=p?mesoTxt(Math.floor(p/k)):'';r.querySelector('.bA').placeholder=p?'1인당 금액 (예: 12억)':'결정석 가격을 직접 적어 주세요'}
 E.bRows.addEventListener('change',e=>{const r=e.target.closest('.brow');if(!r)return;if(e.target.matches('.bB'))bFill(r,true);else if(e.target.matches('.bD,.bP'))bFill(r,false)});
 function bGroups(){const g=[];for(const b of bosses){let x=g.find(y=>y.char===b.char);if(!x)g.push(x={char:b.char,list:[]});x.list.push({name:b.name,amount:b.amount,cycle:b.cycle,boss:b.boss,diff:b.diff,party:b.party})}return g}
 function bSync(){const g=bState[bCur];if(!g)return;g.char=E.bCharName.value.trim().slice(0,20);
@@ -947,37 +952,47 @@ function dPriceHint(){const h=E.hDPrice,c=dCalc();if(!E.dPrice.value.trim()){h.c
   if(!c){h.className='hint';h.textContent='숫자와 억, 만만 쓸 수 있어요';return}
   h.className='hint ok';h.textContent=c.list?'수수료 '+Math.round(c.r*100)+'% '+fmt(c.fee)+' → 받는 메소 '+fmt(c.net):'= '+fmt(c.net)+' 메소'}
 const setDState=st=>{dState=st;for(const x of E.dState.children){x.classList.toggle('on',x.dataset.s===st);x.setAttribute('aria-pressed',x.dataset.s===st)}E.dSoldBox.hidden=st!=='sold';E.dEstBox.hidden=st!=='wait';setText(E.dSave,st==='sold'?'수익으로 넣기':'판매 대기로 저장')};
-// 고른 보스(등록한 보스의 보스·난이도)에 맞는 드롭 아이템 목록. 프리셋이 아니면 전체 목록
-function dItemOptions(sel){const v=E.dBoss.value,[c,n]=v?v.split('\u0001'):['',''],b=bosses.find(x=>x.char===c&&x.name===n);
-  let list=[];if(b&&b.boss&&DROPS[b.boss])list=DROPS[b.boss].filter(([,ds])=>!b.diff||ds.includes(b.diff)).map(([it])=>it);
-  const all=!list.length,grp=all?Object.entries(DROPS):[];
-  E.dItemSel.innerHTML='<option value="">직접 입력</option>'+(all?grp.map(([bn,its])=>`<optgroup label="${esc(bn)}">${its.map(([it])=>`<option${it===sel?' selected':''}>${esc(it)}</option>`).join('')}</optgroup>`).join(''):list.map(it=>`<option${it===sel?' selected':''}>${esc(it)}</option>`).join(''));
-  if(!all&&!sel&&list.length===1)E.dItemSel.value=list[0];dItemPicked(false)}
+// 보스 칸 값: 등록한 보스 = "캐릭터\u0001보스이름", 등록 안 한 보스 = "\u0002보스\u0002난이도"
+function dBossVal(){const v=E.dBoss.value;if(!v)return{char:'',name:'',boss:'',diff:''};
+  if(v[0]==='\u0002'){const[,b,d]=v.split('\u0002');return{char:'',name:b+' '+d,boss:b,diff:d}}
+  const[c,n]=v.split('\u0001'),b=bosses.find(x=>x.char===c&&x.name===n);return{char:c,name:n,boss:b&&b.boss||'',diff:b&&b.diff||''}}
+let dSel='';
+// 고른 보스·난이도의 드롭 아이템을 그림으로 보여 준다 (마지막 칸은 "직접 입력")
+function dGrid(){const b=dBossVal(),list=b.boss&&DROPS[b.boss]?(b.diff&&DROPS[b.boss][b.diff]?DROPS[b.boss][b.diff]:[...new Set(Object.values(DROPS[b.boss]).flat())]):[];
+  const tiles=list.map(n=>`<button type="button" class="itile${n===dSel?' on':''}" data-n="${esc(n)}" role="option" aria-selected="${n===dSel}">${itemIcon(n)}<span>${esc(n)}</span></button>`);
+  const custom=`<button type="button" class="itile custom${dSel==='\u0003'?' on':''}" data-n="\u0003" role="option"><span class="ph" aria-hidden="true">✏️</span><span>직접 입력</span></button>`;
+  setHTML(E.dItemGrid,(list.length?'':`<div class="small empty">${E.dBoss.value?'이 보스는 드롭 목록이 없어요. 직접 입력해 주세요.':'보스를 고르면 드롭 아이템이 그림으로 나와요.'}</div>`)+tiles.join('')+custom)}
 // 아이템을 고르면 이름을 채운다. 가격은 사용자가 직접 적고, 내가 전에 판 가격은 참고로만 보여 준다
-function dItemPicked(){const it=E.dItemSel.value;E.dItemBox.hidden=!!it;if(it)E.dItem.value=it;
-  const mine=it?lastSold(it):0;
-  E.dRef.innerHTML=it?[mine?'내가 마지막으로 판 가격 <b>'+esc(short(mine))+'</b>':'',
-    '<a href="https://mitemprice.kr/" target="_blank" rel="noopener">경매장 시세 보기 ↗</a>'].filter(Boolean).join(' · '):''}
-E.dBoss.addEventListener('change',()=>{dItemOptions('');dItemPicked(true)});
-E.dItemSel.addEventListener('change',()=>dItemPicked(true));
+function dPick(n){dSel=n;const custom=n==='\u0003';E.dItemBox.hidden=!custom;if(n&&!custom)E.dItem.value=n;else if(!n)E.dItem.value='';else if(n==='\u0003'&&DROPS_ALL.has(E.dItem.value))E.dItem.value='';
+  E.dPicked.innerHTML=!n?'아래에서 골라 주세요':custom?'<span class="ph" aria-hidden="true">✏️</span>직접 입력':itemIcon(n)+'<span>'+esc(n)+'</span>';
+  const it=custom?'':n,mine=it?lastSold(it):0;
+  E.dRef.innerHTML=it?[mine?'내가 마지막으로 판 가격 <b>'+esc(short(mine))+'</b>':'','<a href="https://mitemprice.kr/" target="_blank" rel="noopener">경매장 시세 보기 ↗</a>'].filter(Boolean).join(' · '):'';
+  dGrid()}
+const DROPS_ALL=new Set(Object.values(DROPS).flatMap(x=>Object.values(x).flat()));
+const dItemPicked=()=>{};
+E.dBoss.addEventListener('change',()=>{dPick('');dGrid()});
+E.dItemGrid.addEventListener('click',e=>{const t=e.target.closest('.itile');if(t){dPick(t.dataset.n);if(t.dataset.n==='\u0003')E.dItem.focus()}});
 function openDrop(sellId){setText(E.dErr,'');const ex=sellId?entries.find(x=>x.id===sellId):null;dId=ex?ex.id:null;dMode=ex?'sell':'new';
-  const opts=bosses.map(b=>({c:b.char,n:b.name}));if(ex&&ex.dropBoss&&!opts.some(o=>o.n===ex.dropBoss&&o.c===(ex.dropChar||'')))opts.push({c:ex.dropChar||'',n:ex.dropBoss});
+  const opts=bosses.map(b=>({c:b.char,n:b.name}));if(ex&&ex.dropBoss&&ex.dropChar&&!opts.some(o=>o.n===ex.dropBoss&&o.c===ex.dropChar))opts.push({c:ex.dropChar,n:ex.dropBoss});
   const chs=[...new Set(opts.map(o=>o.c))];
-  E.dBoss.innerHTML='<option value="">(선택 안 함)</option>'+chs.map(c=>`<optgroup label="${esc(c||'캐릭터 미지정')}">`+opts.filter(o=>o.c===c).map(o=>`<option value="${esc(o.c+'\u0001'+o.n)}"${ex&&ex.dropBoss===o.n&&(ex.dropChar||'')===o.c?' selected':''}>${esc(o.n)}</option>`).join('')+'</optgroup>').join('');
+  // 등록한 보스(캐릭터별) + 등록 안 한 보스 전체(보스·난이도)
+  const other=BOSSES.filter(b=>DROPS[b[0]]).flatMap(b=>Object.keys(DROPS[b[0]]).map(d=>[b[0],d]));
+  E.dBoss.innerHTML='<option value="">보스를 골라 주세요</option>'+chs.map(c=>`<optgroup label="${esc(c||'캐릭터 미지정')}">`+opts.filter(o=>o.c===c).map(o=>`<option value="${esc(o.c+'\u0001'+o.n)}">${esc(o.n)}</option>`).join('')+'</optgroup>').join('')+
+    '<optgroup label="등록 안 한 보스">'+other.map(([b,d])=>`<option value="${esc('\u0002'+b+'\u0002'+d)}">${esc(b+' '+d)}</option>`).join('')+'</optgroup>';
+  if(ex&&ex.dropBoss){const want=ex.dropChar?ex.dropChar+'\u0001'+ex.dropBoss:null,o=[...E.dBoss.options].find(x=>x.value===want)||[...E.dBoss.options].find(x=>x.value[0]==='\u0002'&&x.textContent===ex.dropBoss)||[...E.dBoss.options].find(x=>x.textContent===ex.dropBoss);if(o)E.dBoss.value=o.value}
   E.dItem.value=ex?ex.item:'';E.dPrice.value=ex&&ex.est?mesoTxt(ex.est):'';E.dEst.value='';E.dPc.checked=false;E.dDate.value=today();setDPriceMode('list');
-  setText(E.dTitle,ex?'팔았어요':'드롭 아이템');E.dStateBox.hidden=!!ex;setDState('sold');if(!ex&&!bosses.length)E.dBoss.value='';
-  dItemOptions(ex?ex.item:'');if(ex&&E.dItemSel.value!==ex.item){E.dItemSel.value='';dItemPicked(false);E.dItem.value=ex.item}
-  if(ex&&!ex.est)dItemPicked(true);else if(!ex)dItemPicked(true);
-  E.dDlg.showModal();(ex?E.dPrice:E.dItemSel).focus()}
+  setText(E.dTitle,ex?'팔았어요':'드롭 아이템');E.dStateBox.hidden=!!ex;setDState('sold');if(!ex)E.dBoss.value='';
+  dSel='';dGrid();if(ex){const inList=[...E.dItemGrid.querySelectorAll('.itile')].some(t=>t.dataset.n===ex.item);dPick(inList?ex.item:'\u0003');E.dItem.value=ex.item}else dPick('');
+  E.dDlg.showModal();(ex?E.dPrice:E.dBoss).focus()}
 E.dropAdd.onclick=()=>openDrop();E.dClose.onclick=()=>E.dDlg.close();
-E.dState.onclick=e=>{const b=e.target.closest('.chip');if(b){setDState(b.dataset.s);if(!E.dPrice.value.trim()&&!E.dEst.value.trim())dItemPicked(true)}};
+E.dState.onclick=e=>{const b=e.target.closest('.chip');if(b)setDState(b.dataset.s)};
 E.dPrice.addEventListener('input',()=>{commaize(E.dPrice);dPriceHint()});E.dPc.addEventListener('change',dPriceHint);
 E.dEst.addEventListener('input',()=>{commaize(E.dEst);const v=parse(E.dEst.value),r=feeRate(prefs.mvp);
   E.hDEst.textContent=!E.dEst.value.trim()?'적어 두면 수수료를 뺀 금액이 총 자산에 들어가요':isNaN(v)?'숫자와 억, 만만 쓸 수 있어요':'수수료 '+Math.round(r*100)+'% 빼면 '+fmt(v-Math.round(v*r))+'이 총 자산에 들어가요'});
 E.dMode.onclick=e=>{const b=e.target.closest('.chip');if(b)setDPriceMode(b.dataset.m)};
 E.dropList.onclick=e=>{const b=e.target.closest('[data-sell]');if(b)openDrop(b.dataset.sell)};
-E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.dErr,t),item=E.dItem.value.trim().slice(0,40),[dChar,boss]=E.dBoss.value?E.dBoss.value.split('\u0001'):['',''];
-  if(!item)return err('아이템 이름을 적어 주세요.');
+E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.dErr,t),item=E.dItem.value.trim().slice(0,40),bv=dBossVal(),dChar=bv.char,boss=bv.name;
+  if(!item)return err(dSel==='\u0003'?'아이템 이름을 적어 주세요.':'아이템을 골라 주세요.');
   try{if(dState==='wait'&&dMode==='new'){const est=parse(E.dEst.value);if(E.dEst.value.trim()&&(isNaN(est)||est<0))return err('예상 판매 가격을 다시 확인해 주세요. 예: 40억');
       put(newId(),{kind:'drop',item,dropBoss:boss,dropChar:dChar,...(est>0?{est}:{}),date:today(),memo:'',at:Date.now()});E.dDlg.close();toast(item+' 판매 대기로 적었어요');return}
     const c=dCalc();if(!c)return err((dPriceMode==='list'?'경매장 판매 가격':'받은 메소')+'을 적어 주세요. 예: 5억');const price=c.net;
