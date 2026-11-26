@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>메소 금고 가계부</title>
+<meta name="description" content="사냥·보스 수익과 지출을 매일 기록하는 메소 가계부. 로그인 없이 쓰고, 기록은 내 기기에만 저장돼요.">
+<meta name="theme-color" content="#ffd23f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="메소 금고">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#15171f);--sun:light-dark(#ffd23f,#3a2f0c);--sun2:light-dark(#ffe789,#2a2410);
+--ink:light-dark(#1d2340,#f3f1ea);--mute:light-dark(#5b6078,#a9aabb);--line:light-dark(#e7e3d6,#2f3242);
+--card:light-dark(#ffffff,#1d2029);--soft:light-dark(#fff7d6,#22242e);
+--safe:light-dark(#ff8a1f,#d9661a);--safe2:light-dark(#e06a00,#a94c0f);--safeIn:light-dark(#fff3e2,#2a1e14);
+--plus:light-dark(#178a4c,#4fd08a);--minus:light-dark(#d93d42,#ff7a7e);--lid:light-dark(#3bb273,#2f9a62);--box:light-dark(#eaf8f0,#1c3327)}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans KR",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(20px,3.4vw,48px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1,h2,.num,.jua{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400}
+h1{font-size:clamp(32px,4.4vw,46px);line-height:1.05;margin:0;text-wrap:balance}
+h2{font-size:24px;line-height:1.1;margin:0 0 14px}
+.top{background:var(--sun);padding-top:max(clamp(20px,3.4vw,48px),env(safe-area-inset-top))}
+.head{display:flex;flex-wrap:wrap;gap:18px 32px;align-items:end;justify-content:space-between}
+.goal{flex:1 1 380px;max-width:620px}
+.goalrow{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.goalname{font-size:17px;font-weight:700}
+.goalnum{font-family:Jua;font-size:20px;white-space:nowrap}
+.meter{height:18px;border-radius:99px;background:var(--sun2);margin:8px 0 6px;overflow:hidden;border:2px solid var(--ink)}
+.meter i{display:block;height:100%;background:var(--ink);border-radius:99px;transform-origin:left;transition:transform .5s}
+.small{font-size:14px;color:var(--mute)}
+.top .small{color:var(--ink);opacity:.8}
+button,input,select{font:inherit;color:inherit}
+input{font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+input:focus-visible,button:focus-visible,label.btn:focus-within{outline:3px solid var(--safe);outline-offset:2px}
+label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 18px;border-radius:12px;border:2px solid var(--ink);background:var(--card);cursor:pointer;font-weight:700;font-size:16px;margin:0}
+.btn.dark{background:var(--ink);color:var(--bg)}
+.btn.orange{background:var(--safe);border-color:var(--safe2);color:#fff}
+.btn.link{border:0;background:none;text-decoration:underline;padding:8px 4px;min-height:44px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.install{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.goalform{display:none;gap:10px;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto auto;margin-top:10px;align-items:end}
+.goalform.on{display:grid}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:clamp(20px,3vw,40px);grid-template-areas:"form safe"}
+.prep{grid-area:form;background:var(--soft);border:2px solid var(--line);border-radius:22px;padding:20px;align-self:start}
+.f{margin-bottom:14px}
+.hint{font-size:13px;color:var(--mute);min-height:20px;margin-top:3px}
+.hint.ok{color:var(--plus)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.seg{display:flex;border:2px solid var(--line);border-radius:12px;overflow:hidden;flex:none}
+.seg button{min-width:48px;min-height:40px;border:0;background:var(--card);cursor:pointer;font-weight:700;font-size:18px}
+.seg button.on.p{background:var(--plus);color:#fff}.seg button.on.m{background:var(--minus);color:#fff}
+.fragrow{display:flex;gap:8px}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px dashed var(--line);padding-top:12px;margin:6px 0 14px;gap:8px;flex-wrap:wrap}
+.total b{font-family:Jua;font-weight:400;font-size:26px;color:var(--plus);white-space:nowrap}
+.safewrap{grid-area:safe}
+.safe{position:relative;background:linear-gradient(160deg,var(--safe),var(--safe2));border-radius:28px;padding:18px;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 14px 0 -4px var(--safe2),0 22px 30px -18px rgba(0,0,0,.4)}
+.panel{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.lcd{background:#17211b;color:#9cf7b8;border-radius:12px;padding:8px 14px;font-family:Jua;font-size:clamp(20px,3vw,28px);white-space:nowrap;box-shadow:inset 0 2px 6px rgba(0,0,0,.6)}
+.lcd small{display:block;font-family:"Noto Sans KR";font-size:12px;color:#6fbf89;line-height:1.2}
+.dial{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff6,#0000 45%),#ffcf6b;border:5px solid var(--safe2);position:relative;flex:none}
+.dial::after{content:"";position:absolute;left:50%;top:4px;width:4px;height:14px;margin-left:-2px;background:var(--safe2);border-radius:2px}
+.frag{color:#fff;font-weight:700;font-size:15px;white-space:nowrap}
+.inside{background:var(--safeIn);border-radius:16px;padding:12px;box-shadow:inset 0 6px 14px rgba(0,0,0,.18);min-height:300px}
+.shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 8px;padding-bottom:10px;margin-bottom:10px;border-bottom:6px solid light-dark(#f0c89a,#4a3420);align-items:end;min-height:78px}
+.shelf:last-child{margin-bottom:0}
+.bx{background:var(--box);border:2px solid var(--lid);border-radius:8px 8px 10px 10px;padding:12px 4px 6px;text-align:center;position:relative;line-height:1.15}
+.bx::before{content:"";position:absolute;left:-3px;right:-3px;top:-2px;height:9px;background:var(--lid);border-radius:6px}
+.bx .d{font-size:12px;color:var(--mute)}
+.bx .a{font-family:Jua;font-size:17px;color:var(--plus);white-space:nowrap}
+.bx.drop{animation:drop .7s cubic-bezier(.3,1.4,.5,1)}
+@keyframes drop{from{transform:translateY(-60px) scale(1.2);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.bx.drop{animation:none}.meter i{transition:none}}
+.empty{color:var(--mute);text-align:center;padding:60px 10px;font-size:15px}
+.more{font-size:13px;color:var(--mute);text-align:right;margin-top:6px}
+.drawer{margin-top:16px;background:light-dark(#ffe2c2,#3a2716);border:3px solid var(--safe2);border-radius:16px;padding:12px}
+.handle{width:100%;display:flex;justify-content:center;align-items:center;gap:10px;background:var(--safe2);color:#fff;border:0;border-radius:12px;min-height:48px;font-weight:700;cursor:pointer;font-size:16px}
+.handle::before{content:"";width:46px;height:8px;border-radius:6px;background:#fff9}
+.dbody{display:none;padding-top:14px}.drawer.open .dbody{display:block}
+.drawer.adj{background:var(--safeIn)}
+.drawer.adj .handle{background:var(--card);color:var(--ink);border:2px solid var(--safe2)}
+.drawer.adj .handle::before{background:var(--safe2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:6px 16px;border-radius:99px;border:2px solid var(--safe2);background:var(--card);cursor:pointer;font-weight:700}
+.chip.on{background:var(--minus);border-color:var(--minus);color:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.card{border:2px solid var(--line);border-radius:18px;padding:18px;background:var(--card)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kpi .num{font-size:24px;white-space:nowrap;line-height:1.2}
+.kpi .num.p{color:var(--plus)}.kpi .num.m{color:var(--minus)}
+.week{display:flex;gap:6px;align-items:flex-end;height:150px;border-bottom:2px solid var(--line);padding-top:6px}
+.day{flex:1;display:flex;gap:2px;align-items:flex-end;height:100%;justify-content:center}
+.day i{width:42%;max-width:16px;border-radius:5px 5px 0 0;min-height:2px}
+.day .in{background:var(--plus)}.day .out{background:var(--minus)}
+.wlab{display:flex;gap:6px;font-size:12px;color:var(--mute)}.wlab span{flex:1;text-align:center}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--mute);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.row{margin-bottom:10px}.row .t{display:flex;justify-content:space-between;font-size:14px;gap:8px}
+.row .t b{white-space:nowrap}
+.bar{height:12px;background:var(--soft);border-radius:8px;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:var(--minus);border-radius:8px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{min-height:44px;padding:6px 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);cursor:pointer;font-weight:700}
+.tabs button.on{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);content-visibility:auto;contain-intrinsic-size:auto 64px}
+.hmore{width:100%;margin-top:12px}
+.tag{font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.tag.adj{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.tag.in{background:var(--box);color:var(--plus)}.tag.out{background:light-dark(#fde7e7,#3a1d1f);color:var(--minus)}
+.det{font-size:14px;color:var(--mute)}.det b{color:var(--ink);font-weight:700}
+.amt{font-family:Jua;font-size:18px;white-space:nowrap;text-align:right}
+.amt.p{color:var(--plus)}.amt.m{color:var(--minus)}.amt.a{color:var(--ink)}
+.del{min-height:44px;min-width:44px;border:0;background:none;cursor:pointer;color:var(--mute);font-size:14px;border-radius:10px}
+.del.sure{background:var(--minus);color:#fff;padding:0 10px}
+.note{display:none;background:var(--soft);border:2px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:14px;font-size:14px}
+.note.on{display:block}
+.backup{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:center}
+.backup .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.backup input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.backup p{margin:0 0 6px}
+.dialog{background:var(--soft);border:2px solid var(--line);border-radius:14px;padding:14px;margin-top:14px}
+.dialog .acts{justify-content:flex-start;margin-top:10px}
+.acct{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:14px}
+.acct b{font-weight:700;overflow-wrap:anywhere}
+.acct .btn{min-height:36px;padding:4px 12px;font-size:14px}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.sync i{width:9px;height:9px;border-radius:50%;background:var(--plus)}
+.sync.off i{background:var(--mute)}
+.gate{min-height:100vh;display:grid;place-items:center;background:var(--sun);padding:24px 16px max(24px,env(safe-area-inset-bottom))}
+.gcard{width:min(100%,420px);background:var(--card);border-radius:24px;padding:28px 24px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45)}
+.gcard img{width:76px;height:76px;border-radius:18px;display:block;margin-bottom:14px}
+.gcard h1{font-size:34px;margin-bottom:6px}
+.gcard p{margin:0 0 18px;color:var(--mute);font-size:15px}
+.gbtn{width:100%;margin-bottom:10px}
+.or{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px;margin:8px 0 14px}.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--line)}
+.gerr{color:var(--minus);font-size:14px;min-height:20px;margin:4px 0 8px}
+.gsw{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.gate{transition:background .3s}
+.gate.su{background:light-dark(#bfeccf,#173326)}
+.gtabs{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border:2px solid var(--line);border-radius:14px;padding:4px;gap:4px;margin-bottom:20px}
+.gtabs button{min-height:44px;border:0;border-radius:10px;background:none;cursor:pointer;font-weight:700;font-size:16px;color:var(--mute)}
+.gtabs button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.gate.su .gtabs button[aria-selected=true]{color:var(--plus)}
+.gbadge{display:inline-block;font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:8px;background:var(--sun2);color:var(--ink)}
+.gate.su .gbadge{background:var(--box);color:var(--plus)}
+.gcard{border-top:8px solid var(--safe)}
+.gate.su .gcard{border-top-color:var(--lid)}
+.btn.green{background:var(--plus);border-color:var(--lid);color:#fff}
+.gwarn{background:var(--box);border:1px dashed var(--lid);border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 14px;color:var(--ink)}
+footer a{color:inherit}
+footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size:13px;color:var(--mute);text-align:center}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 18px;border-radius:14px;display:none;gap:10px;align-items:center;z-index:9;max-width:calc(100% - 32px)}
+.toast.on{display:flex}.toast button{background:none;border:0;color:var(--sun);font-weight:700;min-height:40px;cursor:pointer}
+@media(max-width:760px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}.backup{grid-template-columns:minmax(0,1fr)}.backup .acts{justify-content:flex-start}}
+@media(max-width:420px){.shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{grid-template-columns:minmax(0,1fr) auto auto}.hist .tag{grid-column:1/-1;justify-self:start}.kpi .num{font-size:20px}}
+</style>
+</head>
+<body>
+<section class="gate" id="gate" hidden>
+  <div class="gcard">
+    <div class="gtabs" role="tablist">
+      <button type="button" role="tab" id="tLogin" aria-selected="true">로그인</button>
+      <button type="button" role="tab" id="tSignup" aria-selected="false">회원가입</button>
+    </div>
+    <img src="icon-192.png" alt="" width="76" height="76">
+    <span class="gbadge" id="gBadge">🔑 다시 오셨네요</span>
+    <h1 id="gTitle">내 금고 열기</h1>
+    <p id="gDesc">아이디와 비밀번호를 넣으면 휴대폰·PC 어디서든 같은 기록이 열려요.</p>
+    <form id="gMail" novalidate>
+      <div class="f"><label for="gId">아이디</label><input id="gId" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" required>
+        <div class="hint" id="gIdHint" hidden>영문 소문자·숫자·밑줄(_) 4~20자</div></div>
+      <div class="f"><label for="gPw">비밀번호</label><input id="gPw" type="password" autocomplete="current-password" minlength="6" required>
+        <div class="hint" id="gPwHint" hidden>6자 이상</div></div>
+      <div class="f" id="gPw2Box" hidden><label for="gPw2">비밀번호 확인</label><input id="gPw2" type="password" autocomplete="new-password" minlength="6"></div>
+      <div class="gwarn" id="gWarn" hidden>⚠️ 아이디·비밀번호는 잊어버리면 찾을 수 없어요. 꼭 기억해 두세요.</div>
+      <div class="gerr" id="gErr" role="alert"></div>
+      <button class="btn orange gbtn" type="submit" id="gSubmit">금고 열기</button>
+    </form>
+    <div class="gsw"><button class="btn link" type="button" id="gMode">처음이신가요? 회원가입 →</button></div>
+  </div>
+</section>
+<div class="gate" id="boot"><div class="small">불러오는 중…</div></div>
+<div id="app" hidden>
+<header class="band top"><div class="wrap head">
+  <div><h1>메소 금고 가계부</h1>
+    <div class="small" id="sub">매일 번 메소를 상자에 담아 금고에 넣어요</div>
+    <div class="acct" id="acct" hidden><span class="sync" id="sync"><i></i><span id="syncT">동기화됨</span></span><b id="who"></b><button class="btn" type="button" id="logout">로그아웃</button></div>
+    <div class="install"><button class="btn dark" id="appBtn" type="button" hidden>홈 화면에 설치</button><span class="small" id="iosHint" hidden>공유 버튼 → '홈 화면에 추가'를 누르면 앱처럼 쓸 수 있어요</span></div>
+  </div>
+  <div class="goal">
+    <div class="goalrow"><span class="goalname" id="gName">목표를 정해 보세요</span><span class="goalnum" id="gNum"></span></div>
+    <div class="meter" role="progressbar" aria-label="목표 달성률" id="gMeter" aria-valuemin="0" aria-valuemax="100"><i id="gBar" style="transform:scaleX(0)"></i></div>
+    <div class="goalrow"><span class="small" id="gLeft">목표 금액을 정하면 남은 금액을 알려 드려요</span><button class="btn link" id="gEdit" type="button">목표 정하기</button></div>
+    <form class="goalform" id="gForm">
+      <div><label for="gN">목표 이름</label><input id="gN" maxlength="40" placeholder="예: 무기 강화 자금"></div>
+      <div><label for="gA">목표 금액</label><input id="gA" inputmode="text" placeholder="예: 50억"></div>
+      <button class="btn dark" type="submit">저장</button>
+      <button class="btn" type="button" id="gDel" hidden>목표 삭제</button>
+    </form>
+  </div>
+</div></header>
+
+<main>
+<section class="band"><div class="wrap">
+  <div class="stage">
+    <form class="prep" id="inForm" aria-labelledby="prepT">
+      <h2 id="prepT">오늘의 수익 상자</h2>
+      <div class="f"><label for="iDate">날짜</label><input type="date" id="iDate"></div>
+      <div class="f"><label for="iHunt">사냥 수익</label><input id="iHunt" inputmode="text" placeholder="예: 3억 2500만" autocomplete="off"><div class="hint" id="hHunt"></div></div>
+      <div class="f"><label for="iBoss">보스 수익</label><input id="iBoss" inputmode="text" placeholder="예: 12억" autocomplete="off"><div class="hint" id="hBoss"></div></div>
+      <div class="f"><label for="iFrag">조각 개수</label>
+        <div class="fragrow"><div class="seg" role="group" aria-label="조각 더하기 또는 빼기"><button type="button" class="p on" id="fP" aria-pressed="true">+</button><button type="button" class="m" id="fM" aria-pressed="false">−</button></div>
+        <input id="iFrag" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+        <div class="hint">얻은 조각은 +, 쓴 조각은 −로 적어요</div></div>
+      <div class="f"><label for="iMemo">메모</label><input id="iMemo" maxlength="80" placeholder="예: 아케인리버 2시간"></div>
+      <div class="total"><span>상자에 담긴 메소</span><b id="iSum">0</b></div>
+      <button class="btn orange" type="submit" id="inBtn" style="width:100%">금고에 넣기</button>
+    </form>
+
+    <div class="safewrap">
+      <div class="safe">
+        <div class="panel">
+          <div class="lcd"><small>금고 잔액</small><span id="bal">0</span></div>
+          <span class="frag" id="fragTot">조각 0개</span>
+          <div class="dial" aria-hidden="true"></div>
+        </div>
+        <div class="inside" id="inside" aria-live="polite"></div>
+        <div class="drawer" id="drawer">
+          <button class="handle" type="button" id="dBtn" aria-expanded="false" aria-controls="dBody">메소 꺼내기</button>
+          <form class="dbody" id="dBody">
+            <label>어디에 썼나요</label>
+            <div class="chips" id="cats" role="group" aria-label="지출 종류"></div>
+            <div class="two" style="margin-top:12px">
+              <div><label for="oAmt">금액</label><input id="oAmt" inputmode="text" placeholder="예: 8000만" autocomplete="off"><div class="hint" id="hOut"></div></div>
+              <div><label for="oDate">날짜</label><input type="date" id="oDate"></div>
+            </div>
+            <div class="f" id="cntF" hidden><label for="oCnt">몇 번 돌렸나요</label><input id="oCnt" inputmode="numeric" autocomplete="off" placeholder="예: 11"><div class="hint">메소를 안 썼다면 금액은 비워 두고 횟수만 적어도 돼요</div></div>
+            <div class="f"><label for="oMemo">메모</label><input id="oMemo" maxlength="80" placeholder="예: 반지 구매"></div>
+            <button class="btn dark" type="submit" id="outBtn" style="width:100%">금고에서 빼기</button>
+          </form>
+        </div>
+        <div class="drawer adj" id="aDrawer">
+          <button class="handle" type="button" id="aBtnOpen" aria-expanded="false" aria-controls="aBody">잔액 맞추기</button>
+          <form class="dbody" id="aBody">
+            <div class="small" style="margin-bottom:12px">가계부를 쓰기 전에 있던 메소나 깜빡하고 못 적은 날 때문에 금고와 게임 속 메소가 다르면, 지금 게임 속 메소를 적어 주세요. 차이만큼 맞춰 드려요.</div>
+            <div class="two">
+              <div><label for="aAmt">지금 게임 속 메소</label><input id="aAmt" inputmode="text" placeholder="예: 152억 3000만" autocomplete="off"><div class="hint" id="hAdj"></div></div>
+              <div><label for="aDate">날짜</label><input type="date" id="aDate"></div>
+            </div>
+            <div class="f"><label for="aMemo">메모</label><input id="aMemo" maxlength="80" placeholder="예: 가계부 시작 전 잔액"></div>
+            <button class="btn dark" type="submit" id="adjBtn" style="width:100%">이 금액으로 맞추기</button>
+          </form>
+        </div>
+      </div>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap stats">
+  <div class="card"><h2 id="mT">이번 달</h2><div class="kpis" id="kpis"></div></div>
+  <div class="card"><h2>최근 7일</h2><div class="week" id="week"></div><div class="wlab" id="wlab"></div>
+    <div class="legend"><span><i style="background:var(--plus)"></i>넣은 메소</span><span><i style="background:var(--minus)"></i>뺀 메소</span></div></div>
+  <div class="card"><h2>이번 달 지출</h2><div id="cats2"></div></div>
+</div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap card">
+  <h2>기록</h2>
+  <div class="tabs" id="tabs"><button class="on" data-f="all" type="button">전체</button><button data-f="in" type="button">넣은 것</button><button data-f="out" type="button">뺀 것</button></div>
+  <ul class="hist" id="hist"></ul>
+  <button class="btn hmore" type="button" id="hMore" hidden>더 보기</button>
+</div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap card">
+  <div class="backup">
+    <div><h2>백업</h2>
+      <p id="bInfo">기록은 내 계정에 저장돼서 휴대폰과 PC에서 같이 보여요.</p>
+      <p class="small">혹시 모르니 가끔 백업 파일을 저장해 두면 좋아요. 불러온 기록은 계정에 저장돼요.</p></div>
+    <div class="acts">
+      <button class="btn dark" type="button" id="bExp">백업 파일 저장</button>
+      <label class="btn" for="bFile">백업 불러오기</label><input type="file" id="bFile" accept=".json,application/json">
+    </div>
+  </div>
+  <div class="dialog" id="bAsk" hidden>
+    <div id="bAskT"></div>
+    <div class="acts">
+      <button class="btn dark" type="button" id="bMerge">지금 기록에 합치기</button>
+      <button class="btn" type="button" id="bReplace">지금 기록을 지우고 바꾸기</button>
+      <button class="btn link" type="button" id="bCancel">취소</button>
+    </div>
+  </div>
+  <div class="dialog" id="delBox" hidden>
+    <b>계정 삭제</b>
+    <p class="small" style="margin:4px 0 0">계정과 모든 기록, 목표가 서버에서 지워지고 되돌릴 수 없어요. 필요하면 먼저 백업 파일을 저장해 두세요.</p>
+    <div class="acts"><button class="btn" type="button" id="delBtn" style="border-color:var(--minus);color:var(--minus)">계정 삭제</button></div>
+  </div>
+</div></section>
+</main>
+<footer>메소 금고 가계부 · 개인이 만든 비공식 도구로, 넥슨이나 메이플스토리와는 관계가 없어요.<br><a href="privacy.html">개인정보처리방침</a> · <a href="delete-account.html">계정 삭제 안내</a></footer>
+</div>
+<div class="toast" id="toast" role="status"><span id="tMsg"></span><button type="button" id="tUndo">되돌리기</button></div>
+
+<script type="module">
+import { firebaseConfig } from './firebase-config.js';
+const FB='https://www.gstatic.com/firebasejs/10.12.2/';
+const E={};for(const n of document.querySelectorAll('[id]'))E[n.id]=n;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GACHA='캐시 가챠';
+const CATS=['도핑','에픽던전','템 구매',GACHA];
+const PAGE=50,KEY='meso-safe-v1';
+let entries=[],goal={name:'',amount:0},justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
+const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const today=()=>ymd(new Date());
+const parse=s=>{s=String(s||'').replace(/[,\s]/g,'').replace(/메소$/,'');if(!s)return 0;if(!/^([\d.]+(억|만)?)+$/.test(s))return NaN;let t=0;for(const m of s.matchAll(/([\d.]+)(억|만)?/g)){const v=parseFloat(m[1]);if(isNaN(v))return NaN;t+=v*(m[2]==='억'?1e8:m[2]==='만'?1e4:1)}return Math.round(t)};
+const fmt=n=>{const neg=n<0;n=Math.abs(Math.round(n||0));const e=Math.floor(n/1e8),m=Math.floor(n%1e8/1e4),r=n%1e4;const p=[];if(e)p.push(e.toLocaleString()+'억');if(m)p.push(m.toLocaleString()+'만');if(r&&!e)p.push(r.toLocaleString());return(neg?'-':'')+(p.join(' ')||'0')};
+const short=n=>{const a=Math.abs(n);return a>=1e8?(+(n/1e8).toFixed(a>=1e10?0:1))+'억':a>=1e4?Math.round(n/1e4).toLocaleString()+'만':n.toLocaleString()};
+const md=d=>{const[, m,dd]=String(d).split('-');return +m+'/'+ +dd};
+const inAmt=e=>(e.hunt||0)+(e.boss||0);
+const setHTML=(node,h)=>{if(node._h!==h){node._h=h;node.innerHTML=h}};
+const setText=(node,t)=>{if(node.textContent!==t)node.textContent=t};
+function note(t){E.note.textContent=t||'';E.note.classList.toggle('on',!!t)}
+function toast(msg,data){E.tMsg.textContent=msg;undoData=data;E.tUndo.style.display=data?'':'none';E.toast.classList.add('on');clearTimeout(tTimer);tTimer=setTimeout(()=>E.toast.classList.remove('on'),6000)}
+function show(which){E.boot.hidden=true;E.gate.hidden=which!=='gate';E.app.hidden=which!=='app'}
+
+// 기록 다듬기: 파일이나 서버에서 온 값도 안전한 모양으로 맞춘다
+const num=v=>{v=Number(v);return isFinite(v)?Math.round(v):0};
+const newId=()=>'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(!['in','out','adj'].includes(kind))return null;
+  const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
+  if(kind==='in'){o.hunt=Math.max(0,num(e.hunt));o.boss=Math.max(0,num(e.boss));o.frag=num(e.frag)}
+  else{o.amount=num(e.amount);if(kind==='out'){o.cat=CATS.includes(e.cat)?e.cat:String(e.cat||'기타').slice(0,20);o.amount=Math.max(0,o.amount);if(e.cnt)o.cnt=Math.max(0,num(e.cnt))}}
+  return o}
+const body=e=>{const{id,...rest}=e;return rest};
+function cleanGoal(g){return g&&typeof g==='object'?{name:String(g.name||'').slice(0,40),amount:Math.max(0,num(g.amount))}:{name:'',amount:0}}
+function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');return d?{entries:(Array.isArray(d.entries)?d.entries:[]).map(clean).filter(Boolean),goal:cleanGoal(d.goal)}:null}catch(e){return null}}
+
+// 저장소 1: 이 기기에만 저장 (Firebase 설정 전)
+function localStore(){
+  const d=readLocal();if(d){entries=d.entries;goal=d.goal}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({v:1,entries,goal}))}catch(e){note('저장하지 못했어요. 저장 공간이 부족하거나 시크릿 모드일 수 있어요.');throw e}};
+  const tx=fn=>{const prev={entries:entries.slice(),goal};fn();try{save()}catch(e){entries=prev.entries;goal=prev.goal;throw e}changed()};
+  window.addEventListener('storage',e=>{if(e.key===KEY){const d=readLocal();if(d){entries=d.entries;goal=d.goal;changed()}}});
+  return{
+    put:(id,data)=>tx(()=>{const i=entries.findIndex(e=>e.id===id);if(i>=0)entries[i]={...data,id};else entries.unshift({...data,id})}),
+    remove:id=>tx(()=>{entries=entries.filter(e=>e.id!==id)}),
+    setGoal:g=>tx(()=>{goal=g}),
+    bulk:(adds,removeAll)=>tx(()=>{if(removeAll)entries=[];const have=new Set(entries.map(e=>e.id));for(const e of adds)if(!have.has(e.id))entries.push(e)})
+  }}
+
+// 저장소 2: Firebase 계정에 저장 (휴대폰과 PC가 같이 본다)
+const configured=firebaseConfig&&firebaseConfig.apiKey&&!/여기에/.test(firebaseConfig.apiKey);
+let F=null,auth=null,fs=null,unsubs=[];
+async function cloudInit(){
+  const [A,AU,FS]=await Promise.all([import(FB+'firebase-app.js'),import(FB+'firebase-auth.js'),import(FB+'firebase-firestore.js')]);
+  F={...A,...AU,...FS};
+  const app=F.initializeApp(firebaseConfig);
+  auth=F.getAuth(app);
+  try{fs=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})})}catch(e){fs=F.getFirestore(app)}
+  F.onAuthStateChanged(auth,u=>u?startCloud(u):stopCloud());
+}
+function setSync(state){const m={ok:'동기화됨',saving:'저장 중…',offline:'오프라인 · 연결되면 저장돼요'};setText(E.syncT,m[state]);E.sync.classList.toggle('off',state!=='ok')}
+function cloudErr(e){const c=e&&e.code||'';note(c.includes('permission')?'저장 권한이 없어요. Firebase 보안 규칙을 확인해 주세요.':c.includes('resource-exhausted')?'오늘 무료 사용량을 다 썼어요. 내일 다시 저장돼요.':'저장하지 못했어요. 인터넷 연결을 확인해 주세요.')}
+function startCloud(u){
+  stopCloud(false);
+  E.acct.hidden=false;E.delBox.hidden=false;setText(E.who,emailToId(u.email)||u.displayName||'로그인됨');show('app');
+  const col=F.collection(fs,'users',u.uid,'entries'),gref=F.doc(fs,'users',u.uid,'meta','goal');
+  let first=true,timer=setTimeout(()=>note('기록을 불러오는 중이에요. 연결이 느리면 잠시 기다려 주세요.'),10000);
+  unsubs.push(F.onSnapshot(col,{includeMetadataChanges:true},snap=>{
+    entries=snap.docs.map(d=>clean({...d.data(),id:d.id})).filter(Boolean);
+    setSync(snap.metadata.hasPendingWrites?'saving':snap.metadata.fromCache?'offline':'ok');
+    if(!snap.metadata.fromCache&&timer){clearTimeout(timer);timer=null;if(E.note.textContent.startsWith('기록을 불러오는'))note('')}
+    if(first&&!snap.metadata.fromCache){first=false;offerLocal(u.uid)}
+    changed()},e=>{cloudErr(e)}));
+  unsubs.push(F.onSnapshot(gref,s=>{goal=s.exists()?cleanGoal(s.data()):{name:'',amount:0};render()},()=>{}));
+  const w=p=>p.catch(cloudErr);
+  store={
+    put:(id,data)=>{w(F.setDoc(F.doc(col,id),data))},
+    remove:id=>{w(F.deleteDoc(F.doc(col,id)))},
+    setGoal:g=>{goal=g;render();w(g.amount?F.setDoc(gref,g):F.deleteDoc(gref))},
+    bulk:async(adds,removeAll)=>{const ops=[];if(removeAll)for(const e of entries)ops.push(b=>b.delete(F.doc(col,e.id)));
+      const have=new Set(removeAll?[]:entries.map(e=>e.id));for(const e of adds)if(!have.has(e.id))ops.push(b=>b.set(F.doc(col,e.id),body(e)));
+      for(let i=0;i<ops.length;i+=400){const b=F.writeBatch(fs);ops.slice(i,i+400).forEach(f=>f(b));w(b.commit())}}
+  };
+}
+function stopCloud(toGate=true){unsubs.forEach(f=>{try{f()}catch(e){}});unsubs=[];entries=[];goal={name:'',amount:0};changed();
+  if(toGate){E.acct.hidden=true;E.delBox.hidden=true;store=null;show('gate')}}
+// 로그인 전 이 기기에 적어 둔 기록이 있으면 계정으로 옮길지 묻는다
+function offerLocal(uid){const flag='meso-safe-moved-'+uid;let d=null;try{if(localStorage.getItem(flag))return;d=readLocal()}catch(e){return}
+  if(!d||!d.entries.length)return;pending={entries:d.entries,goal:d.goal,flag,local:true};
+  E.bAskT.textContent='이 기기에 로그인 전에 적은 기록 '+d.entries.length.toLocaleString()+'개가 있어요. 계정으로 옮길까요?';
+  E.bReplace.hidden=true;E.bMerge.textContent='계정으로 옮기기';E.bCancel.textContent='옮기지 않기';E.bAsk.hidden=false}
+
+// 로그인 화면
+let signup=false;
+const ID_DOMAIN='@meso-safe.app',ID_RE=/^[a-z0-9_]{4,20}$/;
+const idToEmail=id=>id+ID_DOMAIN;
+function emailToId(em){em=String(em||'');return em.endsWith(ID_DOMAIN)?em.slice(0,-ID_DOMAIN.length):em}
+const authMsg=c=>({'auth/invalid-credential':'아이디나 비밀번호가 맞지 않아요.','auth/wrong-password':'아이디나 비밀번호가 맞지 않아요.','auth/user-not-found':'없는 아이디예요. 회원가입 탭에서 먼저 가입해 주세요.','auth/email-already-in-use':'이미 누가 쓰고 있는 아이디예요. 다른 아이디로 해 주세요.','auth/weak-password':'비밀번호는 6자 이상으로 해 주세요.','auth/invalid-email':'아이디는 영문 소문자·숫자·밑줄(_)로 4~20자로 정해 주세요.','auth/operation-not-allowed':'Firebase에서 이메일/비밀번호 로그인이 꺼져 있어요.','auth/network-request-failed':'인터넷 연결을 확인해 주세요.','auth/too-many-requests':'시도가 너무 많아요. 잠시 후 다시 해 주세요.'}[c]||'로그인하지 못했어요. 다시 시도해 주세요.');
+const gErr=t=>setText(E.gErr,t||'');
+function setMode(su){signup=su;gErr('');
+  E.gate.classList.toggle('su',su);E.tLogin.setAttribute('aria-selected',!su);E.tSignup.setAttribute('aria-selected',su);
+  setText(E.gBadge,su?'🌱 처음 오셨군요':'🔑 다시 오셨네요');
+  setText(E.gTitle,su?'새 금고 만들기':'내 금고 열기');
+  setText(E.gDesc,su?'쓰고 싶은 아이디와 비밀번호를 정해 주세요. 가입하면 바로 내 금고가 생겨요.':'아이디와 비밀번호를 넣으면 휴대폰·PC 어디서든 같은 기록이 열려요.');
+  setText(E.gSubmit,su?'가입하고 금고 만들기':'금고 열기');E.gSubmit.className='btn gbtn '+(su?'green':'orange');
+  setText(E.gMode,su?'이미 아이디가 있나요? ← 로그인':'처음이신가요? 회원가입 →');
+  E.gIdHint.hidden=E.gPwHint.hidden=E.gPw2Box.hidden=E.gWarn.hidden=!su;
+  E.gPw.autocomplete=su?'new-password':'current-password';E.gPw2.value='';E.gId.focus()}
+E.tLogin.onclick=()=>setMode(false);E.tSignup.onclick=()=>setMode(true);E.gMode.onclick=()=>setMode(!signup);
+E.gMail.addEventListener('submit',async ev=>{ev.preventDefault();gErr('');
+  const id=E.gId.value.trim().toLowerCase(),pw=E.gPw.value;
+  if(!id){gErr('아이디를 적어 주세요.');return E.gId.focus()}
+  if(!ID_RE.test(id)){gErr(signup?'아이디는 영문 소문자·숫자·밑줄(_)로 4~20자로 정해 주세요.':'아이디나 비밀번호가 맞지 않아요.');return E.gId.focus()}
+  if(pw.length<6){gErr('비밀번호는 6자 이상이에요.');return E.gPw.focus()}
+  if(signup&&pw!==E.gPw2.value){gErr('비밀번호 확인이 똑같지 않아요.');return E.gPw2.focus()}
+  E.gSubmit.disabled=true;
+  try{const em=idToEmail(id);await(signup?F.createUserWithEmailAndPassword(auth,em,pw):F.signInWithEmailAndPassword(auth,em,pw))}catch(e){gErr(authMsg(e.code))}
+  E.gSubmit.disabled=false});
+E.delBtn.onclick=async()=>{const b=E.delBtn;
+  if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='정말 삭제할게요';setTimeout(()=>{if(b.isConnected&&!b.disabled){b.classList.remove('sure');b.textContent='계정 삭제'}},5000);return}
+  const u=auth&&auth.currentUser;if(!u)return;b.disabled=true;b.textContent='삭제 중…';
+  try{const refs=entries.map(e=>F.doc(fs,'users',u.uid,'entries',e.id));refs.push(F.doc(fs,'users',u.uid,'meta','goal'));
+    for(let i=0;i<refs.length;i+=400){const bt=F.writeBatch(fs);refs.slice(i,i+400).forEach(r=>bt.delete(r));await bt.commit()}
+    await F.deleteUser(u);try{localStorage.removeItem(KEY)}catch(e){}toast('계정과 기록을 모두 지웠어요')}
+  catch(e){note(e&&e.code==='auth/requires-recent-login'?'기록은 지웠어요. 보안을 위해 다시 로그인한 뒤 계정 삭제를 한 번 더 눌러 주세요.':'삭제하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');
+    if(e&&e.code==='auth/requires-recent-login')try{await F.signOut(auth)}catch(x){}}
+  b.disabled=false;b.classList.remove('sure');b.textContent='계정 삭제'};
+E.logout.onclick=async()=>{try{await F.signOut(auth)}catch(e){}};
+
+// 계산과 화면 그리기
+let S=null,stale=true,needTop=true,needHist=true,raf=0;
+function compute(){
+  const mon=today().slice(0,7),idx={},wk=[];
+  for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);const s=ymd(d);idx[s]=wk.length;wk.push({d:s,i:0,o:0})}
+  let i=0,o=0,f=0,hu=0,bo=0,ou=0,fr=0,nBox=0,adj=0,gc=0;const byCat={};
+  const sorted=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0));
+  const byAt=entries.slice().sort((a,b)=>(b.at||0)-(a.at||0));const boxes=[];
+  for(const e of byAt){const isIn=e.kind==='in',a=isIn?inAmt(e):(e.amount||0);
+    if(e.kind==='adj'){adj+=a;continue}
+    if(isIn){i+=a;f+=e.frag||0;nBox++;if(boxes.length<12)boxes.push(e)}else o+=a;
+    if(e.date&&e.date.slice(0,7)===mon){if(isIn){hu+=e.hunt||0;bo+=e.boss||0;fr+=e.frag||0}else{ou+=a;byCat[e.cat]=(byCat[e.cat]||0)+a;if(e.cat===GACHA)gc+=e.cnt||0}}
+    const k=idx[e.date];if(k!==undefined){if(isIn)wk[k].i+=a;else wk[k].o+=a}}
+  return{i,o,f,bal:i-o+adj,mon,hu,bo,ou,fr,gc,byCat,wk,boxes,nBox,sorted};
+}
+const stats=()=>{if(stale){S=compute();stale=false}return S};
+function sched(){if(!raf)raf=requestAnimationFrame(flush)}
+function changed(){stale=true;needTop=needHist=true;sched()}
+function flush(){raf=0;if(needTop){needTop=false;renderTop()}if(needHist){needHist=false;renderHist()}if(E.aAmt.value.trim())adjHint()}
+const render=()=>{needTop=true;sched()};
+const mq=matchMedia('(max-width:420px)');
+mq.addEventListener?.('change',render);
+
+function renderTop(){
+  const t=stats();
+  setText(E.bal,fmt(t.bal));setText(E.fragTot,'조각 '+t.f.toLocaleString()+'개');
+  if(goal.amount>0){const pct=Math.max(0,Math.min(100,t.bal/goal.amount*100));
+    setText(E.gName,goal.name||'목표');setText(E.gNum,fmt(Math.max(t.bal,0))+' / '+fmt(goal.amount));
+    E.gBar.style.transform='scaleX('+pct/100+')';E.gMeter.setAttribute('aria-valuenow',Math.round(pct));
+    setText(E.gLeft,t.bal>=goal.amount?'목표 달성! '+Math.floor(t.bal/goal.amount*100)+'%':Math.floor(pct)+'% · '+fmt(goal.amount-t.bal)+' 남음');setText(E.gEdit,'목표 바꾸기')}
+  else{setText(E.gName,'목표를 정해 보세요');setText(E.gNum,'');E.gBar.style.transform='scaleX(0)';E.gMeter.removeAttribute('aria-valuenow');setText(E.gLeft,'목표 금액을 정하면 남은 금액을 알려 드려요');setText(E.gEdit,'목표 정하기')}
+  E.gDel.hidden=!(goal.amount>0);
+  const show=t.boxes;
+  if(!show.length)setHTML(E.inside,'<div class="empty">금고가 비어 있어요.<br>오늘의 수익 상자를 넣어 보세요.<br>가계부 쓰기 전에 있던 메소는 아래 \'잔액 맞추기\'로 넣어요.</div>');
+  else{const per=mq.matches?3:4;let h='';
+    for(let s=0;s<Math.max(3,Math.ceil(show.length/per));s++){h+='<div class="shelf">'+show.slice(s*per,s*per+per).map(e=>`<div class="bx${e.id===justId?' drop':''}" title="${esc(e.memo||'')}"><div class="d">${esc(md(e.date))}</div><div class="a">+${esc(short(inAmt(e)))}</div></div>`).join('')+'</div>'}
+    setHTML(E.inside,h+(t.nBox>12?`<div class="more">안쪽에 상자 ${t.nBox-12}개가 더 있어요</div>`:''))}
+  setText(E.mT,(+t.mon.slice(5))+'월');
+  const net=t.hu+t.bo-t.ou;
+  setHTML(E.kpis,[['사냥 수익',fmt(t.hu),'p'],['보스 수익',fmt(t.bo),'p'],['지출',fmt(t.ou),'m'],['순이익',fmt(net),net<0?'m':'p'],['조각',(t.fr>0?'+':'')+t.fr.toLocaleString()+'개',''],['캐시 가챠',t.gc.toLocaleString()+'회','']].map(k=>`<div class="kpi"><div class="small">${k[0]}</div><div class="num ${k[2]}">${esc(k[1])}</div></div>`).join(''));
+  const cats=[...new Set([...CATS,...Object.keys(t.byCat)])];
+  const mx=Math.max(...cats.map(c=>t.byCat[c]||0),1);
+  setHTML(E.cats2,t.ou?cats.map(c=>`<div class="row"><div class="t"><span>${esc(c)}</span><b>${esc(fmt(t.byCat[c]||0))}</b></div><div class="bar"><i style="width:${(t.byCat[c]||0)/mx*100}%"></i></div></div>`).join(''):'<div class="small">이번 달 지출이 아직 없어요.</div>');
+  const wm=Math.max(...t.wk.map(w=>Math.max(w.i,w.o)),1);
+  setHTML(E.week,t.wk.map(w=>`<div class="day" title="${esc(md(w.d))} 넣음 ${esc(fmt(w.i))} · 뺌 ${esc(fmt(w.o))}"><i class="in" style="height:${w.i/wm*100}%"></i><i class="out" style="height:${w.o/wm*100}%"></i></div>`).join(''));
+  setHTML(E.wlab,t.wk.map(w=>`<span>${esc(md(w.d))}</span>`).join(''));
+}
+function renderHist(){
+  const all=stats().sorted,list=filter==='all'?all:all.filter(e=>e.kind===filter),part=list.slice(0,histLimit);
+  setHTML(E.hist,part.length?part.map(e=>{const isIn=e.kind==='in';
+    if(e.kind==='adj'){const a=e.amount||0;return `<li><span class="tag adj">${esc(md(e.date||today()))} 맞춤</span><div class="det"><b>잔액 맞추기</b>${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a">${a>=0?'+':''}${esc(fmt(a))}</span><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></li>`}
+    const det=isIn?[e.hunt?`사냥 <b>${esc(fmt(e.hunt))}</b>`:'',e.boss?`보스 <b>${esc(fmt(e.boss))}</b>`:'',e.frag?`조각 <b>${e.frag>0?'+':''}${esc(Number(e.frag).toLocaleString())}</b>`:''].filter(Boolean).join(' · '):`<b>${esc(e.cat)}</b>${e.cnt?` · <b>${esc(Number(e.cnt).toLocaleString())}회</b>`:''}`;
+    return `<li><span class="tag ${isIn?'in':'out'}">${esc(md(e.date||today()))} ${isIn?'넣음':'뺌'}</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${isIn?'p':'m'}">${isIn?'+':'-'}${esc(fmt(isIn?inAmt(e):e.amount))}</span><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></li>`}).join(''):'<li style="display:block" class="small">아직 기록이 없어요.</li>');
+  const left=list.length-part.length;E.hMore.hidden=left<=0;if(left>0)setText(E.hMore,`더 보기 (${left.toLocaleString()}개 남음)`);
+}
+
+// 입력 칸
+function live(inp,hint){const v=parse(inp.value);const h=E[hint];if(!inp.value.trim()){h.textContent='';h.className='hint'}else if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint'}else{h.textContent='= '+fmt(v)+' 메소';h.className='hint ok'}}
+function sumIn(){const a=parse(E.iHunt.value),b=parse(E.iBoss.value);E.iSum.textContent=fmt((isNaN(a)?0:a)+(isNaN(b)?0:b))}
+function commaize(inp){const v=inp.value,pos=inp.selectionStart??v.length;
+  const before=v.slice(0,pos).replace(/,/g,'').length;
+  const out=v.replace(/,/g,'').replace(/(^|[^\d.])(\d+)/g,(m,p,d)=>p+d.replace(/\B(?=(\d{3})+(?!\d))/g,','));
+  if(out===v)return;inp.value=out;let n=0,i=0;for(;i<out.length&&n<before;i++)if(out[i]!==',')n++;
+  try{inp.setSelectionRange(i,i)}catch(e){}}
+E.iHunt.addEventListener('input',()=>{commaize(E.iHunt);live(E.iHunt,'hHunt');sumIn()});
+E.iBoss.addEventListener('input',()=>{commaize(E.iBoss);live(E.iBoss,'hBoss');sumIn()});
+E.oAmt.addEventListener('input',()=>{commaize(E.oAmt);live(E.oAmt,'hOut')});
+E.gA.addEventListener('input',()=>commaize(E.gA));
+E.iFrag.addEventListener('input',()=>{E.iFrag.value=E.iFrag.value.replace(/[^\d,]/g,'');commaize(E.iFrag)});
+E.iDate.value=E.oDate.value=E.aDate.value=today();
+E.oCnt.addEventListener('input',()=>{E.oCnt.value=E.oCnt.value.replace(/[^\d,]/g,'');commaize(E.oCnt)});
+function adjHint(){const v=parse(E.aAmt.value),h=E.hAdj;
+  if(!E.aAmt.value.trim()){h.textContent='';h.className='hint';return}
+  if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint';return}
+  const d=v-stats().bal;h.className='hint ok';
+  h.textContent='= '+fmt(v)+' 메소 · '+(d===0?'금고 잔액과 같아요':'금고보다 '+fmt(Math.abs(d))+(d>0?' 많아요 → +':' 적어요 → -')+fmt(Math.abs(d))+' 맞춰요')}
+E.aAmt.addEventListener('input',()=>{commaize(E.aAmt);adjHint()});
+E.aBtnOpen.onclick=()=>{const o=E.aDrawer.classList.toggle('open');E.aBtnOpen.setAttribute('aria-expanded',o);if(o)E.aAmt.focus()};
+const setSign=s=>{fragSign=s;E.fP.classList.toggle('on',s>0);E.fM.classList.toggle('on',s<0);E.fP.setAttribute('aria-pressed',s>0);E.fM.setAttribute('aria-pressed',s<0)};
+E.fP.onclick=()=>setSign(1);E.fM.onclick=()=>setSign(-1);
+E.cats.innerHTML=CATS.map(c=>`<button type="button" class="chip${c===cat?' on':''}" data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('');
+E.cats.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;for(const x of E.cats.children){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)}E.cntF.hidden=cat!==GACHA};
+E.dBtn.onclick=()=>{const o=E.drawer.classList.toggle('open');E.dBtn.setAttribute('aria-expanded',o);if(o)E.oAmt.focus()};
+E.gEdit.onclick=()=>{const f=E.gForm;f.classList.toggle('on');E.gN.value=goal.name||'';E.gA.value=goal.amount?fmt(goal.amount):'';if(f.classList.contains('on'))E.gN.focus()};
+E.tabs.onclick=e=>{const b=e.target.closest('button');if(!b||b.dataset.f===filter)return;filter=b.dataset.f;histLimit=PAGE;for(const x of E.tabs.children)x.classList.toggle('on',x===b);needHist=true;sched()};
+E.hMore.onclick=()=>{histLimit+=PAGE;needHist=true;sched()};
+
+// 기록 저장
+const put=(id,data)=>{if(!store)throw 0;return store.put(id,data)};
+E.inForm.addEventListener('submit',ev=>{ev.preventDefault();
+  const hunt=parse(E.iHunt.value),boss=parse(E.iBoss.value),fr=Math.abs(parseInt(E.iFrag.value.replace(/,/g,''),10)||0)*fragSign;
+  if(isNaN(hunt)||isNaN(boss)){note('수익 금액을 다시 확인해 주세요. 예: 3억 2500만');return}
+  if(!hunt&&!boss&&!fr){note('사냥 수익, 보스 수익, 조각 중 하나는 적어 주세요.');return}
+  const data={kind:'in',date:E.iDate.value||today(),hunt,boss,frag:fr,memo:E.iMemo.value.trim().slice(0,80),at:Date.now()};
+  note('');const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
+  try{put(id,data);for(const s of['iHunt','iBoss','iFrag','iMemo'])E[s].value='';live(E.iHunt,'hHunt');live(E.iBoss,'hBoss');sumIn();setSign(1);toast('상자를 금고에 넣었어요: +'+fmt(hunt+boss))}catch(e){justId=null}});
+E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
+  const amount=parse(E.oAmt.value),cnt=cat===GACHA?parseInt(E.oCnt.value.replace(/,/g,''),10)||0:0;
+  if(isNaN(amount)||amount<0||(amount===0&&!cnt)){note(cat===GACHA?'쓴 메소나 돌린 횟수를 적어 주세요. 예: 11회':'뺄 금액을 적어 주세요. 예: 8000만');return}
+  const bal=stats().bal;
+  const data={kind:'out',date:E.oDate.value||today(),cat,amount,memo:E.oMemo.value.trim().slice(0,80),at:Date.now()};
+  if(cnt)data.cnt=cnt;
+  note('');
+  try{put(newId(),data);E.oAmt.value='';E.oMemo.value='';E.oCnt.value='';live(E.oAmt,'hOut');
+    toast(cnt&&!amount?cat+' '+cnt.toLocaleString()+'회 기록했어요':cat+'에 '+fmt(amount)+' 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':'')+(amount>bal?' (잔액보다 많이 뺐어요)':''))}catch(e){}});
+E.aBody.addEventListener('submit',ev=>{ev.preventDefault();
+  const actual=parse(E.aAmt.value);
+  if(!E.aAmt.value.trim()||isNaN(actual)){note('지금 게임 속 메소를 적어 주세요. 예: 152억 3000만');return}
+  const diff=actual-stats().bal;if(diff===0){note('이미 금고 잔액과 같아서 맞출 게 없어요.');return}
+  const data={kind:'adj',date:E.aDate.value||today(),amount:diff,memo:E.aMemo.value.trim().slice(0,80),at:Date.now()};
+  note('');
+  try{put(newId(),data);E.aAmt.value='';E.aMemo.value='';adjHint();toast('잔액을 '+fmt(actual)+'(으)로 맞췄어요 ('+(diff>0?'+':'')+fmt(diff)+')')}catch(e){}});
+E.gForm.addEventListener('submit',ev=>{ev.preventDefault();const amount=parse(E.gA.value);
+  if(isNaN(amount)){note('목표 금액을 다시 확인해 주세요. 예: 50억');return}
+  try{store.setGoal({name:E.gN.value.trim().slice(0,40),amount});E.gForm.classList.remove('on');note('')}catch(e){}});
+E.gDel.onclick=()=>{const old=goal;try{store.setGoal({name:'',amount:0});E.gForm.classList.remove('on');toast('목표를 지웠어요',{goal:old})}catch(e){}};
+E.hist.addEventListener('click',ev=>{const b=ev.target.closest('.del');if(!b)return;
+  if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='정말 삭제';setTimeout(()=>{if(b.isConnected){b.classList.remove('sure');b.textContent='삭제'}},3000);return}
+  const id=b.dataset.id,old=entries.find(e=>e.id===id);if(!old)return;
+  try{store.remove(id);toast('기록을 지웠어요',{id,rest:body(old)})}catch(e){}});
+E.tUndo.onclick=()=>{if(!undoData)return;const u=undoData;undoData=null;E.toast.classList.remove('on');
+  try{if(u.goal)store.setGoal(u.goal);else if(u.ids)u.ids.forEach(id=>store.remove(id));else put(u.id,u.rest)}catch(e){}};
+
+// 백업 파일 저장과 불러오기
+E.bExp.onclick=()=>{const data=JSON.stringify({app:'meso-safe',v:1,exportedAt:new Date().toISOString(),goal,entries},null,1);
+  const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');
+  a.href=url;a.download='메소금고-백업-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  toast('백업 파일을 저장했어요 (기록 '+entries.length.toLocaleString()+'개)')};
+E.bFile.onchange=async()=>{const f=E.bFile.files[0];E.bFile.value='';if(!f)return;
+  try{const d=JSON.parse(await f.text());const list=(Array.isArray(d)?d:d.entries);if(!Array.isArray(list))throw 0;
+    const es=list.map(clean).filter(Boolean);pending={entries:es,goal:cleanGoal(d.goal)};
+    E.bReplace.hidden=false;E.bMerge.textContent='지금 기록에 합치기';E.bCancel.textContent='취소';
+    E.bAskT.textContent='백업 파일에 기록 '+es.length.toLocaleString()+'개가 있어요. 어떻게 불러올까요?';E.bAsk.hidden=false;E.bMerge.focus()}
+  catch(e){pending=null;E.bAsk.hidden=true;note('백업 파일을 읽지 못했어요. 이 가계부에서 저장한 .json 파일인지 확인해 주세요.')}};
+function doneFlag(){if(pending&&pending.flag)try{localStorage.setItem(pending.flag,'1')}catch(e){}}
+async function applyImport(replace){if(!pending||!store)return;const p=pending;pending=null;E.bAsk.hidden=true;
+  const have=new Set(entries.map(e=>e.id)),added=replace?p.entries:p.entries.filter(e=>!have.has(e.id));
+  try{await store.bulk(p.entries,replace);if(p.goal.amount&&(replace||!goal.amount))store.setGoal(p.goal)}catch(e){return}
+  if(p.flag)try{localStorage.setItem(p.flag,'1')}catch(e){}
+  note('');toast(replace?'백업으로 바꿨어요 (기록 '+p.entries.length.toLocaleString()+'개)':(p.local?'계정으로 옮겼어요: ':'새 기록 ')+added.length.toLocaleString()+'개',replace?null:{ids:added.map(e=>e.id)})}
+E.bMerge.onclick=()=>applyImport(false);E.bReplace.onclick=()=>applyImport(true);E.bCancel.onclick=()=>{doneFlag();pending=null;E.bAsk.hidden=true};
+
+// 윈도우 프로그램인지 (설치 안내를 숨길 때 쓴다)
+const isExe=/Electron/i.test(navigator.userAgent);
+// 홈 화면 설치
+let deferred=null;const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;E.appBtn.hidden=false});
+E.appBtn.onclick=async()=>{if(!deferred)return;deferred.prompt();try{const r=await deferred.userChoice;if(r.outcome==='accepted')E.appBtn.hidden=true}catch(e){}deferred=null};
+window.addEventListener('appinstalled',()=>{E.appBtn.hidden=true;toast('홈 화면에 설치했어요')});
+if(!standalone&&/iphone|ipad|ipod/i.test(navigator.userAgent))E.iosHint.hidden=false;
+if(!isExe&&'serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+// 시작: Firebase 설정이 있으면 로그인, 없으면 이 기기 저장
+if(configured){cloudInit().catch(()=>{show('app');store=localStore();changed();setText(E.bInfo,'서버에 연결하지 못해서 지금은 이 기기에만 저장돼요.');note('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.')})}
+else{store=localStore();show('app');setText(E.bInfo,'Firebase 설정 전이라 기록이 이 기기에만 저장돼요.');changed()}
+</script>
+</body>
+</html>
