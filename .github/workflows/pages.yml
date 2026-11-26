@@ -1,27 +1,26 @@
-name: Deploy web app to GitHub Pages
+name: Publish web app (gh-pages branch)
+# main의 source/app 이 바뀌면 그 폴더 내용을 gh-pages 브랜치로 올린다.
+# GitHub Pages 설정: Source = Deploy from a branch, gh-pages / (root)
 on:
   push:
     branches: [main]
     paths: ['source/app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
         with:
-          path: source/app
-      - id: deployment
-        uses: actions/deploy-pages@v5
+          fetch-depth: 0
+      - name: Push source/app to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git subtree split --prefix source/app -b gh-pages-tmp
+          git push -f origin gh-pages-tmp:gh-pages
