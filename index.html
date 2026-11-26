@@ -253,13 +253,14 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
         <div class="drawer adj" id="aDrawer">
           <button class="handle" type="button" id="aBtnOpen" aria-expanded="false" aria-controls="aBody">잔액 맞추기</button>
           <form class="dbody" id="aBody">
-            <div class="small" style="margin-bottom:12px">가계부를 쓰기 전에 있던 메소나 깜빡하고 못 적은 날 때문에 금고와 게임 속 메소가 다르면, 지금 게임 속 메소를 적어 주세요. 차이만큼 맞춰 드려요.</div>
+            <div class="small" style="margin-bottom:12px">가계부를 쓰기 전에 있던 메소·조각이나 깜빡하고 못 적은 날 때문에 금고와 게임 속이 다르면, 지금 게임 속 메소와 조각을 적어 주세요. 차이만큼 맞춰 드려요. (하나만 적어도 돼요)</div>
             <div class="two">
               <div><label for="aAmt">지금 게임 속 메소</label><input id="aAmt" inputmode="text" placeholder="예: 152억 3000만" autocomplete="off"><div class="hint" id="hAdj"></div></div>
-              <div><label for="aDate">날짜</label><input type="date" id="aDate"></div>
+              <div><label for="aFrag">지금 갖고 있는 조각</label><input id="aFrag" inputmode="numeric" placeholder="예: 1,250" autocomplete="off"><div class="hint" id="hAdjF"></div></div>
             </div>
+            <div class="f"><label for="aDate">날짜</label><input type="date" id="aDate"></div>
             <div class="f"><label for="aMemo">메모</label><input id="aMemo" maxlength="80" placeholder="예: 가계부 시작 전 잔액"></div>
-            <button class="btn dark" type="submit" id="adjBtn" style="width:100%">이 금액으로 맞추기</button>
+            <button class="btn dark" type="submit" id="adjBtn" style="width:100%">이대로 맞추기</button>
           </form>
         </div>
       </div>
@@ -339,7 +340,7 @@ const newId=()=>'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8
 function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(!['in','out','adj'].includes(kind))return null;
   const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
   if(kind==='in'){o.hunt=Math.max(0,num(e.hunt));o.boss=Math.max(0,num(e.boss));o.frag=num(e.frag)}
-  else{o.amount=num(e.amount);if(kind==='out'){o.cat=CATS.includes(e.cat)?e.cat:String(e.cat||'기타').slice(0,20);o.amount=Math.max(0,o.amount);if(e.cnt)o.cnt=Math.max(0,num(e.cnt))}}
+  else{o.amount=num(e.amount);if(kind==='adj'&&e.frag)o.frag=num(e.frag);if(kind==='out'){o.cat=CATS.includes(e.cat)?e.cat:String(e.cat||'기타').slice(0,20);o.amount=Math.max(0,o.amount);if(e.cnt)o.cnt=Math.max(0,num(e.cnt))}}
   return o}
 const body=e=>{const{id,...rest}=e;return rest};
 function cleanGoal(g){return g&&typeof g==='object'?{name:String(g.name||'').slice(0,40),amount:Math.max(0,num(g.amount))}:{name:'',amount:0}}
@@ -447,7 +448,7 @@ function compute(){
   const sorted=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0));
   const byAt=entries.slice().sort((a,b)=>(b.at||0)-(a.at||0));const boxes=[];
   for(const e of byAt){const isIn=e.kind==='in',a=isIn?inAmt(e):(e.amount||0);
-    if(e.kind==='adj'){adj+=a;continue}
+    if(e.kind==='adj'){adj+=a;f+=e.frag||0;continue}
     if(isIn){i+=a;f+=e.frag||0;nBox++;if(boxes.length<12)boxes.push(e)}else o+=a;
     if(e.date&&e.date.slice(0,7)===mon){if(isIn){hu+=e.hunt||0;bo+=e.boss||0;fr+=e.frag||0}else{ou+=a;byCat[e.cat]=(byCat[e.cat]||0)+a;if(e.cat===GACHA)gc+=e.cnt||0}}
     const k=idx[e.date];if(k!==undefined){if(isIn)wk[k].i+=a;else wk[k].o+=a}}
@@ -456,7 +457,7 @@ function compute(){
 const stats=()=>{if(stale){S=compute();stale=false}return S};
 function sched(){if(!raf)raf=requestAnimationFrame(flush)}
 function changed(){stale=true;needTop=needHist=true;sched()}
-function flush(){raf=0;if(needTop){needTop=false;renderTop()}if(needHist){needHist=false;renderHist()}if(E.aAmt.value.trim())adjHint()}
+function flush(){raf=0;if(needTop){needTop=false;renderTop()}if(needHist){needHist=false;renderHist()}if(E.aAmt.value.trim())adjHint();if(E.aFrag.value.trim())adjFragHint()}
 const render=()=>{needTop=true;sched()};
 const mq=matchMedia('(max-width:420px)');
 mq.addEventListener?.('change',render);
@@ -488,7 +489,7 @@ function renderTop(){
 function renderHist(){
   const all=stats().sorted,list=filter==='all'?all:all.filter(e=>e.kind===filter),part=list.slice(0,histLimit);
   setHTML(E.hist,part.length?part.map(e=>{const isIn=e.kind==='in';
-    if(e.kind==='adj'){const a=e.amount||0;return `<li><span class="tag adj">${esc(md(e.date||today()))} 맞춤</span><div class="det"><b>잔액 맞추기</b>${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a">${a>=0?'+':''}${esc(fmt(a))}</span><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></li>`}
+    if(e.kind==='adj'){const a=e.amount||0;return `<li><span class="tag adj">${esc(md(e.date||today()))} 맞춤</span><div class="det"><b>잔액 맞추기</b>${e.frag?` · 조각 <b>${e.frag>0?'+':''}${esc(Number(e.frag).toLocaleString())}</b>`:''}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a">${a?(a>0?'+':'')+esc(fmt(a)):''}</span><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></li>`}
     const det=isIn?[e.hunt?`사냥 <b>${esc(fmt(e.hunt))}</b>`:'',e.boss?`보스 <b>${esc(fmt(e.boss))}</b>`:'',e.frag?`조각 <b>${e.frag>0?'+':''}${esc(Number(e.frag).toLocaleString())}</b>`:''].filter(Boolean).join(' · '):`<b>${esc(e.cat)}</b>${e.cnt?` · <b>${esc(Number(e.cnt).toLocaleString())}회</b>`:''}`;
     return `<li><span class="tag ${isIn?'in':'out'}">${esc(md(e.date||today()))} ${isIn?'넣음':'뺌'}</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${isIn?'p':'m'}">${isIn?'+':'-'}${esc(fmt(isIn?inAmt(e):e.amount))}</span><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></li>`}).join(''):'<li style="display:block" class="small">아직 기록이 없어요.</li>');
   const left=list.length-part.length;E.hMore.hidden=left<=0;if(left>0)setText(E.hMore,`더 보기 (${left.toLocaleString()}개 남음)`);
@@ -515,6 +516,11 @@ function adjHint(){const v=parse(E.aAmt.value),h=E.hAdj;
   const d=v-stats().bal;h.className='hint ok';
   h.textContent='= '+fmt(v)+' 메소 · '+(d===0?'금고 잔액과 같아요':'금고보다 '+fmt(Math.abs(d))+(d>0?' 많아요 → +':' 적어요 → -')+fmt(Math.abs(d))+' 맞춰요')}
 E.aAmt.addEventListener('input',()=>{commaize(E.aAmt);adjHint()});
+const fragNow=()=>{const v=E.aFrag.value.replace(/,/g,'').trim();return v?parseInt(v,10):NaN};
+function adjFragHint(){const h=E.hAdjF;if(!E.aFrag.value.trim()){h.textContent='';h.className='hint';return}
+  const d=fragNow()-stats().f;h.className='hint ok';
+  h.textContent=d===0?'금고 조각과 같아요':'금고보다 '+Math.abs(d).toLocaleString()+'개 '+(d>0?'많아요 → +':'적어요 → -')+Math.abs(d).toLocaleString()+'개 맞춰요'}
+E.aFrag.addEventListener('input',()=>{E.aFrag.value=E.aFrag.value.replace(/[^\d,]/g,'');commaize(E.aFrag);adjFragHint()});
 E.aBtnOpen.onclick=()=>{const o=E.aDrawer.classList.toggle('open');E.aBtnOpen.setAttribute('aria-expanded',o);if(o)E.aAmt.focus()};
 const setSign=s=>{fragSign=s;E.fP.classList.toggle('on',s>0);E.fM.classList.toggle('on',s<0);E.fP.setAttribute('aria-pressed',s>0);E.fM.setAttribute('aria-pressed',s<0)};
 E.fP.onclick=()=>setSign(1);E.fM.onclick=()=>setSign(-1);
@@ -544,12 +550,16 @@ E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
   try{put(newId(),data);E.oAmt.value='';E.oMemo.value='';E.oCnt.value='';live(E.oAmt,'hOut');
     toast(cnt&&!amount?cat+' '+cnt.toLocaleString()+'회 기록했어요':cat+'에 '+fmt(amount)+' 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':'')+(amount>bal?' (잔액보다 많이 뺐어요)':''))}catch(e){}});
 E.aBody.addEventListener('submit',ev=>{ev.preventDefault();
-  const actual=parse(E.aAmt.value);
-  if(!E.aAmt.value.trim()||isNaN(actual)){note('지금 게임 속 메소를 적어 주세요. 예: 152억 3000만');return}
-  const diff=actual-stats().bal;if(diff===0){note('이미 금고 잔액과 같아서 맞출 게 없어요.');return}
-  const data={kind:'adj',date:E.aDate.value||today(),amount:diff,memo:E.aMemo.value.trim().slice(0,80),at:Date.now()};
+  const hasM=!!E.aAmt.value.trim(),hasF=!!E.aFrag.value.trim(),actual=parse(E.aAmt.value),fNow=fragNow();
+  if(!hasM&&!hasF){note('지금 게임 속 메소나 조각 개수를 적어 주세요.');return}
+  if(hasM&&isNaN(actual)){note('메소는 숫자와 억, 만으로 적어 주세요. 예: 152억 3000만');return}
+  if(hasF&&(isNaN(fNow)||fNow<0)){note('조각 개수는 숫자로 적어 주세요.');return}
+  const t=stats(),diff=hasM?actual-t.bal:0,fd=hasF?fNow-t.f:0;
+  if(!diff&&!fd){note('이미 금고와 같아서 맞출 게 없어요.');return}
+  const data={kind:'adj',date:E.aDate.value||today(),amount:diff,memo:E.aMemo.value.trim().slice(0,80),at:Date.now()};if(fd)data.frag=fd;
   note('');
-  try{put(newId(),data);E.aAmt.value='';E.aMemo.value='';adjHint();toast('잔액을 '+fmt(actual)+'(으)로 맞췄어요 ('+(diff>0?'+':'')+fmt(diff)+')')}catch(e){}});
+  const msg=[diff?'메소 '+(diff>0?'+':'')+fmt(diff):'',fd?'조각 '+(fd>0?'+':'')+fd.toLocaleString()+'개':''].filter(Boolean).join(', ');
+  try{put(newId(),data);E.aAmt.value='';E.aFrag.value='';E.aMemo.value='';adjHint();adjFragHint();toast('금고를 맞췄어요 ('+msg+')')}catch(e){}});
 E.gForm.addEventListener('submit',ev=>{ev.preventDefault();const amount=parse(E.gA.value);
   if(isNaN(amount)){note('목표 금액을 다시 확인해 주세요. 예: 50억');return}
   try{store.setGoal({name:E.gN.value.trim().slice(0,40),amount});E.gForm.classList.remove('on');note('')}catch(e){}});
