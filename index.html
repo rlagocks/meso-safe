@@ -657,7 +657,7 @@ function compute(){
   for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);const s=ymd(d);idx[s]=wk.length;wk.push({d:s,i:0,o:0})}
   const bc={};let i=0,o=0,f=0,fu=0,hu=0,bo=0,sa=0,ou=0,fr=0,frU=0,nBox=0,adj=0;const byCat={};
   const sorted=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0));
-  const byAt=entries.slice().sort((a,b)=>(b.at||0)-(a.at||0));const boxes=[];
+  const byAt=entries.slice().sort((a,b)=>(b.at||0)-(a.at||0));const days={};
   for(const e of byAt){const isIn=e.kind==='in',a=isIn?inAmt(e):(e.amount||0),ym=(e.date||'').slice(0,7);if(ym&&ym<minMon)minMon=ym;
     if(e.kind==='mp'){const mt=MPT[e.type];mpb+=mpDelta(e);mk+=mesoDelta(e);if(mt.m&&rates.length<5&&mkRate(e))rates.push(mkRate(e));
       if(ym===mon){if(e.type==='charge')won+=e.won||0;if(e.type==='cash_shop'||e.type==='auction_fee')mpUse+=e.mp||0;if(mt.m){mkMeso+=mesoDelta(e);mkMp+=mpDelta(e);mkN++}}continue}
@@ -665,9 +665,10 @@ function compute(){
     if(e.kind==='adj'){adj+=a;f+=e.frag||0;fu+=e.fragU||0;continue}
     mn[ym]=(mn[ym]||0)+(isIn?a:-a);
     if(isIn&&e.huntMin&&ym===mon){huntT+=e.hunt||0;huntM+=e.huntMin}
-    if(isIn){i+=a;f+=e.frag||0;fu+=e.fragU||0;nBox++;if(boxes.length<12)boxes.push(e)}else o+=a;
+    if(isIn){i+=a;f+=e.frag||0;fu+=e.fragU||0;const dd=days[e.date]||(days[e.date]={date:e.date,amt:0,n:0,ids:[]});dd.amt+=a;dd.n++;dd.ids.push(e.id)}else o+=a;
     if(e.date&&e.date.slice(0,7)===mon){if(isIn){hu+=e.hunt||0;bo+=e.boss||0;sa+=e.sale||0;if(e.boss&&e.bossN)bc[e.bossC||'']=(bc[e.bossC||'']||0)+e.boss;fr+=e.frag||0;frU+=e.fragU||0}else{ou+=a;byCat[e.cat]=(byCat[e.cat]||0)+a}}
     const k=idx[e.date];if(k!==undefined){if(isIn)wk[k].i+=a;else wk[k].o+=a}}
+  const dayList=Object.values(days).sort((a,b)=>b.date.localeCompare(a.date)),boxes=dayList.slice(0,12);nBox=dayList.length;
   const rate=rates.length?rates.reduce((x,y)=>x+y,0)/rates.length:0,wkNet=wk.reduce((x,w)=>x+w.i-w.o,0);
   return{i,o,f,fu,bal:i-o+adj+mk,mon,cur,minMon,hu,bo,sa,bc,ou,fr,frU,byCat,wk,boxes,nBox,sorted,mpb,won,mpUse,mkMeso,mkMp,mkN,rate,huntT,huntM,mn,wkNet};
 }
@@ -704,8 +705,8 @@ function renderTop(){
   const show=t.boxes;
   if(!show.length)setHTML(E.inside,'<div class="empty">금고가 비어 있어요.<br>오늘의 수익 상자를 넣어 보세요.<br>가계부 쓰기 전에 있던 메소는 아래 \'잔액 맞추기\'로 넣어요.</div>');
   else{const per=mq.matches?3:4;let h='';
-    for(let s=0;s<Math.max(3,Math.ceil(show.length/per));s++){h+='<div class="shelf">'+show.slice(s*per,s*per+per).map(e=>`<div class="bx${e.id===justId?' drop':''}" title="${esc(e.memo||'')}"><div class="d">${esc(md(e.date))}</div><div class="a">${inAmt(e)?'+'+esc(short(inAmt(e))):'조각'}</div></div>`).join('')+'</div>'}
-    setHTML(E.inside,h+(t.nBox>12?`<div class="more">안쪽에 상자 ${t.nBox-12}개가 더 있어요</div>`:''))}
+    for(let s=0;s<Math.max(3,Math.ceil(show.length/per));s++){h+='<div class="shelf">'+show.slice(s*per,s*per+per).map(d=>`<div class="bx${d.ids.includes(justId)?' drop':''}" title="${esc(md(d.date))} 수익 ${d.n}건 · ${esc(fmt(d.amt))}"><div class="d">${esc(md(d.date))}</div><div class="a">${d.amt?'+'+esc(short(d.amt)):'조각'}</div></div>`).join('')+'</div>'}
+    setHTML(E.inside,h+(t.nBox>12?`<div class="more">안쪽에 ${t.nBox-12}일치 상자가 더 있어요</div>`:''))}
   const mLabel=ym=>monLabel(ym,t.cur);
   setText(E.mT,mLabel(t.mon)+(t.mon===t.cur?' (이번 달)':''));setText(E.cT,mLabel(t.mon)+' 지출');
   E.mNext.disabled=t.mon>=t.cur;E.mPrev.disabled=t.mon<=t.minMon&&t.mon<=addMon(t.cur,-11);
