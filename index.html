@@ -197,14 +197,6 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .xpbar{height:8px;border-radius:99px;background:var(--sun2);border:1.5px solid var(--ink);overflow:hidden;margin:4px 0 2px}.xpbar i{display:block;height:100%;background:var(--ink)}
 .char .btn.link{min-height:36px;padding:4px;font-size:13px;align-self:flex-start}
 @media (prefers-color-scheme:dark){.char{background:rgba(0,0,0,.2)}}
-/* 넥슨 강화 기록 */
-.nxg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
-.nxc{border:2px solid var(--line);border-radius:14px;padding:14px 16px}
-.nxc h3{margin:0 0 2px;font-size:16px}
-.nxbig{font-family:Jua,"Noto Sans KR",sans-serif;font-size:30px;line-height:1.2}
-.nxbar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:8px 0 6px;background:var(--soft)}.nxbar i{display:block;height:100%}
-.nxleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--mute);margin-bottom:8px}.nxleg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
-.nxrow{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:5px 0;border-top:1px dashed var(--line)}.nxrow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nxrow b{white-space:nowrap}
 /* 계정 */
 .pwf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin-bottom:18px}
 .acct3 h3{font-size:16px;margin:16px 0 8px}
@@ -362,13 +354,6 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   <div class="card"><h2>최근 7일</h2><div class="week" id="week"></div><div class="wlab" id="wlab"></div>
     <div class="legend"><span><i style="background:var(--plus)"></i>넣은 메소</span><span><i style="background:var(--minus)"></i>뺀 메소</span></div></div>
   <div class="card"><h2 id="cT">이번 달 지출</h2><div id="cats2"></div></div>
-</div></section>
-
-<section class="band" style="padding-top:0" id="nxSec" hidden><div class="wrap card">
-  <div class="mhead"><h2 id="nxT">강화 기록</h2><button class="btn" type="button" id="nxLoad" style="flex:none">불러오기</button></div>
-  <p class="small" id="nxSub" style="margin:-6px 0 14px"></p>
-  <div class="nxg" id="nxBody"></div>
-  <p class="small" style="margin:14px 0 0">넥슨 API는 메소 비용을 알려 주지 않아서 횟수와 결과만 보여요. 넥슨 계정의 모든 캐릭터 기록이 합쳐져 있고, 지난 날짜는 이 기기에 저장해 두어 다시 불러오지 않아요. Data based on NEXON Open API</p>
 </div></section>
 
 <section class="band" style="padding-top:0"><div class="wrap card">
@@ -625,7 +610,7 @@ function sched(){if(!raf)raf=requestAnimationFrame(flush)}
 function changed(){stale=true;needTop=needHist=true;sched()}
 const sg=n=>(n>0?'+':'')+n.toLocaleString();
 const fragDet=e=>[e.frag?'교환 가능 <b>'+esc(sg(e.frag))+'</b>':'',e.fragU?'교환 불가 <b>'+esc(sg(e.fragU))+'</b>':''].filter(Boolean).map(x=>'조각 '+x).join(' · ');
-function flush(){raf=0;if(needTop){needTop=false;renderTop();renderNx()}if(needHist){needHist=false;renderHist()}if(E.aAmt.value.trim())adjHint();if(E.aFrag.value.trim()||E.aFragU.value.trim())adjFragHint()}
+function flush(){raf=0;if(needTop){needTop=false;renderTop()}if(needHist){needHist=false;renderHist()}if(E.aAmt.value.trim())adjHint();if(E.aFrag.value.trim()||E.aFragU.value.trim())adjFragHint()}
 const render=()=>{needTop=true;sched()};
 const mq=matchMedia('(max-width:420px)');
 mq.addEventListener?.('change',render);
@@ -732,7 +717,7 @@ E.bForm.addEventListener('submit',ev=>{ev.preventDefault();const list=[];
 const NX='https://open.api.nexon.com/maplestory/v1/';
 async function nx(path,key){const r=await fetch(NX+path,{headers:{'x-nxopen-api-key':key}});let j=null;try{j=await r.json()}catch(e){}
   if(!r.ok){const c=j&&j.error&&j.error.name||'';const m={OPENAPI00005:'API 키가 맞지 않아요. 넥슨 Open API에서 키를 다시 확인해 주세요.',OPENAPI00007:'오늘 넥슨 API 사용량을 다 썼어요. 내일 다시 불러와요.',OPENAPI00009:'넥슨 데이터가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.',OPENAPI00010:'넥슨 API 점검 중이에요.',OPENAPI00011:'넥슨 API 점검 중이에요.'}[c];throw new Error(m||'넥슨 API에서 정보를 불러오지 못했어요.')}return j}
-function showChar(d,errMsg){const on=!!nexon.key;renderNx();E.chConnect.hidden=on;E.charCard.hidden=!on;if(!on)return;
+function showChar(d,errMsg){const on=!!nexon.key;E.chConnect.hidden=on;E.charCard.hidden=!on;if(!on)return;
   if(!d){setText(E.chName,nexon.name||'캐릭터');setText(E.chLv,'');setText(E.chInfo,errMsg||'불러오는 중…');E.chXp.style.width='0';setText(E.chXpT,'');E.chImg.hidden=true;return}
   E.chImg.hidden=!d.character_image;if(d.character_image&&E.chImg.src!==d.character_image)E.chImg.src=d.character_image;
   setText(E.chName,d.character_name||nexon.name);setText(E.chLv,'Lv.'+d.character_level);
@@ -746,54 +731,7 @@ async function loadChar(force){const seq=++charSeq;if(!nexon.key){showChar(null)
   try{const d=await nx('character/basic?ocid='+encodeURIComponent(nexon.ocid),nexon.key);if(seq!==charSeq)return;
     try{localStorage.setItem(CKEY,JSON.stringify({ocid:nexon.ocid,at:Date.now(),data:d}))}catch(e){}showChar(d)}
   catch(e){if(seq===charSeq)showChar(c&&c.ocid===nexon.ocid?c.data:null,e.message)}}
-// 넥슨 강화 기록: 하루 단위 API라 날짜별로 받아 이 기기에 저장한다 (지난 날짜는 다시 부르지 않음)
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const NXH='meso-safe-nxhist:',NX_FIRST='2024-01-25';
-const nxCacheKey=()=>NXH+nexon.key.slice(-16);
-function nxRead(){try{return JSON.parse(localStorage.getItem(nxCacheKey())||'{}')||{}}catch(e){return{}}}
-function nxWrite(c){try{localStorage.setItem(nxCacheKey(),JSON.stringify(c))}catch(e){}}
-const sfRes=r=>/파괴/.test(r||'')?2:/성공/.test(r||'')?0:1;
-function nxDays(ym){const out=[],td=today(),[y,m]=ym.split('-').map(Number),last=new Date(y,m,0).getDate();
-  for(let d=1;d<=last;d++){const ds=ym+'-'+String(d).padStart(2,'0');if(ds>td)break;if(ds>=NX_FIRST)out.push(ds)}return out}
-const nxFinal=(ds,at)=>at>new Date(ds+'T00:00:00').getTime()+2*86400000;
-async function nxType(type,ds){let out=[],cursor=null;
-  for(let p=0;p<20;p++){const j=await nx('history/'+type+'?count=1000&'+(cursor?'cursor='+encodeURIComponent(cursor):'date='+ds),nexon.key);
-    out=out.concat(j[type+'_history']||[]);if(!j.next_cursor)break;cursor=j.next_cursor;await sleep(250)}return out}
-let nxBusy=false,nxMsg='';
-async function nxFetch(){if(nxBusy||!nexon.key)return;nxBusy=true;nxMsg='';const ym=stats().mon,c=nxRead(),days=nxDays(ym).filter(ds=>!(c[ds]&&nxFinal(ds,c[ds].at)));let done=0;
-  E.nxLoad.disabled=true;
-  try{for(const ds of days){setText(E.nxLoad,(++done)+'/'+days.length+'일…');
-      const sf=await nxType('starforce',ds);await sleep(250);const cu=await nxType('cube',ds);await sleep(250);const po=await nxType('potential',ds);await sleep(250);
-      c[ds]={at:Date.now(),sf:sf.map(h=>[sfRes(h.item_upgrade_result),h.before_starforce_count|0,h.after_starforce_count|0,String(h.target_item||'').slice(0,40)]),
-        cu:cu.map(h=>[String(h.cube_type||'').slice(0,40),h.item_upgrade_result==='성공'?1:0,String(h.target_item||'').slice(0,40)]),
-        po:po.map(h=>[h.item_upgrade_result==='성공'?1:0,String(h.target_item||'').slice(0,40)])};nxWrite(c);renderNx()}
-    if(!days.length)nxMsg='이미 다 불러왔어요.'}
-  catch(e){nxMsg=e.message+(done>1?' (불러온 날짜까지는 저장했어요)':'')}
-  nxBusy=false;E.nxLoad.disabled=false;renderNx()}
-E.nxLoad.onclick=nxFetch;
-function renderNx(){if(!E.nxSec)return;E.nxSec.hidden=!nexon.key;if(!nexon.key)return;
-  const t=stats(),ym=t.mon,days=nxDays(ym),c=nxRead(),have=days.filter(ds=>c[ds]),pending=days.filter(ds=>!(c[ds]&&nxFinal(ds,c[ds].at))).length;
-  setText(E.nxT,monLabel(ym,t.cur)+' 강화 기록');
-  if(!nxBusy)setText(E.nxLoad,!have.length?'불러오기':pending?'새로고침':'최신 상태');
-  setText(E.nxSub,(days.length?have.length+'/'+days.length+'일 불러옴':'이 달은 넥슨 기록이 없어요')+(nxMsg?' · '+nxMsg:''));
-  if(!have.length){setHTML(E.nxBody,'<div class="small">'+(days.length?'"불러오기"를 누르면 넥슨에서 이 달의 스타포스·큐브·잠재능력 재설정 기록을 가져와요.':'')+'</div>');return}
-  let sf=[0,0,0],sfN=0;const items={},cubes={};let cuN=0,cuUp=0,poN=0,poUp=0;
-  for(const ds of have){const d=c[ds];
-    for(const[r,b,a,it]of d.sf||[]){sfN++;sf[r]++;const x=items[it]||(items[it]={n:0,max:0,d:0});x.n++;x.max=Math.max(x.max,r===2?b:a,b);if(r===2)x.d++}
-    for(const[ty,up]of d.cu||[]){cuN++;cuUp+=up;cubes[ty]=(cubes[ty]||0)+1}
-    for(const[up]of d.po||[]){poN++;poUp+=up}}
-  const pct=(a,b)=>b?Math.round(a/b*1000)/10+'%':'0%',n=x=>x.toLocaleString();
-  const SFC=['var(--plus)','var(--mute)','var(--minus)'],SFL=['성공','실패','파괴'];
-  const topItems=Object.entries(items).sort((a,b)=>b[1].n-a[1].n).slice(0,5);
-  const cubeRows=Object.entries(cubes).sort((a,b)=>b[1]-a[1]);
-  setHTML(E.nxBody,`<div class="nxc"><h3>스타포스</h3><div class="nxbig">${n(sfN)}회</div>
-    ${sfN?`<div class="nxbar">${sf.map((v,i)=>`<i style="width:${v/sfN*100}%;background:${SFC[i]}"></i>`).join('')}</div>
-    <div class="nxleg">${sf.map((v,i)=>`<span><i style="background:${SFC[i]}"></i>${SFL[i]} ${n(v)} (${pct(v,sfN)})</span>`).join('')}</div>
-    ${topItems.map(([it,x])=>`<div class="nxrow"><span>${esc(it||'이름 없음')}</span><b>${n(x.n)}회 · ${x.max}성${x.d?' · 파괴 '+x.d:''}</b></div>`).join('')}`:'<div class="small">이 달은 스타포스 기록이 없어요.</div>'}</div>
-  <div class="nxc"><h3>큐브</h3><div class="nxbig">${n(cuN)}개</div>
-    ${cuN?`<div class="small" style="margin:4px 0 8px">등급 상승 ${n(cuUp)}번 (${pct(cuUp,cuN)})</div>${cubeRows.map(([ty,v])=>`<div class="nxrow"><span>${esc(ty)}</span><b>${n(v)}개</b></div>`).join('')}`:'<div class="small">이 달은 큐브 기록이 없어요.</div>'}</div>
-  <div class="nxc"><h3>잠재능력 재설정 (메소)</h3><div class="nxbig">${n(poN)}회</div>
-    ${poN?`<div class="small" style="margin-top:4px">등급 상승 ${n(poUp)}번 (${pct(poUp,poN)})</div>`:'<div class="small">이 달은 재설정 기록이 없어요.</div>'}</div>`)}
+try{for(const k of Object.keys(localStorage))if(k.startsWith('meso-safe-nxhist:'))localStorage.removeItem(k)}catch(e){}
 let nList=[];
 function openNexon(){setText(E.nErr,'');E.nKey.value=nexon.key||'';E.nUnlink.hidden=!nexon.key;
   if(nexon.ocid){E.nChar.innerHTML=`<option value="${esc(nexon.ocid)}">${esc(nexon.name||'지금 캐릭터')}</option>`;E.nCharBox.hidden=false}else{E.nChar.innerHTML='';E.nCharBox.hidden=true}
