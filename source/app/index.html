@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>메소 금고 가계부</title>
-<meta name="description" content="사냥·보스 수익과 지출을 매일 기록하는 메소 가계부. 로그인 없이 쓰고, 기록은 내 기기에만 저장돼요.">
+<meta name="description" content="사냥·보스 수익과 지출, 메이플포인트를 매일 기록하는 메소 가계부. 아이디로 로그인하면 휴대폰·PC 어디서든 같은 기록이 열려요.">
 <meta name="theme-color" content="#ffd23f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.png" type="image/png">
@@ -165,10 +165,38 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .gwarn{background:var(--box);border:1px dashed var(--lid);border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 14px;color:var(--ink)}
 footer a{color:inherit}
 footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size:13px;color:var(--mute);text-align:center}
+/* 메이플포인트 */
+.lcd.mp{background:#1f1833;color:#d9c2ff}.lcd.mp small{color:#a98be0}
+.tag.mp{background:light-dark(#efe6ff,#2a2140);color:light-dark(#6b3fc4,#c7a8ff)}
+.amt.v{color:light-dark(#6b3fc4,#c7a8ff)}
+.drawer.mpd{background:light-dark(#efe6ff,#231c36);border-color:#7c4dd6}
+.drawer.mpd .handle{background:#7c4dd6}
+.drawer.mpd .chip{border-color:#7c4dd6}.drawer.mpd .chip.on{background:#7c4dd6;border-color:#7c4dd6;color:#fff}
+.btn.purple{background:#7c4dd6;border-color:#5f33b5;color:#fff}
+/* 보스 빠른 입력 */
+.bq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.bchip{min-height:36px;padding:4px 12px;border-radius:99px;border:2px solid var(--lid);background:var(--box);color:var(--ink);cursor:pointer;font-size:14px;font-weight:700}
+.bchip span{color:var(--plus);font-weight:400;margin-left:2px}
+.bq .btn.link{min-height:36px;padding:4px;font-size:14px}
+.brow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto;gap:8px;margin-bottom:8px;align-items:center}
+/* 월별 보기 */
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}.mhead h2{margin:0}
+.mnav{display:flex;gap:6px}.mnav button{min-width:40px;min-height:40px;border:2px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;font-weight:700;color:var(--ink)}
+.mnav button:disabled{opacity:.35;cursor:default}
+.months{display:flex;gap:3px;align-items:flex-end;height:80px;margin-top:6px;border-bottom:2px solid var(--line)}
+.months button{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;background:none;border:0;padding:0;cursor:pointer;border-radius:4px}
+.months i{display:block;width:70%;max-width:18px;border-radius:4px 4px 0 0;min-height:2px;background:var(--plus);opacity:.55}
+.months i.neg{background:var(--minus)}.months button.on i{opacity:1}
+.mlab{display:flex;gap:3px;font-size:11px;color:var(--mute)}.mlab span{flex:1;text-align:center}.mlab span.on{color:var(--ink);font-weight:700}
+.hsearch{margin-bottom:12px}
+/* 계정 */
+.pwf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin-bottom:18px}
+.acct3 h3{font-size:16px;margin:16px 0 8px}
+@media(max-width:760px){.pwf{grid-template-columns:minmax(0,1fr)}}
 .toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 18px;border-radius:14px;display:none;gap:10px;align-items:center;z-index:9;max-width:calc(100% - 32px)}
 .toast.on{display:flex}.toast button{white-space:nowrap;background:none;border:0;color:var(--sun);font-weight:700;min-height:40px;cursor:pointer}
 @media(max-width:760px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:420px){.shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{grid-template-columns:minmax(0,1fr) auto auto}.hist .tag{grid-column:1/-1;justify-self:start}.kpi .num{font-size:20px}}
+@media(max-width:420px){.panel .dial{display:none}.shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{grid-template-columns:minmax(0,1fr) auto auto}.hist .tag{grid-column:1/-1;justify-self:start}.kpi .num{font-size:20px}}
 </style>
 </head>
 <body>
@@ -207,6 +235,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <div class="goalrow"><span class="goalname" id="gName">목표를 정해 보세요</span><span class="goalnum" id="gNum"></span></div>
     <div class="meter" role="progressbar" aria-label="목표 달성률" id="gMeter" aria-valuemin="0" aria-valuemax="100"><i id="gBar" style="transform:scaleX(0)"></i></div>
     <div class="goalrow"><span class="small" id="gLeft">목표 금액을 정하면 남은 금액을 알려 드려요</span><button class="btn link" id="gEdit" type="button">목표 정하기</button></div>
+    <div class="small" id="gEta" hidden></div>
     <form class="goalform" id="gForm">
       <div><label for="gN">목표 이름</label><input id="gN" maxlength="40" placeholder="예: 무기 강화 자금"></div>
       <div><label for="gA">목표 금액</label><input id="gA" inputmode="text" placeholder="예: 50억"></div>
@@ -222,8 +251,12 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <form class="prep" id="inForm" aria-labelledby="prepT">
       <h2 id="prepT">오늘의 수익 상자</h2>
       <div class="f"><label for="iDate">날짜</label><input type="date" id="iDate"></div>
-      <div class="f"><label for="iHunt">사냥 수익</label><input id="iHunt" inputmode="text" placeholder="예: 3억 2500만" autocomplete="off"><div class="hint" id="hHunt"></div></div>
-      <div class="f"><label for="iBoss">보스 수익</label><input id="iBoss" inputmode="text" placeholder="예: 12억" autocomplete="off"><div class="hint" id="hBoss"></div></div>
+      <div class="two f">
+        <div><label for="iHunt">사냥 수익</label><input id="iHunt" inputmode="text" placeholder="예: 3억 2500만" autocomplete="off"><div class="hint" id="hHunt"></div></div>
+        <div><label for="iTime">사냥 시간 <span class="small" style="font-weight:400">(선택)</span></label><input id="iTime" inputmode="text" placeholder="예: 1시간 30분" autocomplete="off"><div class="hint" id="hTime"></div></div>
+      </div>
+      <div class="f"><label for="iBoss">보스 수익</label><input id="iBoss" inputmode="text" placeholder="예: 12억" autocomplete="off"><div class="hint" id="hBoss"></div>
+        <div class="bq" id="bossChips"></div></div>
       <div class="f"><div class="fragrow" style="align-items:center;justify-content:space-between;margin-bottom:4px"><label style="margin:0">조각 개수</label>
         <div class="seg" role="group" aria-label="조각 더하기 또는 빼기"><button type="button" class="p on" id="fP" aria-pressed="true">+</button><button type="button" class="m" id="fM" aria-pressed="false">−</button></div></div>
         <div class="two">
@@ -240,6 +273,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
       <div class="safe">
         <div class="panel">
           <div class="lcd"><small>금고 잔액</small><span id="bal">0</span></div>
+          <div class="lcd mp"><small>메포 잔액</small><span id="mpBal">0</span></div>
           <span class="frag" id="fragTot"><span>교환 가능 0개</span><span>교환 불가 0개</span></span>
           <div class="dial" aria-hidden="true"></div>
         </div>
@@ -255,6 +289,23 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
             </div>
             <div class="f"><label for="oMemo">메모</label><input id="oMemo" maxlength="80" placeholder="예: 반지 구매"></div>
             <button class="btn dark" type="submit" id="outBtn" style="width:100%">금고에서 빼기</button>
+          </form>
+        </div>
+        <div class="drawer mpd" id="mDrawer">
+          <button class="handle" type="button" id="mBtnOpen" aria-expanded="false" aria-controls="mBody">메이플포인트</button>
+          <form class="dbody" id="mBody" novalidate>
+            <label>어떤 기록인가요</label>
+            <div class="chips" id="mTypes" role="group" aria-label="메이플포인트 기록 종류"></div>
+            <div class="small" id="mDesc" style="margin:10px 0 12px"></div>
+            <div class="two">
+              <div><label for="mMp" id="mMpL">받은 메포</label><input id="mMp" inputmode="numeric" autocomplete="off" placeholder="예: 10,000"><div class="hint" id="hMp"></div></div>
+              <div><label for="mDate">날짜</label><input type="date" id="mDate"></div>
+            </div>
+            <div class="f" id="mMesoBox"><label for="mMeso" id="mMesoL">낸 메소</label><input id="mMeso" inputmode="text" autocomplete="off" placeholder="예: 12억"><div class="hint" id="hMeso"></div></div>
+            <div class="f" id="mWonBox"><label for="mWon">쓴 돈 (원)</label><input id="mWon" inputmode="numeric" autocomplete="off" placeholder="예: 10,000"></div>
+            <div class="f" id="mCntBox"><label for="mCnt">횟수 <span class="small" style="font-weight:400">(선택)</span></label><input id="mCnt" inputmode="numeric" autocomplete="off" placeholder="예: 11"></div>
+            <div class="f"><label for="mMemo">메모</label><input id="mMemo" maxlength="80" placeholder="예: 메소마켓"></div>
+            <button class="btn purple" type="submit" id="mSubmit" style="width:100%">기록하기</button>
           </form>
         </div>
         <div class="drawer adj" id="aDrawer">
@@ -280,15 +331,19 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 </div></section>
 
 <section class="band" style="padding-top:0"><div class="wrap stats">
-  <div class="card"><h2 id="mT">이번 달</h2><div class="kpis" id="kpis"></div></div>
+  <div class="card"><div class="mhead"><h2 id="mT">이번 달</h2><div class="mnav"><button type="button" id="mPrev" aria-label="이전 달">◀</button><button type="button" id="mNext" aria-label="다음 달">▶</button></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="small" style="margin-top:18px">최근 12개월 순이익 <span style="opacity:.8">(막대를 누르면 그 달로 이동)</span></div>
+    <div class="months" id="months"></div><div class="mlab" id="mlab"></div></div>
   <div class="card"><h2>최근 7일</h2><div class="week" id="week"></div><div class="wlab" id="wlab"></div>
     <div class="legend"><span><i style="background:var(--plus)"></i>넣은 메소</span><span><i style="background:var(--minus)"></i>뺀 메소</span></div></div>
-  <div class="card"><h2>이번 달 지출</h2><div id="cats2"></div></div>
+  <div class="card"><h2 id="cT">이번 달 지출</h2><div id="cats2"></div></div>
 </div></section>
 
 <section class="band" style="padding-top:0"><div class="wrap card">
   <h2>기록</h2>
-  <div class="tabs" id="tabs"><button class="on" data-f="all" type="button">전체</button><button data-f="in" type="button">넣은 것</button><button data-f="out" type="button">뺀 것</button></div>
+  <div class="tabs" id="tabs"><button class="on" data-f="all" type="button">전체</button><button data-f="in" type="button">넣은 것</button><button data-f="out" type="button">뺀 것</button><button data-f="mp" type="button">메포</button></div>
+  <input class="hsearch" id="hq" type="search" placeholder="메모·종류·금액으로 찾기 (예: 도핑, 12억, 카루타)" autocomplete="off" aria-label="기록 검색">
   <ul class="hist" id="hist"></ul>
   <button class="btn hmore" type="button" id="hMore" hidden>더 보기</button>
 </div></section>
@@ -302,8 +357,19 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
       <button class="btn link" type="button" id="bCancel">취소</button>
     </div>
   </div>
-  <div id="delBox" hidden>
+  <div id="delBox" class="acct3" hidden>
     <h2>계정</h2>
+    <h3>비밀번호 바꾸기</h3>
+    <p class="small" style="margin:0 0 10px">비밀번호는 잊으면 찾을 수 없어요. 바꾼 뒤에는 다른 기기에서도 새 비밀번호로 로그인해 주세요.</p>
+    <form class="pwf" id="pwForm" novalidate>
+      <input type="text" autocomplete="username" id="pwUser" hidden>
+      <div><label for="pwCur">지금 비밀번호</label><input id="pwCur" type="password" autocomplete="current-password"></div>
+      <div><label for="pwNew">새 비밀번호</label><input id="pwNew" type="password" autocomplete="new-password" placeholder="6자 이상"></div>
+      <div><label for="pwNew2">새 비밀번호 확인</label><input id="pwNew2" type="password" autocomplete="new-password"></div>
+      <button class="btn dark" type="submit" id="pwBtn">바꾸기</button>
+    </form>
+    <div class="gerr" id="pwErr" role="alert" style="margin-top:-10px"></div>
+    <h3>계정 삭제</h3>
     <p class="small" style="margin:0 0 10px">계정을 삭제하면 모든 기록과 목표가 서버에서 지워지고 되돌릴 수 없어요.</p>
     <div class="acts" style="display:flex"><button class="btn" type="button" id="delBtn" style="border-color:var(--minus);color:var(--minus)">계정 삭제</button></div>
   </div>
@@ -320,6 +386,16 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <div class="acts"><button class="btn" type="button" id="eCancel">취소</button><button class="btn dark" type="submit" id="eSave">저장</button></div>
   </form>
 </dialog>
+<dialog class="edlg" id="bDlg" aria-labelledby="bTitle">
+  <form id="bForm" novalidate>
+    <h2 id="bTitle">보스 빠른 입력</h2>
+    <p class="small sub">자주 잡는 보스와 한 번에 받는 금액을 적어 두면, 수익 상자에서 눌러 바로 더할 수 있어요. 보스 금액은 패치마다 바뀌니 직접 적어 주세요.</p>
+    <div id="bRows"></div>
+    <button class="btn link" type="button" id="bAdd">+ 보스 추가</button>
+    <div class="gerr" id="bErr" role="alert"></div>
+    <div class="acts"><button class="btn" type="button" id="bClose">취소</button><button class="btn dark" type="submit">저장</button></div>
+  </form>
+</dialog>
 <div class="toast" id="toast" role="status"><span id="tMsg"></span><button type="button" id="tUndo">되돌리기</button></div>
 
 <script type="module">
@@ -329,7 +405,7 @@ const E={};for(const n of document.querySelectorAll('[id]'))E[n.id]=n;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=['도핑','에픽던전','템 구매'];
 const PAGE=50,KEY='meso-safe-v1';
-let entries=[],goal={name:'',amount:0},justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
+let entries=[],goal={name:'',amount:0},bosses=[],viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
 const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const today=()=>ymd(new Date());
 const parse=s=>{s=String(s||'').replace(/[,\s]/g,'').replace(/메소$/,'');if(!s)return 0;if(!/^([\d.]+(억|만)?)+$/.test(s))return NaN;let t=0;for(const m of s.matchAll(/([\d.]+)(억|만)?/g)){const v=parseFloat(m[1]);if(isNaN(v))return NaN;t+=v*(m[2]==='억'?1e8:m[2]==='만'?1e4:1)}return Math.round(t)};
@@ -346,25 +422,35 @@ function show(which){E.boot.hidden=true;E.gate.hidden=which!=='gate';E.app.hidde
 // 기록 다듬기: 파일이나 서버에서 온 값도 안전한 모양으로 맞춘다
 const num=v=>{v=Number(v);return isFinite(v)?Math.round(v):0};
 const newId=()=>'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(!['in','out','adj'].includes(kind))return null;
+// 메이플포인트 기록 종류: s = 메포 부호, m = 메소 부호 (메소마켓만)
+const MPT={charge:{l:'현금 충전',s:1},event:{l:'이벤트·페이백 적립',s:1},market_buy:{l:'메소마켓 구매',s:1,m:-1},market_sell:{l:'메소마켓 판매',s:-1,m:1},cash_shop:{l:'캐시샵·가챠',s:-1},auction_fee:{l:'옥션 수수료·선물하기',s:-1},adj:{l:'메포 잔액 맞추기',s:0}};
+const mpDelta=e=>e.type==='adj'?(e.mp||0):MPT[e.type].s*(e.mp||0);
+const mesoDelta=e=>(MPT[e.type].m||0)*(e.meso||0);
+const mkRate=e=>e.mp>0&&e.meso>0?e.meso/e.mp*1000:0;
+function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(!['in','out','adj','mp'].includes(kind))return null;
+  if(kind==='mp'){if(!MPT[e.type])return null;const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,type:e.type,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
+    o.mp=e.type==='adj'?num(e.mp):Math.max(0,num(e.mp));if(MPT[e.type].m)o.meso=Math.max(0,num(e.meso));
+    if(e.type==='charge'&&e.won)o.won=Math.max(0,num(e.won));if(e.type==='cash_shop'&&e.cnt)o.cnt=Math.max(0,num(e.cnt));return o}
   const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
-  if(kind==='in'){o.hunt=Math.max(0,num(e.hunt));o.boss=Math.max(0,num(e.boss));o.frag=num(e.frag);if(e.fragU)o.fragU=num(e.fragU)}
+  if(kind==='in'){o.hunt=Math.max(0,num(e.hunt));o.boss=Math.max(0,num(e.boss));o.frag=num(e.frag);if(e.fragU)o.fragU=num(e.fragU);if(e.huntMin)o.huntMin=Math.max(0,num(e.huntMin))}
   else{o.amount=num(e.amount);if(kind==='adj'){if(e.frag)o.frag=num(e.frag);if(e.fragU)o.fragU=num(e.fragU)}if(kind==='out'){o.cat=CATS.includes(e.cat)?e.cat:String(e.cat||'기타').slice(0,20);o.amount=Math.max(0,o.amount);if(e.cnt)o.cnt=Math.max(0,num(e.cnt))}}
   return o}
 const body=e=>{const{id,...rest}=e;return rest};
+function cleanBosses(l){return(Array.isArray(l)?l:[]).slice(0,30).map(b=>({name:String(b&&b.name||'').trim().slice(0,20),amount:Math.max(0,num(b&&b.amount))})).filter(b=>b.name&&b.amount)}
 function cleanGoal(g){return g&&typeof g==='object'?{name:String(g.name||'').slice(0,40),amount:Math.max(0,num(g.amount))}:{name:'',amount:0}}
-function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');return d?{entries:(Array.isArray(d.entries)?d.entries:[]).map(clean).filter(Boolean),goal:cleanGoal(d.goal)}:null}catch(e){return null}}
+function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');return d?{entries:(Array.isArray(d.entries)?d.entries:[]).map(clean).filter(Boolean),goal:cleanGoal(d.goal),bosses:cleanBosses(d.bosses)}:null}catch(e){return null}}
 
 // 저장소 1: 이 기기에만 저장 (Firebase 설정 전)
 function localStore(){
-  const d=readLocal();if(d){entries=d.entries;goal=d.goal}
-  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({v:1,entries,goal}))}catch(e){note('저장하지 못했어요. 저장 공간이 부족하거나 시크릿 모드일 수 있어요.');throw e}};
+  const d=readLocal();if(d){entries=d.entries;goal=d.goal;bosses=d.bosses;renderBossChips()}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({v:1,entries,goal,bosses}))}catch(e){note('저장하지 못했어요. 저장 공간이 부족하거나 시크릿 모드일 수 있어요.');throw e}};
   const tx=fn=>{const prev={entries:entries.slice(),goal};fn();try{save()}catch(e){entries=prev.entries;goal=prev.goal;throw e}changed()};
   window.addEventListener('storage',e=>{if(e.key===KEY){const d=readLocal();if(d){entries=d.entries;goal=d.goal;changed()}}});
   return{
     put:(id,data)=>tx(()=>{const i=entries.findIndex(e=>e.id===id);if(i>=0)entries[i]={...data,id};else entries.unshift({...data,id})}),
     remove:id=>tx(()=>{entries=entries.filter(e=>e.id!==id)}),
     setGoal:g=>tx(()=>{goal=g}),
+    setBosses:l=>tx(()=>{bosses=l;renderBossChips()}),
     bulk:(adds,removeAll)=>tx(()=>{if(removeAll)entries=[];const have=new Set(entries.map(e=>e.id));for(const e of adds)if(!have.has(e.id))entries.push(e)})
   }}
 
@@ -384,7 +470,8 @@ function cloudErr(e){const c=e&&e.code||'';note(c.includes('permission')?'저장
 function startCloud(u){
   stopCloud(false);
   E.acct.hidden=false;E.delBox.hidden=false;setText(E.who,emailToId(u.email)||u.displayName||'로그인됨');show('app');
-  const col=F.collection(fs,'users',u.uid,'entries'),gref=F.doc(fs,'users',u.uid,'meta','goal');
+  const col=F.collection(fs,'users',u.uid,'entries'),gref=F.doc(fs,'users',u.uid,'meta','goal'),bref=F.doc(fs,'users',u.uid,'meta','bosses');
+  E.pwUser.value=emailToId(u.email);
   let first=true,timer=setTimeout(()=>note('기록을 불러오는 중이에요. 연결이 느리면 잠시 기다려 주세요.'),10000);
   unsubs.push(F.onSnapshot(col,{includeMetadataChanges:true},snap=>{
     entries=snap.docs.map(d=>clean({...d.data(),id:d.id})).filter(Boolean);
@@ -393,17 +480,19 @@ function startCloud(u){
     if(first&&!snap.metadata.fromCache){first=false;offerLocal(u.uid)}
     changed()},e=>{cloudErr(e)}));
   unsubs.push(F.onSnapshot(gref,s=>{goal=s.exists()?cleanGoal(s.data()):{name:'',amount:0};render()},()=>{}));
+  unsubs.push(F.onSnapshot(bref,s=>{bosses=s.exists()?cleanBosses(s.data().list):[];renderBossChips()},()=>{}));
   const w=p=>p.catch(cloudErr);
   store={
     put:(id,data)=>{w(F.setDoc(F.doc(col,id),data))},
     remove:id=>{w(F.deleteDoc(F.doc(col,id)))},
     setGoal:g=>{goal=g;render();w(g.amount?F.setDoc(gref,g):F.deleteDoc(gref))},
+    setBosses:l=>{bosses=l;renderBossChips();w(l.length?F.setDoc(bref,{list:l}):F.deleteDoc(bref))},
     bulk:async(adds,removeAll)=>{const ops=[];if(removeAll)for(const e of entries)ops.push(b=>b.delete(F.doc(col,e.id)));
       const have=new Set(removeAll?[]:entries.map(e=>e.id));for(const e of adds)if(!have.has(e.id))ops.push(b=>b.set(F.doc(col,e.id),body(e)));
       for(let i=0;i<ops.length;i+=400){const b=F.writeBatch(fs);ops.slice(i,i+400).forEach(f=>f(b));w(b.commit())}}
   };
 }
-function stopCloud(toGate=true){unsubs.forEach(f=>{try{f()}catch(e){}});unsubs=[];entries=[];goal={name:'',amount:0};changed();
+function stopCloud(toGate=true){unsubs.forEach(f=>{try{f()}catch(e){}});unsubs=[];entries=[];goal={name:'',amount:0};bosses=[];renderBossChips();changed();
   if(toGate){E.acct.hidden=true;E.delBox.hidden=true;store=null;show('gate')}}
 // 로그인 전 이 기기에 적어 둔 기록이 있으면 계정으로 옮길지 묻는다
 function offerLocal(uid){const flag='meso-safe-moved-'+uid;let d=null;try{if(localStorage.getItem(flag))return;d=readLocal()}catch(e){return}
@@ -440,28 +529,47 @@ E.gMail.addEventListener('submit',async ev=>{ev.preventDefault();gErr('');
 E.delBtn.onclick=async()=>{const b=E.delBtn;
   if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='정말 삭제할게요';setTimeout(()=>{if(b.isConnected&&!b.disabled){b.classList.remove('sure');b.textContent='계정 삭제'}},5000);return}
   const u=auth&&auth.currentUser;if(!u)return;b.disabled=true;b.textContent='삭제 중…';
-  try{const refs=entries.map(e=>F.doc(fs,'users',u.uid,'entries',e.id));refs.push(F.doc(fs,'users',u.uid,'meta','goal'));
+  try{const refs=entries.map(e=>F.doc(fs,'users',u.uid,'entries',e.id));refs.push(F.doc(fs,'users',u.uid,'meta','goal'),F.doc(fs,'users',u.uid,'meta','bosses'));
     for(let i=0;i<refs.length;i+=400){const bt=F.writeBatch(fs);refs.slice(i,i+400).forEach(r=>bt.delete(r));await bt.commit()}
     await F.deleteUser(u);try{localStorage.removeItem(KEY)}catch(e){}toast('계정과 기록을 모두 지웠어요')}
   catch(e){note(e&&e.code==='auth/requires-recent-login'?'기록은 지웠어요. 보안을 위해 다시 로그인한 뒤 계정 삭제를 한 번 더 눌러 주세요.':'삭제하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');
     if(e&&e.code==='auth/requires-recent-login')try{await F.signOut(auth)}catch(x){}}
   b.disabled=false;b.classList.remove('sure');b.textContent='계정 삭제'};
 E.logout.onclick=async()=>{try{await F.signOut(auth)}catch(e){}};
+// 비밀번호 바꾸기: 오래 로그인해 둔 상태면 Firebase가 재확인을 요구하므로 지금 비밀번호로 먼저 확인한다
+E.pwForm.addEventListener('submit',async ev=>{ev.preventDefault();const err=t=>setText(E.pwErr,t||'');err('');
+  const cur=E.pwCur.value,nw=E.pwNew.value,u=auth&&auth.currentUser;if(!u)return;
+  if(!cur)return err('지금 비밀번호를 적어 주세요.');
+  if(nw.length<6)return err('새 비밀번호는 6자 이상으로 해 주세요.');
+  if(nw!==E.pwNew2.value)return err('새 비밀번호 확인이 똑같지 않아요.');
+  if(nw===cur)return err('지금 비밀번호와 다른 비밀번호로 해 주세요.');
+  E.pwBtn.disabled=true;
+  try{await F.reauthenticateWithCredential(u,F.EmailAuthProvider.credential(u.email,cur));await F.updatePassword(u,nw);
+    E.pwCur.value=E.pwNew.value=E.pwNew2.value='';toast('비밀번호를 바꿨어요. 다른 기기에서는 새 비밀번호로 다시 로그인해 주세요.')}
+  catch(e){const c=e&&e.code||'';err(c==='auth/invalid-credential'||c==='auth/wrong-password'?'지금 비밀번호가 맞지 않아요.':c==='auth/weak-password'?'새 비밀번호는 6자 이상으로 해 주세요.':c==='auth/too-many-requests'?'시도가 너무 많아요. 잠시 후 다시 해 주세요.':c==='auth/network-request-failed'?'인터넷 연결을 확인해 주세요.':'비밀번호를 바꾸지 못했어요. 다시 시도해 주세요.')}
+  E.pwBtn.disabled=false});
 
 // 계산과 화면 그리기
 let S=null,stale=true,needTop=true,needHist=true,raf=0;
+const addMon=(ym,k)=>{let[y,m]=ym.split('-').map(Number);m+=k;while(m<1){m+=12;y--}while(m>12){m-=12;y++}return y+'-'+String(m).padStart(2,'0')};
 function compute(){
-  const mon=today().slice(0,7),idx={},wk=[];
+  const cur=today().slice(0,7),mon=viewMon||cur,idx={},wk=[],mn={};
+  let mpb=0,mk=0,won=0,mpUse=0,mkMeso=0,mkMp=0,mkN=0,huntT=0,huntM=0,minMon=cur;const rates=[];
   for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);const s=ymd(d);idx[s]=wk.length;wk.push({d:s,i:0,o:0})}
   let i=0,o=0,f=0,fu=0,hu=0,bo=0,ou=0,fr=0,frU=0,nBox=0,adj=0;const byCat={};
   const sorted=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0));
   const byAt=entries.slice().sort((a,b)=>(b.at||0)-(a.at||0));const boxes=[];
-  for(const e of byAt){const isIn=e.kind==='in',a=isIn?inAmt(e):(e.amount||0);
+  for(const e of byAt){const isIn=e.kind==='in',a=isIn?inAmt(e):(e.amount||0),ym=(e.date||'').slice(0,7);if(ym&&ym<minMon)minMon=ym;
+    if(e.kind==='mp'){const mt=MPT[e.type];mpb+=mpDelta(e);mk+=mesoDelta(e);if(mt.m&&rates.length<5&&mkRate(e))rates.push(mkRate(e));
+      if(ym===mon){if(e.type==='charge')won+=e.won||0;if(e.type==='cash_shop'||e.type==='auction_fee')mpUse+=e.mp||0;if(mt.m){mkMeso+=mesoDelta(e);mkMp+=mpDelta(e);mkN++}}continue}
     if(e.kind==='adj'){adj+=a;f+=e.frag||0;fu+=e.fragU||0;continue}
+    mn[ym]=(mn[ym]||0)+(isIn?a:-a);
+    if(isIn&&e.huntMin&&ym===mon){huntT+=e.hunt||0;huntM+=e.huntMin}
     if(isIn){i+=a;f+=e.frag||0;fu+=e.fragU||0;nBox++;if(boxes.length<12)boxes.push(e)}else o+=a;
     if(e.date&&e.date.slice(0,7)===mon){if(isIn){hu+=e.hunt||0;bo+=e.boss||0;fr+=e.frag||0;frU+=e.fragU||0}else{ou+=a;byCat[e.cat]=(byCat[e.cat]||0)+a}}
     const k=idx[e.date];if(k!==undefined){if(isIn)wk[k].i+=a;else wk[k].o+=a}}
-  return{i,o,f,fu,bal:i-o+adj,mon,hu,bo,ou,fr,frU,byCat,wk,boxes,nBox,sorted};
+  const rate=rates.length?rates.reduce((x,y)=>x+y,0)/rates.length:0,wkNet=wk.reduce((x,w)=>x+w.i-w.o,0);
+  return{i,o,f,fu,bal:i-o+adj+mk,mon,cur,minMon,hu,bo,ou,fr,frU,byCat,wk,boxes,nBox,sorted,mpb,won,mpUse,mkMeso,mkMp,mkN,rate,huntT,huntM,mn,wkNet};
 }
 const stats=()=>{if(stale){S=compute();stale=false}return S};
 function sched(){if(!raf)raf=requestAnimationFrame(flush)}
@@ -475,37 +583,63 @@ mq.addEventListener?.('change',render);
 
 function renderTop(){
   const t=stats();
-  setText(E.bal,fmt(t.bal));setHTML(E.fragTot,'<span>교환 가능 '+t.f.toLocaleString()+'개</span><span>교환 불가 '+t.fu.toLocaleString()+'개</span>');
+  setText(E.bal,fmt(t.bal));setText(E.mpBal,t.mpb.toLocaleString());setHTML(E.fragTot,'<span>교환 가능 '+t.f.toLocaleString()+'개</span><span>교환 불가 '+t.fu.toLocaleString()+'개</span>');
   if(goal.amount>0){const pct=Math.max(0,Math.min(100,t.bal/goal.amount*100));
     setText(E.gName,goal.name||'목표');setText(E.gNum,fmt(Math.max(t.bal,0))+' / '+fmt(goal.amount));
     E.gBar.style.transform='scaleX('+pct/100+')';E.gMeter.setAttribute('aria-valuenow',Math.round(pct));
     setText(E.gLeft,t.bal>=goal.amount?'목표 달성! '+Math.floor(t.bal/goal.amount*100)+'%':Math.floor(pct)+'% · '+fmt(goal.amount-t.bal)+' 남음');setText(E.gEdit,'목표 바꾸기')}
   else{setText(E.gName,'목표를 정해 보세요');setText(E.gNum,'');E.gBar.style.transform='scaleX(0)';E.gMeter.removeAttribute('aria-valuenow');setText(E.gLeft,'목표 금액을 정하면 남은 금액을 알려 드려요');setText(E.gEdit,'목표 정하기')}
   E.gDel.hidden=!(goal.amount>0);
+  // 목표 달성 예상일: 최근 7일 평균 순이익(수익 - 지출)으로 남은 금액을 나눈다
+  if(goal.amount>0&&t.bal<goal.amount){const avg=t.wkNet/7;let msg;
+    if(avg>0){const days=Math.ceil((goal.amount-t.bal)/avg);if(days>3650)msg='이 속도면 10년 넘게 걸려요';else{const d=new Date();d.setDate(d.getDate()+days);msg='이 속도면 '+(d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'년 ':'')+(d.getMonth()+1)+'월 '+d.getDate()+'일쯤 달성 (최근 7일 하루 평균 +'+short(Math.round(avg))+')'}}
+    else msg=t.wk.some(w=>w.i||w.o)?'최근 7일은 잔액이 줄고 있어서 달성일을 예상할 수 없어요':'최근 7일 기록이 없어서 달성일을 예상할 수 없어요';
+    setText(E.gEta,msg);E.gEta.hidden=false}else E.gEta.hidden=true;
   const show=t.boxes;
   if(!show.length)setHTML(E.inside,'<div class="empty">금고가 비어 있어요.<br>오늘의 수익 상자를 넣어 보세요.<br>가계부 쓰기 전에 있던 메소는 아래 \'잔액 맞추기\'로 넣어요.</div>');
   else{const per=mq.matches?3:4;let h='';
     for(let s=0;s<Math.max(3,Math.ceil(show.length/per));s++){h+='<div class="shelf">'+show.slice(s*per,s*per+per).map(e=>`<div class="bx${e.id===justId?' drop':''}" title="${esc(e.memo||'')}"><div class="d">${esc(md(e.date))}</div><div class="a">${inAmt(e)?'+'+esc(short(inAmt(e))):'조각'}</div></div>`).join('')+'</div>'}
     setHTML(E.inside,h+(t.nBox>12?`<div class="more">안쪽에 상자 ${t.nBox-12}개가 더 있어요</div>`:''))}
-  setText(E.mT,(+t.mon.slice(5))+'월');
+  const mLabel=ym=>(ym.slice(0,4)!==t.cur.slice(0,4)?ym.slice(2,4)+'년 ':'')+(+ym.slice(5))+'월';
+  setText(E.mT,mLabel(t.mon)+(t.mon===t.cur?' (이번 달)':''));setText(E.cT,mLabel(t.mon)+' 지출');
+  E.mNext.disabled=t.mon>=t.cur;E.mPrev.disabled=t.mon<=t.minMon&&t.mon<=addMon(t.cur,-11);
   const net=t.hu+t.bo-t.ou;
-  setHTML(E.kpis,[['사냥 수익',fmt(t.hu),'p'],['보스 수익',fmt(t.bo),'p'],['지출',fmt(t.ou),'m'],['순이익',fmt(net),net<0?'m':'p'],['조각 (교환 가능 · 불가)',sg(t.fr)+' · '+sg(t.frU),'',' wide']].map(k=>`<div class="kpi${k[3]||''}"><div class="small">${k[0]}</div><div class="num ${k[2]}">${esc(k[1])}</div></div>`).join(''));
+  setHTML(E.kpis,[['사냥 수익',fmt(t.hu),'p'],['보스 수익',fmt(t.bo),'p'],['지출',fmt(t.ou),'m'],['순이익',fmt(net),net<0?'m':'p'],['시간당 사냥 수익',t.huntM?short(Math.round(t.huntT/t.huntM*60)):'—',t.huntM?'p':''],['현금 충전',t.won?t.won.toLocaleString()+'원':'0원',''],
+    ['메포 사용',t.mpUse.toLocaleString()+' P',''],['메소마켓 시세 (1,000P당 · 최근 5건)',t.rate?short(Math.round(t.rate)):'—',''],
+    ['메소마켓 거래 (수익·지출과 따로)',t.mkN?'메소 '+(t.mkMeso>0?'+':'')+fmt(t.mkMeso)+' · 메포 '+sg(t.mkMp):'없음','',' wide'],
+    ['조각 (교환 가능 · 불가)',sg(t.fr)+' · '+sg(t.frU),'',' wide']].map(k=>`<div class="kpi${k[3]||''}"><div class="small">${k[0]}</div><div class="num ${k[2]}">${esc(k[1])}</div></div>`).join(''));
   const cats=[...new Set([...CATS,...Object.keys(t.byCat)])];
   const mx=Math.max(...cats.map(c=>t.byCat[c]||0),1);
-  setHTML(E.cats2,t.ou?cats.map(c=>`<div class="row"><div class="t"><span>${esc(c)}</span><b>${esc(fmt(t.byCat[c]||0))}</b></div><div class="bar"><i style="width:${(t.byCat[c]||0)/mx*100}%"></i></div></div>`).join(''):'<div class="small">이번 달 지출이 아직 없어요.</div>');
+  setHTML(E.cats2,t.ou?cats.map(c=>`<div class="row"><div class="t"><span>${esc(c)}</span><b>${esc(fmt(t.byCat[c]||0))}</b></div><div class="bar"><i style="width:${(t.byCat[c]||0)/mx*100}%"></i></div></div>`).join(''):'<div class="small">'+mLabel(t.mon)+' 지출이 없어요.</div>');
+  const ms=[];for(let k=11;k>=0;k--)ms.push(addMon(t.cur,-k));const mmx=Math.max(...ms.map(m=>Math.abs(t.mn[m]||0)),1);
+  setHTML(E.months,ms.map(m=>{const v=t.mn[m]||0;return `<button type="button" data-m="${m}" class="${m===t.mon?'on':''}" title="${esc(mLabel(m))} 순이익 ${esc(fmt(v))}" aria-label="${esc(mLabel(m))} 순이익 ${esc(fmt(v))}"><i class="${v<0?'neg':''}" style="height:${Math.abs(v)/mmx*100}%"></i></button>`}).join(''));
+  setHTML(E.mlab,ms.map(m=>`<span class="${m===t.mon?'on':''}">${+m.slice(5)}</span>`).join(''));
   const wm=Math.max(...t.wk.map(w=>Math.max(w.i,w.o)),1);
   setHTML(E.week,t.wk.map(w=>`<div class="day" title="${esc(md(w.d))} 넣음 ${esc(fmt(w.i))} · 뺌 ${esc(fmt(w.o))}"><i class="in" style="height:${w.i/wm*100}%"></i><i class="out" style="height:${w.o/wm*100}%"></i></div>`).join(''));
   setHTML(E.wlab,t.wk.map(w=>`<span>${esc(md(w.d))}</span>`).join(''));
 }
 function renderHist(){
-  const all=stats().sorted,list=filter==='all'?all:all.filter(e=>e.kind===filter),part=list.slice(0,histLimit);
+  const all=stats().sorted,byKind=filter==='all'?all:all.filter(e=>e.kind===filter),list=hq?byKind.filter(e=>matchQ(e,hq)):byKind,part=list.slice(0,histLimit);
+  const btns=e=>`<span class="hbtns"><button class="ed" type="button" data-id="${esc(e.id)}" aria-label="기록 수정">수정</button><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></span>`;
   setHTML(E.hist,part.length?part.map(e=>{const isIn=e.kind==='in';
+    if(e.kind==='mp'){const mt=MPT[e.type],d=mpDelta(e),m=mesoDelta(e);
+      const det=[`<b>${esc(mt.l)}</b>`,`메포 <b>${esc(sg(d))}</b>`,mt.m&&mkRate(e)?`1,000P당 ${esc(short(Math.round(mkRate(e))))}`:'',e.won?`<b>${esc(e.won.toLocaleString())}원</b>`:'',e.cnt?`<b>${esc(e.cnt.toLocaleString())}회</b>`:''].filter(Boolean).join(' · ');
+      return `<li><span class="tag mp">${esc(md(e.date||today()))} 메포</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${m?(m>0?'p':'m'):'v'}">${m?(m>0?'+':'-')+esc(fmt(Math.abs(m))):esc(sg(d))+'P'}</span>${btns(e)}</li>`}
     if(e.kind==='adj'){const a=e.amount||0;return `<li><span class="tag adj">${esc(md(e.date||today()))} 맞춤</span><div class="det"><b>잔액 맞추기</b>${e.frag||e.fragU?' · '+fragDet(e):''}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a">${a?(a>0?'+':'')+esc(fmt(a)):''}</span><span class="hbtns"><button class="ed" type="button" data-id="${esc(e.id)}" aria-label="기록 수정">수정</button><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></span></li>`}
-    const det=isIn?[e.hunt?`사냥 <b>${esc(fmt(e.hunt))}</b>`:'',e.boss?`보스 <b>${esc(fmt(e.boss))}</b>`:'',fragDet(e)].filter(Boolean).join(' · '):`<b>${esc(e.cat)}</b>${e.cnt?` · <b>${esc(Number(e.cnt).toLocaleString())}회</b>`:''}`;
-    return `<li><span class="tag ${isIn?'in':'out'}">${esc(md(e.date||today()))} ${isIn?'넣음':'뺌'}</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${isIn?'p':'m'}">${isIn&&!inAmt(e)?'':(isIn?'+':'-')+esc(fmt(isIn?inAmt(e):e.amount))}</span><span class="hbtns"><button class="ed" type="button" data-id="${esc(e.id)}" aria-label="기록 수정">수정</button><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></span></li>`}).join(''):'<li style="display:block" class="small">아직 기록이 없어요.</li>');
+    const det=isIn?[e.hunt?`사냥 <b>${esc(fmt(e.hunt))}</b>${e.huntMin?` (${esc(durTxt(e.huntMin))} · 시간당 ${esc(short(Math.round(e.hunt/e.huntMin*60)))})`:''}`:'',e.boss?`보스 <b>${esc(fmt(e.boss))}</b>`:'',fragDet(e)].filter(Boolean).join(' · '):`<b>${esc(e.cat)}</b>${e.cnt?` · <b>${esc(Number(e.cnt).toLocaleString())}회</b>`:''}`;
+    return `<li><span class="tag ${isIn?'in':'out'}">${esc(md(e.date||today()))} ${isIn?'넣음':'뺌'}</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${isIn?'p':'m'}">${isIn&&!inAmt(e)?'':(isIn?'+':'-')+esc(fmt(isIn?inAmt(e):e.amount))}</span><span class="hbtns"><button class="ed" type="button" data-id="${esc(e.id)}" aria-label="기록 수정">수정</button><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></span></li>`}).join(''):'<li style="display:block" class="small">'+(hq?'찾는 기록이 없어요.':'아직 기록이 없어요.')+'</li>');
   const left=list.length-part.length;E.hMore.hidden=left<=0;if(left>0)setText(E.hMore,`더 보기 (${left.toLocaleString()}개 남음)`);
 }
 
+// 사냥 시간: "1시간 30분", "90분", "1.5시간", 숫자만 쓰면 분
+function parseDur(v){v=String(v||'').replace(/\s/g,'');if(!v)return 0;let m=v.match(/^(?:(\d+(?:\.\d+)?)시간)?(?:(\d+)분)?$/);
+  if(m&&(m[1]||m[2]))return Math.round((parseFloat(m[1]||0))*60+parseInt(m[2]||0,10));if(/^\d+$/.test(v))return parseInt(v,10);return NaN}
+const durTxt=n=>{const h=Math.floor(n/60),m=n%60;return(h?h+'시간':'')+(h&&m?' ':'')+(m?m+'분':'')||'0분'};
+// 기록 검색: 날짜, 종류, 메모, 금액(억·만으로 적어도 됨)
+function entryText(e){const mt=e.kind==='mp'?MPT[e.type].l:'';const ams=[e.hunt,e.boss,e.amount,e.meso,e.mp,e.won].filter(x=>x);
+  return[e.date,md(e.date||''),{in:'넣음 수익 사냥 보스',out:'뺌 지출',adj:'잔액 맞추기 맞춤',mp:'메포 메이플포인트'}[e.kind],e.cat,mt,e.memo,e.frag||e.fragU?'조각':'',...ams.map(a=>fmt(Math.abs(a))+' '+mesoTxt(Math.abs(a))+' '+Math.abs(a))].filter(Boolean).join(' ').toLowerCase().replace(/,/g,'')}
+function matchQ(e,q){const txt=entryText(e),ams=[e.hunt,e.boss,e.amount,e.meso,e.mp,e.won].filter(x=>x).map(Math.abs);
+  return q.split(/\s+/).filter(Boolean).every(w=>{w=w.toLowerCase().replace(/,/g,'');if(txt.includes(w))return true;const n=parse(w);return n>0&&/[억만]/.test(w)&&ams.includes(n)})}
 // 입력 칸
 function live(inp,hint){const v=parse(inp.value);const h=E[hint];if(!inp.value.trim()){h.textContent='';h.className='hint'}else if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint'}else{h.textContent='= '+fmt(v)+' 메소';h.className='hint ok'}}
 function sumIn(){const a=parse(E.iHunt.value),b=parse(E.iBoss.value);E.iSum.textContent=fmt((isNaN(a)?0:a)+(isNaN(b)?0:b))}
@@ -519,7 +653,67 @@ E.iBoss.addEventListener('input',()=>{commaize(E.iBoss);live(E.iBoss,'hBoss');su
 E.oAmt.addEventListener('input',()=>{commaize(E.oAmt);live(E.oAmt,'hOut')});
 E.gA.addEventListener('input',()=>commaize(E.gA));
 for(const x of[E.iFrag,E.iFragU])x.addEventListener('input',()=>{x.value=x.value.replace(/[^\d,]/g,'');commaize(x)});
-E.iDate.value=E.oDate.value=E.aDate.value=today();
+E.iDate.value=E.oDate.value=E.aDate.value=E.mDate.value=today();
+function timeHint(){const h=E.hTime,v=E.iTime.value.trim();if(!v){h.textContent='';h.className='hint';return}
+  const n=parseDur(v),hunt=parse(E.iHunt.value);if(isNaN(n)||n<=0){h.textContent='예: 1시간 30분, 90분';h.className='hint';return}
+  h.textContent='= '+durTxt(n)+(hunt>0?' · 시간당 '+short(Math.round(hunt/n*60)):'');h.className='hint ok'}
+E.iTime.addEventListener('input',timeHint);E.iHunt.addEventListener('input',timeHint);
+// 월별 보기
+const goMon=m=>{const cur=today().slice(0,7);viewMon=m>=cur?null:m;changed()};
+E.mPrev.onclick=()=>goMon(addMon(stats().mon,-1));E.mNext.onclick=()=>goMon(addMon(stats().mon,1));
+E.months.onclick=e=>{const b=e.target.closest('button[data-m]');if(b)goMon(b.dataset.m)};
+// 기록 검색
+let hqT=0;E.hq.addEventListener('input',()=>{clearTimeout(hqT);hqT=setTimeout(()=>{hq=E.hq.value.trim();histLimit=PAGE;needHist=true;sched()},150)});
+// 보스 빠른 입력
+function renderBossChips(){if(!E.bossChips)return;E.bossChips.innerHTML=bosses.map((b,i)=>`<button type="button" class="bchip" data-i="${i}" title="${esc(b.name)} ${esc(fmt(b.amount))} 더하기">${esc(b.name)}<span>+${esc(short(b.amount))}</span></button>`).join('')+
+  `<button type="button" class="btn link" id="bossEdit">${bosses.length?'보스 편집':'+ 자주 잡는 보스 등록'}</button>`}
+renderBossChips();
+E.bossChips.onclick=e=>{if(e.target.closest('#bossEdit'))return openBosses();const c=e.target.closest('.bchip');if(!c)return;const b=bosses[+c.dataset.i];if(!b)return;
+  const cur=parse(E.iBoss.value);E.iBoss.value=mesoTxt((isNaN(cur)?0:cur)+b.amount);commaize(E.iBoss);live(E.iBoss,'hBoss');sumIn()};
+const bRow=(b={name:'',amount:0})=>`<div class="brow"><input class="bN" maxlength="20" placeholder="보스 이름" value="${esc(b.name)}" aria-label="보스 이름"><input class="bA" inputmode="text" placeholder="금액 (예: 12억)" value="${esc(mesoTxt(b.amount))}" aria-label="금액"><button type="button" class="del bDel" aria-label="이 보스 지우기">삭제</button></div>`;
+function openBosses(){setText(E.bErr,'');E.bRows.innerHTML=(bosses.length?bosses:[{name:'',amount:0}]).map(bRow).join('');E.bDlg.showModal();const i=E.bRows.querySelector('input');if(i)i.focus()}
+E.bAdd.onclick=()=>{if(E.bRows.children.length>=30)return;E.bRows.insertAdjacentHTML('beforeend',bRow());E.bRows.lastElementChild.querySelector('input').focus()};
+E.bRows.onclick=e=>{const d=e.target.closest('.bDel');if(d)d.parentElement.remove()};
+E.bClose.onclick=()=>E.bDlg.close();
+E.bForm.addEventListener('submit',ev=>{ev.preventDefault();const list=[];
+  for(const r of E.bRows.querySelectorAll('.brow')){const name=r.querySelector('.bN').value.trim(),raw=r.querySelector('.bA').value.trim();if(!name&&!raw)continue;
+    const amount=parse(raw);if(!name)return setText(E.bErr,'보스 이름을 적어 주세요.');if(isNaN(amount)||amount<=0)return setText(E.bErr,name+'의 금액을 다시 확인해 주세요. 예: 12억');list.push({name:name.slice(0,20),amount})}
+  try{store.setBosses(list);E.bDlg.close();toast(list.length?'보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
+// 메이플포인트 서랍
+const MP_UI={charge:{mp:'받은 메포',d:'넥슨캐시로 메이플포인트를 충전했을 때 적어요. 쓴 돈(원)을 같이 적으면 이번 달 현금 충전이 보여요.',won:1,btn:'충전 기록하기'},
+  event:{mp:'받은 메포',d:'이벤트 보상, 페이백 등으로 받은 메이플포인트예요.',btn:'적립 기록하기'},
+  market_buy:{mp:'받은 메포',meso:'낸 메소',d:'메소마켓에서 메소를 내고 메이플포인트를 샀어요. 메소 금고에서 빠지고 메포 지갑에 들어가요.',btn:'구매 기록하기'},
+  market_sell:{mp:'낸 메포',meso:'받은 메소',d:'메소마켓에서 메이플포인트를 팔고 메소를 받았어요. 메포 지갑에서 빠지고 메소 금고에 들어가요.',btn:'판매 기록하기'},
+  cash_shop:{mp:'쓴 메포',d:'캐시샵 아이템이나 가챠에 쓴 메이플포인트예요.',cnt:1,btn:'사용 기록하기'},
+  auction_fee:{mp:'쓴 메포',d:'메이플 옥션 수수료나 선물하기에 쓴 메이플포인트예요.',btn:'사용 기록하기'},
+  adj:{mp:'지금 게임 속 메포',d:'게임 속 메이플포인트와 다르면 지금 갖고 있는 메포를 적어 주세요. 차이만큼 맞춰 드려요.',btn:'이대로 맞추기'}};
+E.mTypes.innerHTML=Object.keys(MPT).map(k=>`<button type="button" class="chip${k===mType?' on':''}" data-t="${k}" aria-pressed="${k===mType}">${MPT[k].l}</button>`).join('');
+const intOf=inp=>{const v=inp.value.replace(/,/g,'').trim();return v?(/^\d+$/.test(v)?parseInt(v,10):NaN):0};
+function mpHints(){const u=MP_UI[mType],mp=intOf(E.mMp),me=parse(E.mMeso.value);
+  if(mType==='adj'&&E.mMp.value.trim()&&!isNaN(mp)){const d=mp-stats().mpb;E.hMp.textContent=d===0?'메포 지갑과 같아요':'지갑보다 '+Math.abs(d).toLocaleString()+(d>0?' 많아요 → +':' 적어요 → -')+Math.abs(d).toLocaleString()+' 맞춰요';E.hMp.className='hint ok'}
+  else{E.hMp.textContent='';E.hMp.className='hint'}
+  if(u.meso&&E.mMeso.value.trim()){if(isNaN(me)){E.hMeso.textContent='숫자와 억, 만만 쓸 수 있어요';E.hMeso.className='hint'}
+    else{const r=mp>0&&me>0?me/mp*1000:0,avg=stats().rate;E.hMeso.textContent='= '+fmt(me)+' 메소'+(r?' · 1,000포인트당 약 '+short(Math.round(r))+(avg?' (최근 평균 '+short(Math.round(avg))+')':''):'');E.hMeso.className='hint ok'}}
+  else{E.hMeso.textContent='';E.hMeso.className='hint'}}
+function renderMpForm(){const u=MP_UI[mType];setText(E.mMpL,u.mp);setText(E.mDesc,u.d);setText(E.mSubmit,u.btn);setText(E.mMesoL,u.meso||'메소');
+  E.mMesoBox.hidden=!u.meso;E.mWonBox.hidden=!u.won;E.mCntBox.hidden=!u.cnt;E.mMp.placeholder=mType==='adj'?'예: 25,000':'예: 10,000';mpHints()}
+renderMpForm();
+E.mTypes.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;mType=b.dataset.t;for(const x of E.mTypes.children){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)}renderMpForm()};
+E.mBtnOpen.onclick=()=>{const o=E.mDrawer.classList.toggle('open');E.mBtnOpen.setAttribute('aria-expanded',o);if(o)E.mMp.focus()};
+for(const x of[E.mMp,E.mWon,E.mCnt])x.addEventListener('input',()=>{x.value=x.value.replace(/[^\d,]/g,'');commaize(x);mpHints()});
+E.mMeso.addEventListener('input',()=>{commaize(E.mMeso);mpHints()});
+E.mBody.addEventListener('submit',ev=>{ev.preventDefault();const u=MP_UI[mType],mp=intOf(E.mMp),meso=u.meso?parse(E.mMeso.value):0,won=u.won?intOf(E.mWon):0,cnt=u.cnt?intOf(E.mCnt):0;
+  if(!E.mMp.value.trim()||isNaN(mp)||(mType!=='adj'&&mp<=0)){note(u.mp+'를 숫자로 적어 주세요. 예: 10,000');return}
+  if(u.meso&&(isNaN(meso)||meso<=0)){note(u.meso+'를 적어 주세요. 예: 12억');return}
+  if(isNaN(won)||isNaN(cnt)){note('숫자로 적어 주세요.');return}
+  const t=stats(),data={kind:'mp',type:mType,date:E.mDate.value||today(),memo:E.mMemo.value.trim().slice(0,80),at:Date.now()};
+  if(mType==='adj'){const d=mp-t.mpb;if(!d){note('이미 메포 지갑과 같아서 맞출 게 없어요.');return}data.mp=d}else data.mp=mp;
+  if(u.meso)data.meso=meso;if(won)data.won=won;if(cnt)data.cnt=cnt;
+  note('');
+  const msg={charge:'메포 +'+mp.toLocaleString()+' 충전했어요'+(won?' ('+won.toLocaleString()+'원)':''),event:'메포 +'+mp.toLocaleString()+' 적립했어요',
+    market_buy:fmt(meso)+'로 메포 '+mp.toLocaleString()+'를 샀어요'+(meso>t.bal?' (메소 잔액보다 많아요)':''),market_sell:'메포 '+mp.toLocaleString()+'를 팔아 '+fmt(meso)+'를 받았어요'+(mp>t.mpb?' (메포 잔액보다 많아요)':''),
+    cash_shop:'메포 '+mp.toLocaleString()+'를 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':''),auction_fee:'메포 '+mp.toLocaleString()+'를 썼어요',adj:'메포 지갑을 맞췄어요 ('+sg(data.mp)+')'}[mType];
+  try{put(newId(),data);for(const x of[E.mMp,E.mMeso,E.mWon,E.mCnt,E.mMemo])x.value='';mpHints();toast(msg)}catch(e){}});
 
 function adjHint(){const v=parse(E.aAmt.value),h=E.hAdj;
   if(!E.aAmt.value.trim()){h.textContent='';h.className='hint';return}
@@ -548,10 +742,11 @@ const put=(id,data)=>{if(!store)throw 0;return store.put(id,data)};
 E.inForm.addEventListener('submit',ev=>{ev.preventDefault();
   const hunt=parse(E.iHunt.value),boss=parse(E.iBoss.value),fr=Math.abs(parseInt(E.iFrag.value.replace(/,/g,''),10)||0)*fragSign,frU=Math.abs(parseInt(E.iFragU.value.replace(/,/g,''),10)||0)*fragSign;
   if(isNaN(hunt)||isNaN(boss)){note('수익 금액을 다시 확인해 주세요. 예: 3억 2500만');return}
+  const huntMin=parseDur(E.iTime.value);if(isNaN(huntMin)){note('사냥 시간을 다시 확인해 주세요. 예: 1시간 30분');return}
   if(!hunt&&!boss&&!fr&&!frU){note('사냥 수익, 보스 수익, 조각 중 하나는 적어 주세요.');return}
-  const data={kind:'in',date:E.iDate.value||today(),hunt,boss,frag:fr,...(frU?{fragU:frU}:{}),memo:E.iMemo.value.trim().slice(0,80),at:Date.now()};
+  const data={kind:'in',date:E.iDate.value||today(),hunt,boss,frag:fr,...(frU?{fragU:frU}:{}),...(huntMin&&hunt?{huntMin}:{}),memo:E.iMemo.value.trim().slice(0,80),at:Date.now()};
   note('');const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
-  try{put(id,data);for(const s of['iHunt','iBoss','iFrag','iFragU','iMemo'])E[s].value='';live(E.iHunt,'hHunt');live(E.iBoss,'hBoss');sumIn();setSign(1);toast(hunt+boss?'상자를 금고에 넣었어요: +'+fmt(hunt+boss):'조각을 기록했어요')}catch(e){justId=null}});
+  try{put(id,data);for(const s of['iHunt','iTime','iBoss','iFrag','iFragU','iMemo'])E[s].value='';timeHint();live(E.iHunt,'hHunt');live(E.iBoss,'hBoss');sumIn();setSign(1);toast(hunt+boss?'상자를 금고에 넣었어요: +'+fmt(hunt+boss):'조각을 기록했어요')}catch(e){justId=null}});
 E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
   const amount=parse(E.oAmt.value);
   if(isNaN(amount)||amount<=0){note('뺄 금액을 적어 주세요. 예: 8000만');return}
@@ -585,10 +780,11 @@ const pSignedMeso=v=>{v=String(v||'').trim();if(!v)return 0;const neg=/^[-−]/.
 const pSignedInt=v=>{v=String(v||'').replace(/[,\s]/g,'').replace(/^−/,'-');if(!v)return 0;return /^-?\d+$/.test(v)?parseInt(v,10):NaN};
 function openEdit(id){const e=entries.find(x=>x.id===id);if(!e)return;editId=id;setText(E.eErr,'');
   const k=e.kind,date=`<div class="f"><label for="eDate">날짜</label><input type="date" id="eDate" value="${esc(e.date||today())}"></div>`,memo=fld('eMemo','메모',e.memo||'','');
-  setText(E.eTitle,k==='in'?'수익 기록 수정':k==='out'?'지출 기록 수정':'잔액 맞추기 수정');
-  setText(E.eSub,k==='adj'?'맞출 때 더하거나 뺀 양이에요. 빼는 값은 앞에 -를 붙여요.':'금액은 억, 만으로 적을 수 있어요. 예: 3억 2500만');
+  setText(E.eTitle,k==='in'?'수익 기록 수정':k==='out'?'지출 기록 수정':k==='mp'?MPT[e.type].l+' 수정':'잔액 맞추기 수정');
+  setText(E.eSub,k==='mp'?(e.type==='adj'?'맞출 때 더하거나 뺀 메포예요. 빼는 값은 앞에 -를 붙여요.':'메포는 숫자로, 메소는 억·만으로 적을 수 있어요.'):k==='adj'?'맞출 때 더하거나 뺀 양이에요. 빼는 값은 앞에 -를 붙여요.':'금액은 억, 만으로 적을 수 있어요. 예: 3억 2500만');
   let h='';
-  if(k==='in')h=date+`<div class="two">${fld('eHunt','사냥 수익',mesoTxt(e.hunt),'0')}${fld('eBoss','보스 수익',mesoTxt(e.boss),'0')}</div>
+  if(k==='mp'){const u=MP_UI[e.type];h=date+`<div class="two">${fld('eMp',e.type==='adj'?'메포 (더하거나 뺀 양)':u.mp,e.mp?String(e.mp):'','0')}${u.meso?fld('eMeso',u.meso,mesoTxt(e.meso),'예: 12억'):'<div></div>'}</div>`+(u.won?fld('eWon','쓴 돈 (원)',e.won?String(e.won):'','0'):'')+(u.cnt?fld('eCnt','횟수 (선택)',e.cnt?String(e.cnt):'','0'):'')+memo}
+  else if(k==='in')h=date+`<div class="two">${fld('eHunt','사냥 수익',mesoTxt(e.hunt),'0')}${fld('eTime','사냥 시간',e.huntMin?durTxt(e.huntMin):'','예: 1시간 30분')}</div>${fld('eBoss','보스 수익',mesoTxt(e.boss),'0')}
     <div class="two">${fld('eFrag','교환 가능 조각',intTxt(e.frag),'0','text')}${fld('eFragU','교환 불가 조각',intTxt(e.fragU),'0','text')}</div><div class="hint" style="margin:-8px 0 12px">쓴 조각은 앞에 -를 붙여요. 예: -20</div>`+memo;
   else if(k==='out'){const opts=[...new Set([...CATS,e.cat].filter(Boolean))];
     h=`<div class="f"><label for="eCat">어디에 썼나요</label><select id="eCat" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card)">${opts.map(c=>`<option${c===e.cat?' selected':''}>${esc(c)}</option>`).join('')}</select></div>
@@ -603,11 +799,17 @@ E.eForm.addEventListener('submit',ev=>{ev.preventDefault();const old=entries.fin
   const v=id=>(document.getElementById(id)||{}).value||'',err=t=>setText(E.eErr,t);
   const date=/^\d{4}-\d\d-\d\d$/.test(v('eDate'))?v('eDate'):old.date;
   const data={kind:old.kind,date,memo:v('eMemo').trim().slice(0,80),at:old.at||Date.now()};
-  if(old.kind==='in'){const hunt=parse(v('eHunt')),boss=parse(v('eBoss')),fr=pSignedInt(v('eFrag')),frU=pSignedInt(v('eFragU'));
+  if(old.kind==='mp'){const u=MP_UI[old.type],mp=old.type==='adj'?pSignedInt(v('eMp')):pSignedInt(v('eMp')),meso=u.meso?parse(v('eMeso')):0,won=u.won?pSignedInt(v('eWon')):0,cnt=u.cnt?pSignedInt(v('eCnt')):0;
+    if(isNaN(mp)||(old.type!=='adj'&&mp<=0)||(old.type==='adj'&&!mp))return err((old.type==='adj'?'더하거나 뺀 메포':u.mp)+'를 숫자로 적어 주세요.');
+    if(u.meso&&(isNaN(meso)||meso<=0))return err(u.meso+'를 다시 확인해 주세요. 예: 12억');
+    if(isNaN(won)||won<0||isNaN(cnt)||cnt<0)return err('숫자로 적어 주세요.');
+    Object.assign(data,{type:old.type,mp});if(u.meso)data.meso=meso;if(won)data.won=won;if(cnt)data.cnt=cnt}
+  else if(old.kind==='in'){const hunt=parse(v('eHunt')),boss=parse(v('eBoss')),fr=pSignedInt(v('eFrag')),frU=pSignedInt(v('eFragU')),huntMin=parseDur(v('eTime'));
     if(isNaN(hunt)||isNaN(boss))return err('수익 금액을 다시 확인해 주세요. 예: 3억 2500만');
+    if(isNaN(huntMin))return err('사냥 시간을 다시 확인해 주세요. 예: 1시간 30분');
     if(isNaN(fr)||isNaN(frU))return err('조각 개수는 숫자로 적어 주세요. 쓴 조각은 -20처럼 적어요.');
     if(!hunt&&!boss&&!fr&&!frU)return err('사냥 수익, 보스 수익, 조각 중 하나는 적어 주세요.');
-    Object.assign(data,{hunt,boss,frag:fr},frU?{fragU:frU}:{})}
+    Object.assign(data,{hunt,boss,frag:fr},frU?{fragU:frU}:{},huntMin&&hunt?{huntMin}:{})}
   else if(old.kind==='out'){const amount=parse(v('eAmt'));
     if(isNaN(amount)||amount<=0)return err('금액을 다시 확인해 주세요. 예: 8000만');
     Object.assign(data,{cat:v('eCat')||old.cat,amount});if(old.cnt)data.cnt=old.cnt}
@@ -627,6 +829,7 @@ E.tUndo.onclick=()=>{if(!undoData)return;const u=undoData;undoData=null;E.toast.
   try{if(u.goal)store.setGoal(u.goal);else if(u.ids)u.ids.forEach(id=>store.remove(id));else put(u.id,u.rest)}catch(e){}};
 
 // 로그인 전 기록을 계정으로 옮기기
+function doneFlag(){if(pending&&pending.flag)try{localStorage.setItem(pending.flag,'1')}catch(e){}}
 async function applyImport(replace){if(!pending||!store)return;const p=pending;pending=null;E.bAsk.hidden=true;
   const have=new Set(entries.map(e=>e.id)),added=replace?p.entries:p.entries.filter(e=>!have.has(e.id));
   try{await store.bulk(p.entries,replace);if(p.goal.amount&&(replace||!goal.amount))store.setGoal(p.goal)}catch(e){return}
