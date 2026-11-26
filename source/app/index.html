@@ -125,12 +125,8 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .del.sure{background:var(--minus);color:#fff;padding:0 10px}
 .note{display:none;background:var(--soft);border:2px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:14px;font-size:14px}
 .note.on{display:block}
-.backup{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:center}
-.backup .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-.backup input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.backup p{margin:0 0 6px}
 .dialog{background:var(--soft);border:2px solid var(--line);border-radius:14px;padding:14px;margin-top:14px}
-.dialog .acts{justify-content:flex-start;margin-top:10px}
+.dialog .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start;margin-top:10px}
 .acct{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:14px}
 .acct b{font-weight:700;overflow-wrap:anywhere}
 .acct .btn{min-height:36px;padding:4px 12px;font-size:14px}
@@ -162,7 +158,7 @@ footer a{color:inherit}
 footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size:13px;color:var(--mute);text-align:center}
 .toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 18px;border-radius:14px;display:none;gap:10px;align-items:center;z-index:9;max-width:calc(100% - 32px)}
 .toast.on{display:flex}.toast button{background:none;border:0;color:var(--sun);font-weight:700;min-height:40px;cursor:pointer}
-@media(max-width:760px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}.backup{grid-template-columns:minmax(0,1fr)}.backup .acts{justify-content:flex-start}}
+@media(max-width:760px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:420px){.shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{grid-template-columns:minmax(0,1fr) auto auto}.hist .tag{grid-column:1/-1;justify-self:start}.kpi .num{font-size:20px}}
 </style>
 </head>
@@ -284,15 +280,6 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 </div></section>
 
 <section class="band" style="padding-top:0"><div class="wrap card">
-  <div class="backup">
-    <div><h2>백업</h2>
-      <p id="bInfo">기록은 내 계정에 저장돼서 휴대폰과 PC에서 같이 보여요.</p>
-      <p class="small">혹시 모르니 가끔 백업 파일을 저장해 두면 좋아요. 불러온 기록은 계정에 저장돼요.</p></div>
-    <div class="acts">
-      <button class="btn dark" type="button" id="bExp">백업 파일 저장</button>
-      <label class="btn" for="bFile">백업 불러오기</label><input type="file" id="bFile" accept=".json,application/json">
-    </div>
-  </div>
   <div class="dialog" id="bAsk" hidden>
     <div id="bAskT"></div>
     <div class="acts">
@@ -301,10 +288,10 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
       <button class="btn link" type="button" id="bCancel">취소</button>
     </div>
   </div>
-  <div class="dialog" id="delBox" hidden>
-    <b>계정 삭제</b>
-    <p class="small" style="margin:4px 0 0">계정과 모든 기록, 목표가 서버에서 지워지고 되돌릴 수 없어요. 필요하면 먼저 백업 파일을 저장해 두세요.</p>
-    <div class="acts"><button class="btn" type="button" id="delBtn" style="border-color:var(--minus);color:var(--minus)">계정 삭제</button></div>
+  <div id="delBox" hidden>
+    <h2>계정</h2>
+    <p class="small" style="margin:0 0 10px">계정을 삭제하면 모든 기록과 목표가 서버에서 지워지고 되돌릴 수 없어요.</p>
+    <div class="acts" style="display:flex"><button class="btn" type="button" id="delBtn" style="border-color:var(--minus);color:var(--minus)">계정 삭제</button></div>
   </div>
 </div></section>
 </main>
@@ -571,18 +558,7 @@ E.hist.addEventListener('click',ev=>{const b=ev.target.closest('.del');if(!b)ret
 E.tUndo.onclick=()=>{if(!undoData)return;const u=undoData;undoData=null;E.toast.classList.remove('on');
   try{if(u.goal)store.setGoal(u.goal);else if(u.ids)u.ids.forEach(id=>store.remove(id));else put(u.id,u.rest)}catch(e){}};
 
-// 백업 파일 저장과 불러오기
-E.bExp.onclick=()=>{const data=JSON.stringify({app:'meso-safe',v:1,exportedAt:new Date().toISOString(),goal,entries},null,1);
-  const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');
-  a.href=url;a.download='메소금고-백업-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
-  toast('백업 파일을 저장했어요 (기록 '+entries.length.toLocaleString()+'개)')};
-E.bFile.onchange=async()=>{const f=E.bFile.files[0];E.bFile.value='';if(!f)return;
-  try{const d=JSON.parse(await f.text());const list=(Array.isArray(d)?d:d.entries);if(!Array.isArray(list))throw 0;
-    const es=list.map(clean).filter(Boolean);pending={entries:es,goal:cleanGoal(d.goal)};
-    E.bReplace.hidden=false;E.bMerge.textContent='지금 기록에 합치기';E.bCancel.textContent='취소';
-    E.bAskT.textContent='백업 파일에 기록 '+es.length.toLocaleString()+'개가 있어요. 어떻게 불러올까요?';E.bAsk.hidden=false;E.bMerge.focus()}
-  catch(e){pending=null;E.bAsk.hidden=true;note('백업 파일을 읽지 못했어요. 이 가계부에서 저장한 .json 파일인지 확인해 주세요.')}};
-function doneFlag(){if(pending&&pending.flag)try{localStorage.setItem(pending.flag,'1')}catch(e){}}
+// 로그인 전 기록을 계정으로 옮기기
 async function applyImport(replace){if(!pending||!store)return;const p=pending;pending=null;E.bAsk.hidden=true;
   const have=new Set(entries.map(e=>e.id)),added=replace?p.entries:p.entries.filter(e=>!have.has(e.id));
   try{await store.bulk(p.entries,replace);if(p.goal.amount&&(replace||!goal.amount))store.setGoal(p.goal)}catch(e){return}
@@ -601,8 +577,8 @@ if(!standalone&&/iphone|ipad|ipod/i.test(navigator.userAgent))E.iosHint.hidden=f
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 // 시작: Firebase 설정이 있으면 로그인, 없으면 이 기기 저장
-if(configured){cloudInit().catch(()=>{show('app');store=localStore();changed();setText(E.bInfo,'서버에 연결하지 못해서 지금은 이 기기에만 저장돼요.');note('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.')})}
-else{store=localStore();show('app');setText(E.bInfo,'Firebase 설정 전이라 기록이 이 기기에만 저장돼요.');changed()}
+if(configured){cloudInit().catch(()=>{show('app');store=localStore();changed();note('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.')})}
+else{store=localStore();show('app');changed()}
 </script>
 </body>
 </html>
