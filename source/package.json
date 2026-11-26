@@ -1,7 +1,7 @@
 {
   "name": "meso-safe",
   "productName": "메소 금고 가계부",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "메소 금고 가계부",
   "author": "meso-safe",
   "main": "main.js",
@@ -17,7 +17,7 @@
     "appId": "com.mesosafe.app",
     "productName": "메소 금고 가계부",
     "executableName": "MesoSafe",
-    "files": ["main.js", "package.json", "app/**/*", "build/icon.png"],
+    "files": ["main.js", "preload.js", "package.json", "app/**/*", "build/icon.png"],
     "directories": { "output": "../release" },
     "win": { "icon": "build/icon.png", "signExecutable": false },
     "portable": { "artifactName": "메소금고가계부.exe" }

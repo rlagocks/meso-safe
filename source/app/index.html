@@ -588,7 +588,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;
 E.appBtn.onclick=async()=>{if(!deferred)return;deferred.prompt();try{const r=await deferred.userChoice;if(r.outcome==='accepted')E.appBtn.hidden=true}catch(e){}deferred=null};
 window.addEventListener('appinstalled',()=>{E.appBtn.hidden=true;toast('홈 화면에 설치했어요')});
 if(!standalone&&/iphone|ipad|ipod/i.test(navigator.userAgent))E.iosHint.hidden=false;
-if(!isExe&&'serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 // 시작: Firebase 설정이 있으면 로그인, 없으면 이 기기 저장
 if(configured){cloudInit().catch(()=>{show('app');store=localStore();changed();setText(E.bInfo,'서버에 연결하지 못해서 지금은 이 기기에만 저장돼요.');note('서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.')})}
