@@ -438,6 +438,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <p class="small sub" id="dSub">보스에서 돈 되는 아이템이 나왔다면 적어 두세요. 팔기 전에는 메소가 늘지 않고, 팔았을 때 받은 금액이 "아이템 판매" 수익으로 들어가요.</p>
     <div class="two"><div class="f"><label for="dItem">아이템 이름</label><input id="dItem" maxlength="40" autocomplete="off" placeholder="예: 몽환의 벨트"></div>
       <div class="f"><label for="dBoss">보스</label><select id="dBoss" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)"></select></div></div>
+    <div class="f" id="dEstBox" hidden><label for="dEst">예상 판매 가격 <span class="small" style="font-weight:400">(선택)</span></label><input id="dEst" inputmode="text" autocomplete="off" placeholder="예: 40억"><div class="hint" id="hDEst">적어 두면 수수료를 뺀 금액이 총 자산에 들어가요</div></div>
     <div class="f" id="dStateBox"><label>지금 상태</label><div class="chips" id="dState" role="group" aria-label="판매 상태"><button type="button" class="chip" data-s="sold">팔았어요</button><button type="button" class="chip" data-s="wait">아직 안 팔았어요</button></div></div>
     <div id="dSoldBox">
       <div class="chips" id="dMode" role="group" aria-label="금액 적는 방식" style="margin-bottom:10px"><button type="button" class="chip" data-m="list">경매장 판매 가격</button><button type="button" class="chip" data-m="net">받은 메소 그대로</button></div>
@@ -522,7 +523,7 @@ const mpDelta=e=>e.type==='adj'?(e.mp||0):MPT[e.type].s*(e.mp||0);
 const mesoDelta=e=>(MPT[e.type].m||0)*(e.meso||0);
 const mkRate=e=>e.mp>0&&e.meso>0?e.meso/e.mp*1000:0;
 function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(!['in','out','adj','mp','drop'].includes(kind))return null;
-  if(kind==='drop'){const item=String(e.item||'').trim().slice(0,40);if(!item)return null;return{id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,item,dropBoss:String(e.dropBoss||'').slice(0,20),dropChar:String(e.dropChar||'').slice(0,20),date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()}}
+  if(kind==='drop'){const item=String(e.item||'').trim().slice(0,40);if(!item)return null;return{id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,item,dropBoss:String(e.dropBoss||'').slice(0,20),dropChar:String(e.dropChar||'').slice(0,20),...(num(e.est)>0?{est:num(e.est)}:{}),date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()}}
   if(kind==='mp'){if(!MPT[e.type])return null;const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,type:e.type,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
     o.mp=e.type==='adj'?num(e.mp):Math.max(0,num(e.mp));if(MPT[e.type].m)o.meso=Math.max(0,num(e.meso));
     if(e.type==='charge'&&e.won)o.won=Math.max(0,num(e.won));if(e.type==='cash_shop'&&e.cnt)o.cnt=Math.max(0,num(e.cnt));return o}
@@ -694,9 +695,11 @@ mq.addEventListener?.('change',render);
 function renderTop(){
   const t=stats();
   // 총 자산 = 메소 + 교환 가능 조각 × 시세 + 메포 × (1,000P당 시세 ÷ 1,000). 교환 불가 조각은 팔 수 없어 넣지 않는다
-  const mpR=prefs.mpRate||t.rate||0,fragV=Math.max(0,t.f)*prefs.fragPrice,mpV=Math.max(0,t.mpb)*mpR/1000,total=t.bal+fragV+mpV;
+  // 조각과 판매 대기 드롭은 경매장에 팔아야 메소가 되므로 MVP 등급 수수료를 빼고 센다
+  const afterFee=v=>v-Math.round(v*feeRate(prefs.mvp)),mpR=prefs.mpRate||t.rate||0,fragV=afterFee(Math.max(0,t.f)*prefs.fragPrice),mpV=Math.max(0,t.mpb)*mpR/1000,
+    dropV=entries.reduce((a,e)=>a+(e.kind==='drop'&&e.est?afterFee(e.est):0),0),total=t.bal+fragV+mpV+dropV;
   setText(E.aTot,fmt(Math.round(total)));
-  setText(E.aDet,['메소 '+short(t.bal),prefs.fragPrice?'조각 '+short(Math.round(fragV)):'조각 시세 없음',t.mpb?(mpR?'메포 '+short(Math.round(mpV)):'메포 시세 없음'):''].filter(Boolean).join(' · '));
+  setText(E.aDet,['메소 '+short(t.bal),prefs.fragPrice?'조각 '+short(Math.round(fragV)):'조각 시세 없음',t.mpb?(mpR?'메포 '+short(Math.round(mpV)):'메포 시세 없음'):'',dropV?'판매 대기 '+short(dropV):''].filter(Boolean).join(' · ')+' (수수료 '+Math.round(feeRate(prefs.mvp)*100)+'% 뺌)');
   const gv=prefs.goalBasis==='total'?Math.round(total):t.bal;
   setText(E.bal,fmt(t.bal));setText(E.mpBal,t.mpb.toLocaleString());setHTML(E.fragTot,'<span>교환 가능 '+t.f.toLocaleString()+'개</span><span>교환 불가 '+t.fu.toLocaleString()+'개</span>');
   if(goal.amount>0){const pct=Math.max(0,Math.min(100,gv/goal.amount*100));
@@ -743,7 +746,7 @@ function renderHist(){
     if(e.kind==='mp'){const mt=MPT[e.type],d=mpDelta(e),m=mesoDelta(e);
       const det=[`<b>${esc(mt.l)}</b>`,`메포 <b>${esc(sg(d))}</b>`,mt.m&&mkRate(e)?`1,000P당 ${esc(short(Math.round(mkRate(e))))}`:'',e.won?`<b>${esc(e.won.toLocaleString())}원</b>`:'',e.cnt?`<b>${esc(e.cnt.toLocaleString())}회</b>`:''].filter(Boolean).join(' · ');
       return `<li><span class="tag mp">${esc(md(e.date||today()))} 메포</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${m?(m>0?'p':'m'):'v'}">${m?(m>0?'+':'-')+esc(fmt(Math.abs(m))):esc(sg(d))+'P'}</span>${btns(e)}</li>`}
-    if(e.kind==='drop')return `<li><span class="tag adj">${esc(md(e.date||today()))} 드롭</span><div class="det"><b>${esc(e.item)}</b>${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · 판매 대기${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a"></span>${btns(e)}</li>`;
+    if(e.kind==='drop')return `<li><span class="tag adj">${esc(md(e.date||today()))} 드롭</span><div class="det"><b>${esc(e.item)}</b>${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · 판매 대기${e.est?' (예상 '+esc(fmt(e.est))+')':''}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a"></span>${btns(e)}</li>`;
     if(e.kind==='adj'){const a=e.amount||0;return `<li><span class="tag adj">${esc(md(e.date||today()))} 맞춤</span><div class="det"><b>잔액 맞추기</b>${e.frag||e.fragU?' · '+fragDet(e):''}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt a">${a?(a>0?'+':'')+esc(fmt(a)):''}</span><span class="hbtns"><button class="ed" type="button" data-id="${esc(e.id)}" aria-label="기록 수정">수정</button><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></span></li>`}
     const det=isIn?[e.hunt?`사냥 <b>${esc(fmt(e.hunt))}</b>${e.huntMin?` (${esc(durTxt(e.huntMin))} · 시간당 ${esc(short(Math.round(e.hunt/e.huntMin*60)))})`:''}`:'',e.boss?`보스 <b>${esc(fmt(e.boss))}</b>`:'',e.sale?`아이템 판매 <b>${esc(fmt(e.sale))}</b>${e.list?` (판매가 ${esc(fmt(e.list))} · 수수료 ${esc(fmt(e.fee||0))})`:''}${e.item?` (${esc(e.item)}${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''})`:''}`:'',fragDet(e)].filter(Boolean).join(' · '):`<b>${esc(e.cat)}</b>${e.cnt?` · <b>${esc(Number(e.cnt).toLocaleString())}회</b>`:''}`;
     return `<li><span class="tag ${isIn?'in':'out'}">${esc(md(e.date||today()))} ${isIn?'넣음':'뺌'}</span><div class="det">${det}${e.memo?`<br>${esc(e.memo)}`:''}</div><span class="amt ${isIn?'p':'m'}">${isIn&&!inAmt(e)?'':(isIn?'+':'-')+esc(fmt(isIn?inAmt(e):e.amount))}</span><span class="hbtns"><button class="ed" type="button" data-id="${esc(e.id)}" aria-label="기록 수정">수정</button><button class="del" type="button" data-id="${esc(e.id)}" aria-label="기록 삭제">삭제</button></span></li>`}).join(''):'<li style="display:block" class="small">'+(hq?'찾는 기록이 없어요.':'아직 기록이 없어요.')+'</li>');
@@ -856,11 +859,11 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadChar()
 // 총 자산 시세 설정
 let pBasis='meso';
 const setBasis=b=>{pBasis=b;for(const x of E.pBasis.children){x.classList.toggle('on',x.dataset.b===b);x.setAttribute('aria-pressed',x.dataset.b===b)}};
-function pHints(){const v=parse(E.pFrag.value);E.hPFrag.textContent=E.pFrag.value.trim()?(isNaN(v)?'숫자와 억, 만만 쓸 수 있어요':'= 1개당 '+fmt(v)+' · 지금 '+stats().f.toLocaleString()+'개 = '+fmt(Math.max(0,stats().f)*v)):'비워 두면 조각은 총 자산에 넣지 않아요. 교환 불가 조각은 팔 수 없어서 넣지 않아요.';
+function pHints(){const v=parse(E.pFrag.value);E.hPFrag.textContent=E.pFrag.value.trim()?(isNaN(v)?'숫자와 억, 만만 쓸 수 있어요':(()=>{const g=Math.max(0,stats().f)*v,r=feeRate(MVP[E.pMvp.value]?E.pMvp.value:prefs.mvp),fee=Math.round(g*r);return'= 1개당 '+fmt(v)+' · 지금 '+stats().f.toLocaleString()+'개 = '+fmt(g)+' → 수수료 '+Math.round(r*100)+'% 빼면 '+fmt(g-fee)})()):'비워 두면 조각은 총 자산에 넣지 않아요. 교환 불가 조각은 팔 수 없어서 넣지 않아요.';
   const m=parse(E.pMp.value),avg=stats().rate;E.hPMp.textContent=E.pMp.value.trim()?(isNaN(m)?'숫자와 억, 만만 쓸 수 있어요':'= 1,000P당 '+fmt(m)):(avg?'지금 메소마켓 최근 평균: 1,000P당 '+fmt(Math.round(avg)):'메소마켓 기록이 없어서 비워 두면 메포는 0으로 계산해요')}
 E.pMvp.innerHTML=Object.entries(MVP).map(([k,l])=>`<option value="${k}">${l}</option>`).join('');
 const mvpHint=()=>{E.hPMvp.textContent='경매장 판매 수수료 '+Math.round(feeRate(E.pMvp.value)*100)+'%'+(feeRate(E.pMvp.value)===0.05?' · 실버 이상이면 3%로 줄어요':'')};
-E.pMvp.addEventListener('change',mvpHint);
+E.pMvp.addEventListener('change',()=>{mvpHint();pHints()});
 E.aSet.onclick=()=>{E.pMvp.value=prefs.mvp;mvpHint();setText(E.pErr,'');E.pFrag.value=mesoTxt(prefs.fragPrice);E.pMp.value=mesoTxt(prefs.mpRate);setBasis(prefs.goalBasis);pHints();E.pDlg.showModal();E.pFrag.focus()};
 E.pBasis.onclick=e=>{const b=e.target.closest('.chip');if(b)setBasis(b.dataset.b)};
 for(const x of[E.pFrag,E.pMp])x.addEventListener('input',()=>{commaize(x);pHints()});
@@ -894,22 +897,25 @@ function dCalc(){const v=parse(E.dPrice.value);if(!E.dPrice.value.trim()||isNaN(
 function dPriceHint(){const h=E.hDPrice,c=dCalc();if(!E.dPrice.value.trim()){h.className='hint';h.textContent=dPriceMode==='list'?'수수료 '+Math.round(feeRate(prefs.mvp,E.dPc.checked)*100)+'% ('+(E.dPc.checked?'PC방':MVP[prefs.mvp])+') · MVP 등급은 "시세 · MVP"에서 바꿔요':'경매장 수수료를 뺀, 실제로 받은 금액이에요';return}
   if(!c){h.className='hint';h.textContent='숫자와 억, 만만 쓸 수 있어요';return}
   h.className='hint ok';h.textContent=c.list?'수수료 '+Math.round(c.r*100)+'% '+fmt(c.fee)+' → 받는 메소 '+fmt(c.net):'= '+fmt(c.net)+' 메소'}
-const setDState=st=>{dState=st;for(const x of E.dState.children){x.classList.toggle('on',x.dataset.s===st);x.setAttribute('aria-pressed',x.dataset.s===st)}E.dSoldBox.hidden=st!=='sold';setText(E.dSave,st==='sold'?'수익으로 넣기':'판매 대기로 저장')};
+const setDState=st=>{dState=st;for(const x of E.dState.children){x.classList.toggle('on',x.dataset.s===st);x.setAttribute('aria-pressed',x.dataset.s===st)}E.dSoldBox.hidden=st!=='sold';E.dEstBox.hidden=st!=='wait';setText(E.dSave,st==='sold'?'수익으로 넣기':'판매 대기로 저장')};
 function openDrop(sellId){setText(E.dErr,'');const ex=sellId?entries.find(x=>x.id===sellId):null;dId=ex?ex.id:null;dMode=ex?'sell':'new';
   const opts=bosses.map(b=>({c:b.char,n:b.name}));if(ex&&ex.dropBoss&&!opts.some(o=>o.n===ex.dropBoss&&o.c===(ex.dropChar||'')))opts.push({c:ex.dropChar||'',n:ex.dropBoss});
   const chs=[...new Set(opts.map(o=>o.c))];
   E.dBoss.innerHTML='<option value="">(선택 안 함)</option>'+chs.map(c=>`<optgroup label="${esc(c||'캐릭터 미지정')}">`+opts.filter(o=>o.c===c).map(o=>`<option value="${esc(o.c+'\u0001'+o.n)}"${ex&&ex.dropBoss===o.n&&(ex.dropChar||'')===o.c?' selected':''}>${esc(o.n)}</option>`).join('')+'</optgroup>').join('');
-  E.dItem.value=ex?ex.item:'';E.dPrice.value='';E.dPc.checked=false;E.dDate.value=today();setDPriceMode('list');
+  E.dItem.value=ex?ex.item:'';E.dPrice.value=ex&&ex.est?mesoTxt(ex.est):'';E.dEst.value='';E.dPc.checked=false;E.dDate.value=today();setDPriceMode('list');
   setText(E.dTitle,ex?'팔았어요':'드롭 아이템');E.dStateBox.hidden=!!ex;setDState('sold');if(!ex&&!bosses.length)E.dBoss.value='';
   E.dDlg.showModal();(ex?E.dPrice:E.dItem).focus()}
 E.dropAdd.onclick=()=>openDrop();E.dClose.onclick=()=>E.dDlg.close();
 E.dState.onclick=e=>{const b=e.target.closest('.chip');if(b)setDState(b.dataset.s)};
 E.dPrice.addEventListener('input',()=>{commaize(E.dPrice);dPriceHint()});E.dPc.addEventListener('change',dPriceHint);
+E.dEst.addEventListener('input',()=>{commaize(E.dEst);const v=parse(E.dEst.value),r=feeRate(prefs.mvp);
+  E.hDEst.textContent=!E.dEst.value.trim()?'적어 두면 수수료를 뺀 금액이 총 자산에 들어가요':isNaN(v)?'숫자와 억, 만만 쓸 수 있어요':'수수료 '+Math.round(r*100)+'% 빼면 '+fmt(v-Math.round(v*r))+'이 총 자산에 들어가요'});
 E.dMode.onclick=e=>{const b=e.target.closest('.chip');if(b)setDPriceMode(b.dataset.m)};
 E.dropList.onclick=e=>{const b=e.target.closest('[data-sell]');if(b)openDrop(b.dataset.sell)};
 E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.dErr,t),item=E.dItem.value.trim().slice(0,40),[dChar,boss]=E.dBoss.value?E.dBoss.value.split('\u0001'):['',''];
   if(!item)return err('아이템 이름을 적어 주세요.');
-  try{if(dState==='wait'&&dMode==='new'){put(newId(),{kind:'drop',item,dropBoss:boss,dropChar:dChar,date:today(),memo:'',at:Date.now()});E.dDlg.close();toast(item+' 판매 대기로 적었어요');return}
+  try{if(dState==='wait'&&dMode==='new'){const est=parse(E.dEst.value);if(E.dEst.value.trim()&&(isNaN(est)||est<0))return err('예상 판매 가격을 다시 확인해 주세요. 예: 40억');
+      put(newId(),{kind:'drop',item,dropBoss:boss,dropChar:dChar,...(est>0?{est}:{}),date:today(),memo:'',at:Date.now()});E.dDlg.close();toast(item+' 판매 대기로 적었어요');return}
     const c=dCalc();if(!c)return err((dPriceMode==='list'?'경매장 판매 가격':'받은 메소')+'을 적어 주세요. 예: 5억');const price=c.net;
     const date=/^\d{4}-\d\d-\d\d$/.test(E.dDate.value)?E.dDate.value:today(),data={kind:'in',date,hunt:0,boss:0,frag:0,sale:price,...(c.list?{list:c.list,fee:c.fee}:{}),item,...(boss?{dropBoss:boss}:{}),...(dChar?{dropChar:dChar}:{}),memo:'',at:Date.now()};
     if(dMode==='sell'&&dId){const old=entries.find(x=>x.id===dId);put(dId,data);E.dDlg.close();toast(item+' 판매! +'+fmt(price)+(c.fee?' (수수료 '+short(c.fee)+')':''),old?{id:dId,rest:body(old)}:null)}
@@ -917,7 +923,7 @@ E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(
   catch(e){err('저장하지 못했어요. 다시 시도해 주세요.')}});
 function renderDrops(){const ws=ymd(weekStart()),wait=entries.filter(e=>e.kind==='drop').sort((a,b)=>(b.at||0)-(a.at||0)),soldWk=entries.filter(e=>e.kind==='in'&&e.sale&&e.date>=ws),sum=soldWk.reduce((a,e)=>a+e.sale,0);
   setText(E.dropSub,(soldWk.length?'이번 주 판매 '+soldWk.length+'개 · +'+short(sum):'이번 주 판매 없음')+(wait.length?' · 판매 대기 '+wait.length+'개':''));
-  setHTML(E.dropList,wait.map(e=>`<div class="drow"><span>${esc(e.item)}<small>${esc(md(e.date))}${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · 판매 대기</small></span><button class="btn" type="button" data-sell="${esc(e.id)}">팔았어요</button></div>`).join(''))}
+  setHTML(E.dropList,wait.map(e=>`<div class="drow"><span>${esc(e.item)}<small>${esc(md(e.date))}${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · ${e.est?'예상 '+esc(short(e.est)):'판매 대기'}</small></span><button class="btn" type="button" data-sell="${esc(e.id)}">팔았어요</button></div>`).join(''))}
 E.wkList.onclick=e=>{const btn=e.target.closest('.wkb');if(!btn)return;const b=bosses[+btn.dataset.i];if(!b)return;const ws=ymd(weekStart());
   const ex=entries.find(x=>x.kind==='in'&&x.bossN===b.name&&(x.bossC||'')===(b.char||'')&&x.date>=ws),who=b.char?b.char+' ':'';
   try{if(ex){store.remove(ex.id);toast(who+b.name+' 체크를 풀고 기록을 지웠어요',{id:ex.id,rest:body(ex)})}
@@ -1028,7 +1034,7 @@ function openEdit(id){const e=entries.find(x=>x.id===id);if(!e)return;editId=id;
   setText(E.eSub,k==='mp'?(e.type==='adj'?'맞출 때 더하거나 뺀 메포예요. 빼는 값은 앞에 -를 붙여요.':'메포는 숫자로, 메소는 억·만으로 적을 수 있어요.'):k==='adj'?'맞출 때 더하거나 뺀 양이에요. 빼는 값은 앞에 -를 붙여요.':'금액은 억, 만으로 적을 수 있어요. 예: 3억 2500만');
   let h='';
   if(k==='mp'){const u=MP_UI[e.type];h=date+`<div class="two">${fld('eMp',e.type==='adj'?'메포 (더하거나 뺀 양)':u.mp,e.mp?String(e.mp):'','0')}${u.meso?fld('eMeso',u.meso,mesoTxt(e.meso),'예: 12억'):'<div></div>'}</div>`+(u.won?fld('eWon','쓴 돈 (원)',e.won?String(e.won):'','0'):'')+(u.cnt?fld('eCnt','횟수 (선택)',e.cnt?String(e.cnt):'','0'):'')+memo}
-  else if(k==='drop')h=date+`<div class="two">${fld('eItem','아이템 이름',e.item||'','')}${fld('eDBoss','보스',e.dropBoss||'','(선택)')}</div>`+memo;
+  else if(k==='drop')h=date+`<div class="two">${fld('eItem','아이템 이름',e.item||'','')}${fld('eDBoss','보스',e.dropBoss||'','(선택)')}</div>`+fld('eEst','예상 판매 가격 (선택)',mesoTxt(e.est),'예: 40억')+memo;
   else if(k==='in')h=date+(e.sale||e.item?`<div class="two">${fld('eSale','아이템 판매 (받은 메소)',mesoTxt(e.sale),'예: 5억')}${fld('eItem','아이템 이름',e.item||'','')}</div>`:'')+`<div class="two">${fld('eHunt','사냥 수익',mesoTxt(e.hunt),'0')}${fld('eTime','사냥 시간',e.huntMin?durTxt(e.huntMin):'','예: 1시간 30분')}</div>${fld('eBoss','보스 수익',mesoTxt(e.boss),'0')}
     <div class="two">${fld('eFrag','교환 가능 조각',intTxt(e.frag),'0','text')}${fld('eFragU','교환 불가 조각',intTxt(e.fragU),'0','text')}</div><div class="hint" style="margin:-8px 0 12px">쓴 조각은 앞에 -를 붙여요. 예: -20</div>`+memo;
   else if(k==='out'){const opts=[...new Set([...CATS,e.cat].filter(Boolean))];
@@ -1049,7 +1055,7 @@ E.eForm.addEventListener('submit',ev=>{ev.preventDefault();const old=entries.fin
     if(u.meso&&(isNaN(meso)||meso<=0))return err(u.meso+'를 다시 확인해 주세요. 예: 12억');
     if(isNaN(won)||won<0||isNaN(cnt)||cnt<0)return err('숫자로 적어 주세요.');
     Object.assign(data,{type:old.type,mp});if(u.meso)data.meso=meso;if(won)data.won=won;if(cnt)data.cnt=cnt}
-  else if(old.kind==='drop'){const item=v('eItem').trim();if(!item)return err('아이템 이름을 적어 주세요.');Object.assign(data,{item:item.slice(0,40),dropBoss:v('eDBoss').trim().slice(0,20),dropChar:old.dropChar||''})}
+  else if(old.kind==='drop'){const item=v('eItem').trim();if(!item)return err('아이템 이름을 적어 주세요.');const est=parse(v('eEst'));if(isNaN(est)||est<0)return err('예상 판매 가격을 다시 확인해 주세요. 예: 40억');Object.assign(data,{item:item.slice(0,40),dropBoss:v('eDBoss').trim().slice(0,20),dropChar:old.dropChar||''},est>0?{est}:{})}
   else if(old.kind==='in'){const sale=document.getElementById('eSale')?parse(v('eSale')):(old.sale||0),item=document.getElementById('eItem')?v('eItem').trim().slice(0,40):(old.item||'');if(isNaN(sale))return err('판매 금액을 다시 확인해 주세요. 예: 5억');
     const hunt=parse(v('eHunt')),boss=parse(v('eBoss')),fr=pSignedInt(v('eFrag')),frU=pSignedInt(v('eFragU')),huntMin=parseDur(v('eTime'));
     if(isNaN(hunt)||isNaN(boss))return err('수익 금액을 다시 확인해 주세요. 예: 3억 2500만');
