@@ -97,5 +97,6 @@ if (!app.requestSingleInstanceLock()) {
     app.on('before-quit', flush);
   });
 
-  app.on('window-all-closed', () => app.quit());
+  // 예전 기록을 읽는 숨은 창이 닫힐 때는 끄지 않는다 (본 창을 띄운 뒤에만 종료)
+  app.on('window-all-closed', () => { if (win) app.quit(); });
 }
