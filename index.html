@@ -179,7 +179,8 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .bchip{min-height:36px;padding:4px 12px;border-radius:99px;border:2px solid var(--lid);background:var(--box);color:var(--ink);cursor:pointer;font-size:14px;font-weight:700}
 .bchip span{color:var(--plus);font-weight:400;margin-left:2px}
 .bq .btn.link{min-height:36px;padding:4px;font-size:14px}
-.brow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto;gap:8px;margin-bottom:8px;align-items:center}
+.brow select{font-size:15px;min-height:44px;padding:6px 8px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+.brow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto auto;gap:8px;margin-bottom:8px;align-items:center}
 /* 월별 보기 */
 .mhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}.mhead h2{margin:0}
 .mnav{display:flex;gap:6px}.mnav button{min-width:40px;min-height:40px;border:2px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;font-weight:700;color:var(--ink)}
@@ -211,7 +212,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .wkb{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 10px;border:2px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;text-align:left;color:var(--ink);font:inherit}
 .wkb i{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--lid);display:grid;place-items:center;font-style:normal;font-size:14px;color:#fff}
 .wkb.on{background:var(--box);border-color:var(--lid)}.wkb.on i{background:var(--lid)}.wkb.on i::after{content:"✓"}
-.wkb span{min-width:0;flex:1;line-height:1.2}.wkb small{display:block;color:var(--plus);font-size:12px}
+.wkb span{min-width:0;flex:1;line-height:1.2}.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}.wkb small{display:block;color:var(--plus);font-size:12px}
 .edlg .chip{border-color:var(--line)}.edlg .chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .drow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}.drow span{flex:1;min-width:0;line-height:1.3}.drow small{display:block;color:var(--mute)}
 .drow .btn{min-height:38px;padding:4px 12px;font-size:14px;flex:none}
@@ -303,7 +304,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
       <button class="btn orange" type="submit" id="inBtn" style="width:100%">금고에 넣기</button>
     </form>
     <section class="wk" aria-labelledby="wkT">
-      <div class="mhead"><h2 id="wkT">이번 주 보스</h2><button class="btn link" type="button" id="wkEdit" style="min-height:36px;padding:4px">보스 편집</button></div>
+      <div class="mhead"><h2 id="wkT">보스</h2><button class="btn link" type="button" id="wkEdit" style="min-height:36px;padding:4px">보스 편집</button></div>
       <div class="small" id="wkSub"></div>
       <div class="wkmeter" aria-hidden="true"><i id="wkBar" style="width:0"></i></div>
       <div id="wkList"></div>
@@ -486,7 +487,9 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <datalist id="bCharSug"></datalist>
     <div class="small" style="margin:10px 0 6px">이 캐릭터의 보스</div>
     <div id="bRows"></div>
+    <div class="small" style="margin:4px 0 0">주간 보스는 매주 목요일 0시, 월간 보스는 아래 기준으로 초기화돼요. 등록한 보스는 계속 저장되고, 초기화되면 체크만 풀려요.</div>
     <button class="btn link" type="button" id="bAdd">+ 보스 추가</button>
+    <div class="f" style="margin-top:12px"><label>월간 보스 초기화</label><div class="chips" id="bMr" role="group" aria-label="월간 보스 초기화 기준"><button type="button" class="chip" data-r="thu">매월 첫째 목요일</button><button type="button" class="chip" data-r="first">매월 1일</button></div></div>
     <div class="gerr" id="bErr" role="alert"></div>
     <div class="acts"><button class="btn" type="button" id="bClose">취소</button><button class="btn dark" type="submit">저장</button></div>
   </form>
@@ -500,7 +503,7 @@ const E={};for(const n of document.querySelectorAll('[id]'))E[n.id]=n;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=['도핑','에픽던전','템 구매'];
 const PAGE=50,KEY='meso-safe-v1',NKEY='meso-safe-nexon',CKEY='meso-safe-char';
-let entries=[],goal={name:'',amount:0},bosses=[],nexon={},prefs={fragPrice:0,mpRate:0,goalBasis:'meso'},viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
+let entries=[],goal={name:'',amount:0},bosses=[],nexon={},prefs={fragPrice:0,mpRate:0,goalBasis:'meso',mvp:'none',monthReset:'thu'},viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
 const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const today=()=>ymd(new Date());
 const parse=s=>{s=String(s||'').replace(/[,\s]/g,'').replace(/메소$/,'');if(!s)return 0;if(!/^([\d.]+(억|만)?)+$/.test(s))return NaN;let t=0;for(const m of s.matchAll(/([\d.]+)(억|만)?/g)){const v=parseFloat(m[1]);if(isNaN(v))return NaN;t+=v*(m[2]==='억'?1e8:m[2]==='만'?1e4:1)}return Math.round(t)};
@@ -532,12 +535,12 @@ function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(![
   else{o.amount=num(e.amount);if(kind==='adj'){if(e.frag)o.frag=num(e.frag);if(e.fragU)o.fragU=num(e.fragU)}if(kind==='out'){o.cat=CATS.includes(e.cat)?e.cat:String(e.cat||'기타').slice(0,20);o.amount=Math.max(0,o.amount);if(e.cnt)o.cnt=Math.max(0,num(e.cnt))}}
   return o}
 const body=e=>{const{id,...rest}=e;return rest};
-function cleanBosses(l){return(Array.isArray(l)?l:[]).slice(0,150).map(b=>({char:String(b&&b.char||'').trim().slice(0,20),name:String(b&&b.name||'').trim().slice(0,20),amount:Math.max(0,num(b&&b.amount))})).filter(b=>b.name&&b.amount)}
+function cleanBosses(l){return(Array.isArray(l)?l:[]).slice(0,150).map(b=>({char:String(b&&b.char||'').trim().slice(0,20),name:String(b&&b.name||'').trim().slice(0,20),amount:Math.max(0,num(b&&b.amount)),cycle:b&&b.cycle==='m'?'m':'w'})).filter(b=>b.name&&b.amount)}
 function cleanNexon(n){n=n&&typeof n==='object'?n:{};const key=String(n.key||'').trim().slice(0,200),ocid=String(n.ocid||'').replace(/[^\w]/g,'').slice(0,80);return key&&ocid?{key,ocid,name:String(n.name||'').slice(0,40)}:{}}
 // 경매장 판매 수수료: 기본 5%, MVP 실버 이상이거나 프리미엄 PC방에서 대금을 받으면 3% (브론즈는 혜택 없음)
 const MVP={none:'일반 (MVP 아님)',bronze:'브론즈',silver:'실버',gold:'골드',diamond:'다이아몬드',red:'레드',black:'블랙'};
 const feeRate=(mvp,pc)=>pc||['silver','gold','diamond','red','black'].includes(mvp)?0.03:0.05;
-function cleanPrefs(p){p=p&&typeof p==='object'?p:{};return{fragPrice:Math.max(0,num(p.fragPrice)),mpRate:Math.max(0,num(p.mpRate)),goalBasis:p.goalBasis==='total'?'total':'meso',mvp:MVP[p.mvp]?p.mvp:'none'}}
+function cleanPrefs(p){p=p&&typeof p==='object'?p:{};return{fragPrice:Math.max(0,num(p.fragPrice)),mpRate:Math.max(0,num(p.mpRate)),goalBasis:p.goalBasis==='total'?'total':'meso',mvp:MVP[p.mvp]?p.mvp:'none',monthReset:p.monthReset==='first'?'first':'thu'}}
 function cleanGoal(g){return g&&typeof g==='object'?{name:String(g.name||'').slice(0,40),amount:Math.max(0,num(g.amount))}:{name:'',amount:0}}
 function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');return d?{entries:(Array.isArray(d.entries)?d.entries:[]).map(clean).filter(Boolean),goal:cleanGoal(d.goal),bosses:cleanBosses(d.bosses),prefs:cleanPrefs(d.prefs)}:null}catch(e){return null}}
 
@@ -788,20 +791,22 @@ let hqT=0;E.hq.addEventListener('input',()=>{clearTimeout(hqT);hqT=setTimeout(()
 // 보스 빠른 입력
 // 보스 목록이 바뀌면 주간 보스 카드를 다시 그린다
 function renderBossChips(){render()}
-const bRow=(b={name:'',amount:0})=>`<div class="brow"><input class="bN" maxlength="20" placeholder="보스 이름" value="${esc(b.name)}" aria-label="보스 이름"><input class="bA" inputmode="text" placeholder="금액 (예: 12억)" value="${esc(mesoTxt(b.amount))}" aria-label="금액"><button type="button" class="del bDel" aria-label="이 보스 지우기">삭제</button></div>`;
+const bRow=(b={name:'',amount:0})=>`<div class="brow"><input class="bN" maxlength="20" placeholder="보스 이름" value="${esc(b.name)}" aria-label="보스 이름"><input class="bA" inputmode="text" placeholder="금액 (예: 12억)" value="${esc(mesoTxt(b.amount))}" aria-label="금액"><select class="bC" aria-label="주기"><option value="w">주간</option><option value="m"${b.cycle==='m'?' selected':''}>월간</option></select><button type="button" class="del bDel" aria-label="이 보스 지우기">삭제</button></div>`;
 // 편집 창 상태: [{char, list:[{name,amount}]}] — 캐릭터를 바꿀 때마다 지금 칸의 내용을 상태에 옮겨 둔다
 let bState=[],bCur=0;
-function bGroups(){const g=[];for(const b of bosses){let x=g.find(y=>y.char===b.char);if(!x)g.push(x={char:b.char,list:[]});x.list.push({name:b.name,amount:b.amount})}return g}
+function bGroups(){const g=[];for(const b of bosses){let x=g.find(y=>y.char===b.char);if(!x)g.push(x={char:b.char,list:[]});x.list.push({name:b.name,amount:b.amount,cycle:b.cycle})}return g}
 function bSync(){const g=bState[bCur];if(!g)return;g.char=E.bCharName.value.trim().slice(0,20);
-  g.list=[...E.bRows.querySelectorAll('.brow')].map(r=>({name:r.querySelector('.bN').value,amount:r.querySelector('.bA').value}))}
+  g.list=[...E.bRows.querySelectorAll('.brow')].map(r=>({name:r.querySelector('.bN').value,amount:r.querySelector('.bA').value,cycle:r.querySelector('.bC').value}))}
 function bDraw(){setHTML(E.bChars,bState.map((g,i)=>`<button type="button" class="chip${i===bCur?' on':''}" data-c="${i}" role="tab" aria-selected="${i===bCur}">${esc(g.char||'캐릭터 미지정')}</button>`).join('')+'<button type="button" class="chip" data-c="new">+ 캐릭터</button>');
   const g=bState[bCur];E.bCharName.value=g.char;E.bCharDel.hidden=bState.length<2&&!g.list.some(x=>String(x.name).trim());
-  E.bRows.innerHTML=(g.list.length?g.list:[{name:'',amount:0}]).map(x=>bRow({name:x.name,amount:typeof x.amount==='number'?x.amount:0})).join('');
+  E.bRows.innerHTML=(g.list.length?g.list:[{name:'',amount:0}]).map(x=>bRow({name:x.name,amount:typeof x.amount==='number'?x.amount:0,cycle:x.cycle})).join('');
   g.list.forEach((x,i)=>{if(typeof x.amount==='string'){const r=E.bRows.children[i];if(r)r.querySelector('.bA').value=x.amount}})}
 async function bSuggest(){const names=new Set(bosses.map(b=>b.char).filter(Boolean));if(nexon.name)names.add(nexon.name);
   if(nexon.key){try{const j=await nx('character/list',nexon.key);for(const a of j.account_list||[])for(const c of a.character_list||[])names.add(c.character_name)}catch(e){}}
   E.bCharSug.innerHTML=[...names].map(n=>`<option value="${esc(n)}"></option>`).join('')}
-function openBosses(){setText(E.bErr,'');bState=bGroups();if(!bState.length)bState=[{char:nexon.name||'',list:[]}];bCur=0;bDraw();bSuggest();E.bDlg.showModal();E.bCharName.focus()}
+let bMr='thu';const setMr=r=>{bMr=r;for(const x of E.bMr.children){x.classList.toggle('on',x.dataset.r===r);x.setAttribute('aria-pressed',x.dataset.r===r)}};
+E.bMr.onclick=e=>{const b=e.target.closest('.chip');if(b)setMr(b.dataset.r)};
+function openBosses(){setMr(prefs.monthReset||'thu');setText(E.bErr,'');bState=bGroups();if(!bState.length)bState=[{char:nexon.name||'',list:[]}];bCur=0;bDraw();bSuggest();E.bDlg.showModal();E.bCharName.focus()}
 E.bChars.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;bSync();
   if(b.dataset.c==='new'){if(bState.length>=10)return setText(E.bErr,'캐릭터는 10개까지 넣을 수 있어요.');bState.push({char:'',list:[]});bCur=bState.length-1}else bCur=+b.dataset.c;
   setText(E.bErr,'');bDraw();E.bCharName.focus()};
@@ -811,13 +816,13 @@ E.bAdd.onclick=()=>{if(E.bRows.children.length>=30)return;E.bRows.insertAdjacent
 E.bRows.onclick=e=>{const d=e.target.closest('.bDel');if(d)d.parentElement.remove()};
 E.bClose.onclick=()=>E.bDlg.close();
 E.bForm.addEventListener('submit',ev=>{ev.preventDefault();bSync();const list=[],seen=new Set(),err=(t,i)=>{if(i!==undefined&&i!==bCur){bCur=i;bDraw()}setText(E.bErr,t)};
-  for(let gi=0;gi<bState.length;gi++){const g=bState[gi],rows=g.list.map(x=>({name:String(x.name||'').trim(),raw:typeof x.amount==='number'?String(x.amount):String(x.amount||'').trim()})).filter(x=>x.name||x.raw);
+  for(let gi=0;gi<bState.length;gi++){const g=bState[gi],rows=g.list.map(x=>({name:String(x.name||'').trim(),raw:typeof x.amount==='number'?String(x.amount):String(x.amount||'').trim(),cycle:x.cycle==='m'?'m':'w'})).filter(x=>x.name||x.raw);
     if(!rows.length)continue;
     if(seen.has(g.char))return err((g.char||'캐릭터 미지정')+' 캐릭터가 두 번 있어요. 이름을 다르게 해 주세요.',gi);seen.add(g.char);
     const names=new Set();
     for(const x of rows){const amount=parse(x.raw);if(!x.name)return err('보스 이름을 적어 주세요.',gi);if(isNaN(amount)||amount<=0)return err(x.name+'의 금액을 다시 확인해 주세요. 예: 12억',gi);
-      if(names.has(x.name))return err((g.char||'캐릭터 미지정')+'에 '+x.name+'이(가) 두 번 있어요.',gi);names.add(x.name);list.push({char:g.char,name:x.name.slice(0,20),amount})}}
-  try{store.setBosses(list);E.bDlg.close();toast(list.length?'캐릭터 '+seen.size+'개 · 보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
+      if(names.has(x.name))return err((g.char||'캐릭터 미지정')+'에 '+x.name+'이(가) 두 번 있어요.',gi);names.add(x.name);list.push({char:g.char,name:x.name.slice(0,20),amount,cycle:x.cycle})}}
+  try{store.setBosses(list);if(bMr!==prefs.monthReset)store.setPrefs({...prefs,monthReset:bMr});E.bDlg.close();toast(list.length?'캐릭터 '+seen.size+'개 · 보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
 // 넥슨 Open API: 캐릭터 카드 (키는 이 사용자 계정에만 저장, 결과는 10분 동안 이 기기에 캐시)
 const NX='https://open.api.nexon.com/maplestory/v1/';
 async function nx(path,key){const r=await fetch(NX+path,{headers:{'x-nxopen-api-key':key}});let j=null;try{j=await r.json()}catch(e){}
@@ -872,20 +877,28 @@ E.pForm.addEventListener('submit',ev=>{ev.preventDefault();const fp=parse(E.pFra
   if(isNaN(fp)||isNaN(mr))return setText(E.pErr,'시세는 숫자와 억, 만으로 적어 주세요. 예: 400만');
   try{store.setPrefs({fragPrice:fp,mpRate:mr,goalBasis:pBasis,mvp:MVP[E.pMvp.value]?E.pMvp.value:'none'});E.pDlg.close();toast('설정을 저장했어요')}catch(e){setText(E.pErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
 // 주간 보스: 메이플 주간 보스는 목요일 0시에 초기화된다. 체크하면 오늘 수익으로 기록하고, 풀면 그 기록을 지운다
+// 주간: 매주 목요일 0시. 월간: 매월 첫째 목요일 0시 (설정에서 "매월 1일 0시"로 바꿀 수 있음)
 function weekStart(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+3)%7));return d}
+function firstThu(y,m){const d=new Date(y,m,1);d.setDate(1+((4-d.getDay()+7)%7));return d}
+function monthStart(){const n=new Date();if(prefs.monthReset==='first')return new Date(n.getFullYear(),n.getMonth(),1);
+  const t=firstThu(n.getFullYear(),n.getMonth());return n>=t?t:firstThu(n.getFullYear(),n.getMonth()-1)}
+function monthNext(){const s=monthStart();return prefs.monthReset==='first'?new Date(s.getFullYear(),s.getMonth()+1,1):firstThu(s.getFullYear(),s.getMonth()+1)}
+const periodStart=b=>ymd(b.cycle==='m'?monthStart():weekStart());
 function renderWeek(){renderDrops();const ws=ymd(weekStart()),next=new Date(weekStart());next.setDate(next.getDate()+7);
   const left=Math.ceil((next-new Date())/86400000),done={};
   const key=(c,n)=>(c||'')+'\u0001'+n;
-  for(const e of entries)if(e.kind==='in'&&e.bossN&&e.date>=ws)done[key(e.bossC,e.bossN)]=e;
+  // 보스마다 자기 주기(주간/월간)의 시작일 이후 기록이 있으면 처치한 것
+  for(const e of entries)if(e.kind==='in'&&e.bossN){const k=key(e.bossC,e.bossN);if(!done[k]||e.date>done[k].date)done[k]=e}
   if(!bosses.length){setText(E.wkSub,'"보스 등록"에서 캐릭터마다 매주 잡는 보스와 받는 금액을 등록하면 여기서 체크할 수 있어요.');E.wkBar.style.width='0';setHTML(E.wkList,'');setText(E.wkEdit,'보스 등록');return}
   setText(E.wkEdit,'보스 편집');
-  const dk=b=>done[key(b.char,b.name)],got=bosses.filter(dk),sum=got.reduce((a,b)=>a+(dk(b).boss||0),0),max=bosses.reduce((a,b)=>a+b.amount,0);
-  setText(E.wkSub,got.length+'/'+bosses.length+' 처치 · '+short(sum)+' / '+short(max)+' · 목요일 초기화까지 '+(left<=1?'오늘':left+'일'));
+  const dk=b=>{const e=done[key(b.char,b.name)];return e&&e.date>=periodStart(b)?e:null},got=bosses.filter(dk),sum=got.reduce((a,b)=>a+(dk(b).boss||0),0),max=bosses.reduce((a,b)=>a+b.amount,0);
+  const hasM=bosses.some(b=>b.cycle==='m'),mn=monthNext();
+  setText(E.wkSub,got.length+'/'+bosses.length+' 처치 · '+short(sum)+' / '+short(max)+' · 주간 초기화까지 '+(left<=1?'오늘':left+'일')+(hasM?' · 월간 초기화 '+(mn.getMonth()+1)+'/'+mn.getDate():''));
   E.wkBar.style.width=(bosses.length?got.length/bosses.length*100:0)+'%';
   const chars=[...new Set(bosses.map(b=>b.char))];
   setHTML(E.wkList,chars.map(c=>{const idx=bosses.map((b,i)=>[b,i]).filter(([b])=>b.char===c),g=idx.filter(([b])=>dk(b)),gs=g.reduce((a,[b])=>a+(dk(b).boss||0),0);
     return `<div class="wkg"><div class="wkh"><b>${esc(c||'캐릭터 미지정')}</b><span class="small">${g.length}/${idx.length} · ${esc(short(gs))}</span></div><div class="wkl">`+
-      idx.map(([b,i])=>{const on=!!dk(b);return `<button type="button" class="wkb${on?' on':''}" data-i="${i}" aria-pressed="${on}"><i aria-hidden="true"></i><span>${esc(b.name)}<small>+${esc(short(on?dk(b).boss||b.amount:b.amount))}</small></span></button>`}).join('')+'</div></div>'}).join(''))}
+      idx.map(([b,i])=>{const on=!!dk(b);return `<button type="button" class="wkb${on?' on':''}" data-i="${i}" aria-pressed="${on}"><i aria-hidden="true"></i><span>${esc(b.name)}${b.cycle==='m'?' <em class="mtag">월간</em>':''}<small>+${esc(short(on?dk(b).boss||b.amount:b.amount))}</small></span></button>`}).join('')+'</div></div>'}).join(''))}
 E.wkEdit.onclick=()=>openBosses();
 // 드롭 아이템: 나왔을 때 "판매 대기"로 적고, 팔리면 받은 메소를 적어 수익으로 바꾼다
 let dMode='new',dId=null,dState='sold',dPriceMode='list';
@@ -924,11 +937,11 @@ E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(
 function renderDrops(){const ws=ymd(weekStart()),wait=entries.filter(e=>e.kind==='drop').sort((a,b)=>(b.at||0)-(a.at||0)),soldWk=entries.filter(e=>e.kind==='in'&&e.sale&&e.date>=ws),sum=soldWk.reduce((a,e)=>a+e.sale,0);
   setText(E.dropSub,(soldWk.length?'이번 주 판매 '+soldWk.length+'개 · +'+short(sum):'이번 주 판매 없음')+(wait.length?' · 판매 대기 '+wait.length+'개':''));
   setHTML(E.dropList,wait.map(e=>`<div class="drow"><span>${esc(e.item)}<small>${esc(md(e.date))}${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · ${e.est?'예상 '+esc(short(e.est)):'판매 대기'}</small></span><button class="btn" type="button" data-sell="${esc(e.id)}">팔았어요</button></div>`).join(''))}
-E.wkList.onclick=e=>{const btn=e.target.closest('.wkb');if(!btn)return;const b=bosses[+btn.dataset.i];if(!b)return;const ws=ymd(weekStart());
+E.wkList.onclick=e=>{const btn=e.target.closest('.wkb');if(!btn)return;const b=bosses[+btn.dataset.i];if(!b)return;const ws=periodStart(b);
   const ex=entries.find(x=>x.kind==='in'&&x.bossN===b.name&&(x.bossC||'')===(b.char||'')&&x.date>=ws),who=b.char?b.char+' ':'';
   try{if(ex){store.remove(ex.id);toast(who+b.name+' 체크를 풀고 기록을 지웠어요',{id:ex.id,rest:body(ex)})}
     else{const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
-      put(id,{kind:'in',date:today(),hunt:0,boss:b.amount,frag:0,bossN:b.name,...(b.char?{bossC:b.char}:{}),memo:b.name+(b.char?' · '+b.char:'')+' (주간 보스)',at:Date.now()});toast(who+b.name+' 처치! +'+fmt(b.amount),{ids:[id]})}}catch(err){}};
+      put(id,{kind:'in',date:today(),hunt:0,boss:b.amount,frag:0,bossN:b.name,...(b.char?{bossC:b.char}:{}),memo:b.name+(b.char?' · '+b.char:'')+(b.cycle==='m'?' (월간 보스)':' (주간 보스)'),at:Date.now()});toast(who+b.name+' 처치! +'+fmt(b.amount),{ids:[id]})}}catch(err){}};
 // 메이플포인트 서랍
 const MP_UI={charge:{mp:'받은 메포',d:'넥슨캐시로 메이플포인트를 충전했을 때 적어요. 쓴 돈(원)을 같이 적으면 이번 달 현금 충전이 보여요.',won:1,btn:'충전 기록하기'},
   event:{mp:'받은 메포',d:'이벤트 보상, 페이백 등으로 받은 메이플포인트예요.',btn:'적립 기록하기'},
