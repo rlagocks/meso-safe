@@ -572,7 +572,7 @@ import { firebaseConfig } from './firebase-config.js';
 const FB='https://www.gstatic.com/firebasejs/10.12.2/';
 const E={};for(const n of document.querySelectorAll('[id]'))E[n.id]=n;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CATS=['도핑','에픽던전','템 구매'];
+const CATS=['도핑','에픽던전','템 구매','심볼'];
 const PAGE=50,KEY='meso-safe-v1',NKEY='meso-safe-nexon',CKEY='meso-safe-char';
 let entries=[],goal={name:'',amount:0},bosses=[],nexon={},prefs={fragPrice:0,mpRate:0,goalBasis:'meso',mvp:'none',monthReset:'thu'},viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
 const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
