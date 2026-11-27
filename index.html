@@ -469,12 +469,8 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   <form id="rForm" novalidate>
     <h2 id="rTitle">반지 상자 열기</h2>
     <div class="dpick" id="rBox" style="margin-bottom:12px"></div>
-    <div class="chips" id="rRes" role="group" aria-label="결과" style="margin-bottom:12px"><button type="button" class="chip" data-r="good">돈 되는 반지가 나왔어요</button><button type="button" class="chip" data-r="bad">꽝이에요</button></div>
-    <div id="rGoodBox">
-      <div class="igrid" id="rGrid" role="listbox" aria-label="나온 반지"></div>
-      <div class="f"><label for="rLv">반지 레벨</label><select id="rLv" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)"><option value="1">1레벨</option><option value="2">2레벨</option><option value="3">3레벨</option><option value="4">4레벨</option></select></div>
-      <p class="small" style="margin:0 0 8px">목록에 없는 반지는 돈이 안 되는 반지로 보고 "꽝이에요"를 눌러 주세요.</p>
-    </div>
+    <p class="small" style="margin:0 0 10px">돈 되는 반지는 리스트레인트 링 4레벨과 컨티뉴어스 링 4레벨뿐이에요. 그 밖의 반지는 0원으로 골라 주세요.</p>
+    <div class="igrid" id="rGrid" role="listbox" aria-label="나온 반지" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
     <div class="gerr" id="rErr" role="alert"></div>
     <div class="acts"><button class="btn" type="button" id="rClose">취소</button><button class="btn dark" type="submit" id="rSave">판매 대기로 바꾸기</button></div>
   </form>
@@ -1020,18 +1016,19 @@ E.dEst.addEventListener('input',()=>{commaize(E.dEst);const v=parse(E.dEst.value
 E.dMode.onclick=e=>{const b=e.target.closest('.chip');if(b)setDPriceMode(b.dataset.m)};
 E.dropList.onclick=e=>{const b=e.target.closest('[data-sell]');if(b)return openDrop(b.dataset.sell);const o=e.target.closest('[data-open]');if(o)openRing(o.dataset.open)};
 // 반지 상자 열기: 꽝이면 정리, 돈 되는 반지가 나오면 반지·레벨을 골라 판매 대기로 바꾼다
-let rId=null,rRing='',rRes='good';
-function rDraw(){for(const x of E.rRes.children){x.classList.toggle('on',x.dataset.r===rRes);x.setAttribute('aria-pressed',x.dataset.r===rRes)}E.rGoodBox.hidden=rRes!=='good';
-  setHTML(E.rGrid,RINGS.map(([n])=>`<button type="button" class="itile${n===rRing?' on':''}" data-n="${esc(n)}">${itemIcon(n)}<span>${esc(n)}</span></button>`).join(''));setText(E.rSave,rRes==='good'?'판매 대기로 바꾸기':'꽝 처리하기')}
-function openRing(id){const e=entries.find(x=>x.id===id);if(!e)return;rId=id;rRing='';rRes='good';setText(E.rErr,'');E.rLv.value='1';
+// 반지 상자 결과는 세 가지: 0원(돈 안 되는 반지), 리스트레인트 링 4레벨, 컨티뉴어스 링 4레벨
+const RING_OPTS=[['bad','0원','<span class="ph" aria-hidden="true">✖️</span>'],['리스트레인트 링 4레벨','리스트레인트 링 4레벨',''],['컨티뉴어스 링 4레벨','컨티뉴어스 링 4레벨','']];
+let rId=null,rRing='';
+function rDraw(){setHTML(E.rGrid,RING_OPTS.map(([v,l,ic])=>`<button type="button" class="itile${v===rRing?' on':''}" data-n="${esc(v)}" role="option" aria-selected="${v===rRing}">${ic||itemIcon(v)}<span>${esc(l)}</span></button>`).join(''));
+  setText(E.rSave,rRing==='bad'?'0원으로 정리하기':'판매 대기로 바꾸기')}
+function openRing(id){const e=entries.find(x=>x.id===id);if(!e)return;rId=id;rRing='';setText(E.rErr,'');
   E.rBox.innerHTML=itemIcon(e.item)+'<span>'+esc(e.item)+(e.dropBoss?' · '+esc(e.dropBoss):'')+'</span>';rDraw();E.rDlg.showModal()}
-E.rRes.onclick=e=>{const b=e.target.closest('.chip');if(b){rRes=b.dataset.r;rDraw()}};
-E.rGrid.onclick=e=>{const t=e.target.closest('.itile');if(t){rRing=t.dataset.n;rDraw()}};
+E.rGrid.onclick=e=>{const t=e.target.closest('.itile');if(t){rRing=t.dataset.n;setText(E.rErr,'');rDraw()}};
 E.rClose.onclick=()=>E.rDlg.close();
 E.rForm.addEventListener('submit',ev=>{ev.preventDefault();const old=entries.find(x=>x.id===rId);if(!old)return E.rDlg.close();
-  try{if(rRes==='bad'){store.remove(rId);E.rDlg.close();toast(old.item+' 꽝 처리했어요',{id:rId,rest:body(old)});return}
-    if(!rRing)return setText(E.rErr,'나온 반지를 골라 주세요.');
-    const item=rRing+' '+E.rLv.value+'레벨',nd={...body(old),item,memo:(old.memo?old.memo+' · ':'')+old.item+'에서 나옴',at:Date.now()};delete nd.est;put(rId,nd);
+  try{if(!rRing)return setText(E.rErr,'결과를 골라 주세요.');
+    if(rRing==='bad'){store.remove(rId);E.rDlg.close();toast(old.item+' 0원으로 정리했어요',{id:rId,rest:body(old)});return}
+    const item=rRing,nd={...body(old),item,memo:(old.memo?old.memo+' · ':'')+old.item+'에서 나옴',at:Date.now()};delete nd.est;put(rId,nd);
     E.rDlg.close();toast(item+'! 판매 대기에 넣었어요',{id:rId,rest:body(old)})}catch(err){setText(E.rErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
 E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.dErr,t),item=E.dItem.value.trim().slice(0,40),bv=dBossVal(),dChar=bv.char,boss=bv.name;
   if(!item)return err(dSel==='\u0003'?'아이템 이름을 적어 주세요.':'아이템을 골라 주세요.');
