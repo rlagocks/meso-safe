@@ -238,14 +238,15 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .ing.d-e,.mpc.d-e,.leds i.d-e{--c:#4f9a43}.ing.d-n,.mpc.d-n,.leds i.d-n{--c:#2f72b8}.ing.d-h,.mpc.d-h,.leds i.d-h{--c:#c0392b}
 .ing.d-c,.mpc.d-c,.leds i.d-c{--c:#8e2a78}.ing.d-x,.mpc.d-x,.leds i.d-x{--c:light-dark(#2b2b2b,#b9b9b9)}.ing.d-u,.mpc.d-u,.leds i.d-u{--c:#8a5a2b}
 .mpboard{margin-top:10px;padding:10px 10px 12px;border-radius:14px;background:light-dark(#f3e2c4,#3a2c1c);border:2px solid light-dark(#d9bf93,#5a4428);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08)}
-.mplab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700;font-size:14px;margin:0 2px 8px}.mplab .small{font-weight:400}
-.mpings{display:flex;flex-wrap:wrap;gap:6px}
+.mplab{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 8px;font-weight:700;font-size:14px;margin:0 2px 8px}.mplab .small{font-weight:400}.mplab>span:first-child{white-space:nowrap}
+.mpings{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:6px}
 .mpdone{font-size:14px;color:var(--plus);font-weight:700;padding:6px 2px}
-.ing{--c:#8a5a2b;display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:4px 10px 4px 4px;border:2px solid var(--c);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
+.ing{--c:#8a5a2b;display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:7px;align-items:center;min-height:46px;padding:5px 8px 5px 5px;text-align:left;border:2px solid var(--c);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
 .ing:hover{transform:translateY(-2px)}
 .ing .em{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--c) 18%,transparent);font-size:17px;flex:none}
 .ing .df{font-size:11px;line-height:1.3;padding:0 5px;border-radius:6px;background:var(--c);color:light-dark(#fff,#111)}
-.ing .pr{font-weight:400;color:var(--mute);font-size:12px}
+.ing .em{grid-row:1/3}.ing .in{min-width:0;line-height:1.25;word-break:keep-all}.ing .df{margin-right:4px}
+.ing .pr{grid-column:2;display:flex;align-items:center;flex-wrap:wrap;gap:2px 0;font-weight:400;color:var(--mute);font-size:12px;line-height:1.3;margin-top:2px}
 .ing.m{box-shadow:0 0 0 2px #f3c63f}
 .mpbox{margin-top:12px;padding:10px;border-radius:20px;background:light-dark(#e6f1f7,#22313b);border:3px solid light-dark(#b9d3e2,#4d6a7d);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 5px 0 light-dark(#9fbdd0,#344a58)}
 .mplid{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:light-dark(#3d6378,#a9cde0);margin:0 4px 8px}
@@ -271,6 +272,7 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .chbar{grid-column:1;display:block;height:6px;margin-top:8px;border-radius:9px;background:var(--soft);overflow:hidden}.chbar i{display:block;height:100%;background:#2f9e7d;border-radius:9px}
 .ing .em img{width:24px;height:24px}.mpc .em img{width:34px;height:34px}
 .tabbar img{width:22px;height:22px}
+@media(max-width:420px){.mpc{min-height:66px}.mpc .em img{width:28px;height:28px}.mpcells{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}}
 .mpmonth{margin-top:16px;padding:10px 10px 12px;border-radius:18px;border:2px dashed #e0b43a;background:light-dark(#fff8e1,#2e2814)}
 .mpmh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 2px}.mpmh b{font-size:15px;color:light-dark(#8a6400,#f3c63f)}
 .mpmonth .mpboard{margin-top:8px}
@@ -301,7 +303,7 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .crow{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:8px;text-align:left;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
 .crow span{font-size:12px;color:var(--mute)}.crow .chlv{grid-column:2;grid-row:1}.crow em{grid-column:2;grid-row:2;font-style:normal;font-size:12px;font-weight:700;color:var(--plus);text-align:right}
 .crow.on{border-color:var(--lid);background:var(--box)}.crow:disabled{opacity:.5;cursor:default}
-.chtile{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.chtile{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
 .chtile:hover{border-color:var(--lid)}.chn{font-weight:700;font-size:16px}.chtile .small{grid-column:1}.chgo{grid-row:1/3;grid-column:2;font-size:26px;color:var(--mute)}
 .wkback{min-height:36px;padding:4px 0;margin-top:6px;text-decoration:none;font-weight:700}
 .wkdrop{margin-top:12px;padding:12px;border:2px dashed var(--lid);border-radius:14px;background:var(--box)}.wkdrop .igrid{margin:8px 0}.wkdrop .wkh .btn{min-height:32px;padding:2px 4px}
@@ -324,7 +326,7 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 @media(max-width:760px){.pwf{grid-template-columns:minmax(0,1fr)}}
 .toast{position:fixed;left:50%;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 70px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 18px;border-radius:14px;display:none;gap:10px;align-items:center;z-index:31;max-width:calc(100% - 32px)}
 .toast.on{display:flex}.toast button{white-space:nowrap;background:none;border:0;color:var(--sun);font-weight:700;min-height:40px;cursor:pointer}
-@media(max-width:760px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:420px){.panel .temp{display:none}.shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{grid-template-columns:minmax(0,1fr) auto auto}.hist .tag{grid-column:1/-1;justify-self:start}.kpi .num{font-size:20px}}
 </style>
 </head>
@@ -1149,7 +1151,7 @@ function mealPrep(idx,dk){const wk=idx.filter(([b])=>b.cycle!=='m'),mo=idx.filte
 function mpSection(idx,dk,m){const info=([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name;
     return{b,i,on,amt,lab,em:ingImg(b,30),cls:diffCls(b)+(b.cycle==='m'?' m':'')+(i===wkSel?' sel':''),full:b.name+(b.cycle==='m'?' (월간)':'')+' · +'+short(amt)+(on?' · 처치함':'')}};
   const all=idx.map(info),todo=all.filter(x=>!x.on),done=all.filter(x=>x.on);
-  const ings=todo.map(x=>`<button type="button" class="wkb ing ${x.cls}" data-i="${x.i}" aria-pressed="false" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 담기"><span class="em" aria-hidden="true">${x.em}</span>${esc(x.lab)}${x.b.diff?`<span class="df">${esc(x.b.diff)}</span>`:''}<span class="pr">${esc(short(x.amt))}</span></button>`).join('');
+  const ings=todo.map(x=>`<button type="button" class="wkb ing ${x.cls}" data-i="${x.i}" aria-pressed="false" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 담기"><span class="em" aria-hidden="true">${x.em}</span><span class="in">${esc(x.lab)}</span><span class="pr">${x.b.diff?`<span class="df">${esc(x.b.diff)}</span>`:''}${esc(short(x.amt))}</span></button>`).join('');
   const cells=done.map(x=>`<button type="button" class="wkb mpc on ${x.cls}${x.i===wkPop?' pop':''}" data-i="${x.i}" aria-pressed="true" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 빼기"><span class="ck" aria-hidden="true">✓</span><span class="em" aria-hidden="true">${x.em}</span><span class="nm">${esc(x.lab)}${x.b.diff?' '+esc(x.b.diff):''}</span><span class="pr">+${esc(short(x.amt))}</span></button>`).join('')+
     todo.map(()=>'<div class="mpc" aria-hidden="true"></div>').join('');
   return `<div class="mpboard"><div class="mplab"><span><img class="mpic" src="items/food-apple.png" alt="">재료 손질 중</span><span class="small">잡은 보스를 눌러 통에 담아요</span></div>`+
