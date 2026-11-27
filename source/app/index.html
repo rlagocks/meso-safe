@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>메소 금고 가계부</title>
+<title>메생여전</title>
 <meta name="description" content="사냥·보스 수익과 지출, 메이플포인트를 매일 기록하는 메소 가계부. 아이디로 로그인하면 휴대폰·PC 어디서든 같은 기록이 열려요.">
 <meta name="theme-color" content="#ffd23f">
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="메소 금고">
+<meta name="apple-mobile-web-app-title" content="메생여전">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -341,7 +341,7 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 <div class="gate" id="boot"><div class="small">불러오는 중…</div></div>
 <div id="app" hidden>
 <header class="band top"><div class="wrap head">
-  <div><h1>메소 금고 가계부</h1>
+  <div><h1>메생여전</h1>
     <div class="small" id="sub">매일 번 메소를 상자에 담아 금고에 넣어요</div>
     <div class="acct" id="acct" hidden><span class="sync" id="sync"><i></i><span id="syncT">동기화됨</span></span><b id="who"></b><button class="btn" type="button" id="logout">로그아웃</button></div>
     <div class="char" id="charCard" hidden>
@@ -386,7 +386,6 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
           <div><label for="iFragU" class="small" style="font-weight:700">교환 불가</label><input id="iFragU" inputmode="numeric" autocomplete="off" placeholder="0"></div>
         </div>
         <div class="hint">얻은 조각은 +, 쓴 조각은 −로 적어요 (두 칸 모두에 적용)</div></div>
-      <div class="f"><label for="iMemo">메모</label><input id="iMemo" maxlength="80" placeholder="예: 아케인리버 2시간"></div>
       <div class="total"><span>상자에 담긴 메소</span><b id="iSum">0</b></div>
       <button class="btn orange" type="submit" id="inBtn" style="width:100%">금고에 넣기</button>
     </form>
@@ -523,7 +522,7 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 </div></section>
 </main>
 <nav class="tabbar" id="tabbar" aria-label="페이지"><button type="button" data-p="home" class="on" aria-current="page"><span aria-hidden="true">💰</span>금고</button><button type="button" data-p="more"><span aria-hidden="true">📒</span>기록 · 통계</button></nav>
-<footer>메소 금고 가계부 · 개인이 만든 비공식 도구로, 넥슨이나 메이플스토리와는 관계가 없어요. 캐릭터 정보: Data based on NEXON Open API<br><a href="privacy.html">개인정보처리방침</a> · <a href="delete-account.html">계정 삭제 안내</a></footer>
+<footer>메생여전 · 개인이 만든 비공식 도구로, 넥슨이나 메이플스토리와는 관계가 없어요. 캐릭터 정보: Data based on NEXON Open API<br><a href="privacy.html">개인정보처리방침</a> · <a href="delete-account.html">계정 삭제 안내</a></footer>
 </div>
 <dialog class="edlg" id="eDlg" aria-labelledby="eTitle">
   <form id="eForm" method="dialog" novalidate>
@@ -1369,9 +1368,9 @@ E.inForm.addEventListener('submit',ev=>{ev.preventDefault();
   if(isNaN(hunt)){note('사냥 수익을 다시 확인해 주세요. 예: 3억 2500만');return}
   const huntMin=parseDur(E.iTime.value);if(isNaN(huntMin)){note('사냥 시간을 다시 확인해 주세요. 예: 1시간 30분');return}
   if(!hunt&&!fr&&!frU){note('사냥 수익이나 조각 중 하나는 적어 주세요. 보스 수익은 아래 "이번 주 보스"에서 체크해요.');return}
-  const data={kind:'in',date:E.iDate.value||today(),hunt,boss,frag:fr,...(frU?{fragU:frU}:{}),...(huntMin&&hunt?{huntMin}:{}),memo:E.iMemo.value.trim().slice(0,80),at:Date.now()};
+  const data={kind:'in',date:E.iDate.value||today(),hunt,boss,frag:fr,...(frU?{fragU:frU}:{}),...(huntMin&&hunt?{huntMin}:{}),at:Date.now()};
   note('');const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
-  try{put(id,data);for(const s of['iHunt','iTime','iFrag','iFragU','iMemo'])E[s].value='';timeHint();live(E.iHunt,'hHunt');sumIn();setSign(1);toast(hunt?'상자를 금고에 넣었어요: +'+fmt(hunt):'조각을 기록했어요')}catch(e){justId=null}});
+  try{put(id,data);for(const s of['iHunt','iTime','iFrag','iFragU'])E[s].value='';timeHint();live(E.iHunt,'hHunt');sumIn();setSign(1);toast(hunt?'상자를 금고에 넣었어요: +'+fmt(hunt):'조각을 기록했어요')}catch(e){justId=null}});
 E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
   if(cat==='심볼'&&!E.symBox.hidden){const lim=symLimit(),to=+E.sTo.value;
     if(lim!=null&&(!to||to>lim)){const s=symData[symSel.i];note(lim>s.symbol_level?'업그레이드 실패: 가진 심볼 개수로는 Lv.'+lim+'까지만 올릴 수 있어요.':'업그레이드 실패: 심볼 개수가 부족해요 ('+s.symbol_growth_count+' / '+s.symbol_require_growth_count+'). 개수가 다 차야 올릴 수 있어요.');return}}
