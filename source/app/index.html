@@ -165,7 +165,15 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .btn.green{background:var(--plus);border-color:var(--lid);color:#fff}
 .gwarn{background:var(--box);border:1px dashed var(--lid);border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 14px;color:var(--ink)}
 footer a{color:inherit}
-footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size:13px;color:var(--mute);text-align:center}
+footer{padding:8px max(5vw,16px) calc(84px + env(safe-area-inset-bottom));font-size:13px;color:var(--mute);text-align:center}
+/* 페이지 나누기: 첫 화면은 금고·수익 상자·보스만, 통계·기록·계정은 "기록 · 통계" 페이지에 */
+body:not([data-page="more"]) .pgmore{display:none}
+body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
+.pgmore#pgMore{padding-top:clamp(20px,3.4vw,48px)!important}.pgtitle{margin:0 0 2px;font-size:22px}
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));z-index:30;display:flex;gap:4px;padding:5px;border:2px solid var(--line);border-radius:999px;background:var(--card);box-shadow:0 6px 22px rgba(0,0,0,.18)}
+.tabbar button{display:flex;align-items:center;gap:6px;min-height:46px;padding:6px 18px;border:0;border-radius:999px;background:transparent;color:var(--mute);font:inherit;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+.tabbar button.on{background:var(--ink);color:var(--card)}
+.tabbar button:focus-visible{outline:3px solid var(--safe);outline-offset:2px}
 /* 메이플포인트 */
 .lcd.mp{background:#1f1833;color:#d9c2ff}.lcd.mp small{color:#a98be0}
 .tag.mp{background:light-dark(#efe6ff,#2a2140);color:light-dark(#6b3fc4,#c7a8ff)}
@@ -338,7 +346,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 </div></header>
 
 <main>
-<section class="band"><div class="wrap">
+<section class="band" id="pgHome"><div class="wrap">
   <div class="stage">
     <div class="leftcol">
     <form class="prep" id="inForm" aria-labelledby="prepT">
@@ -443,7 +451,8 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   </div>
 </div></section>
 
-<section class="band" style="padding-top:0"><div class="wrap stats">
+<section class="band pgmore" style="padding-top:0" id="pgMore"><div class="wrap"><h2 class="pgtitle">기록 · 통계</h2><div class="small">수입·지출 통계와 지금까지의 기록, 계정 설정이에요.</div></div></section>
+<section class="band pgmore" style="padding-top:0"><div class="wrap stats">
   <div class="card"><div class="mhead"><h2 id="mT">이번 달</h2><div class="mnav"><button type="button" id="mPrev" aria-label="이전 달">◀</button><button type="button" id="mNext" aria-label="다음 달">▶</button></div></div>
     <div class="kpis" id="kpis"></div>
     <div id="kBoss"></div>
@@ -454,7 +463,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   <div class="card"><h2 id="cT">이번 달 지출</h2><div id="cats2"></div></div>
 </div></section>
 
-<section class="band" style="padding-top:0"><div class="wrap card">
+<section class="band pgmore" style="padding-top:0"><div class="wrap card">
   <h2>기록</h2>
   <div class="tabs" id="tabs"><button class="on" data-f="all" type="button">전체</button><button data-f="in" type="button">넣은 것</button><button data-f="out" type="button">뺀 것</button><button data-f="mp" type="button">메포</button></div>
   <input class="hsearch" id="hq" type="search" placeholder="메모·종류·금액으로 찾기 (예: 도핑, 12억, 카루타)" autocomplete="off" aria-label="기록 검색">
@@ -462,7 +471,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   <button class="btn hmore" type="button" id="hMore" hidden>더 보기</button>
 </div></section>
 
-<section class="band" style="padding-top:0"><div class="wrap card">
+<section class="band pgmore" style="padding-top:0"><div class="wrap card">
   <div class="dialog" id="bAsk" hidden>
     <div id="bAskT"></div>
     <div class="acts">
@@ -489,6 +498,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
   </div>
 </div></section>
 </main>
+<nav class="tabbar" id="tabbar" aria-label="페이지"><button type="button" data-p="home" class="on" aria-current="page"><span aria-hidden="true">💰</span>금고</button><button type="button" data-p="more"><span aria-hidden="true">📒</span>기록 · 통계</button></nav>
 <footer>메소 금고 가계부 · 개인이 만든 비공식 도구로, 넥슨이나 메이플스토리와는 관계가 없어요. 캐릭터 정보: Data based on NEXON Open API<br><a href="privacy.html">개인정보처리방침</a> · <a href="delete-account.html">계정 삭제 안내</a></footer>
 </div>
 <dialog class="edlg" id="eDlg" aria-labelledby="eTitle">
@@ -1238,11 +1248,12 @@ E.mBody.addEventListener('submit',ev=>{ev.preventDefault();const u=MP_UI[mType],
   if(u.meso&&(isNaN(meso)||meso<=0)){note(u.meso+'를 적어 주세요. 예: 12억');return}
   if(isNaN(won)||isNaN(cnt)){note('숫자로 적어 주세요.');return}
   const t=stats(),data={kind:'mp',type:mType,date:E.mDate.value||today(),memo:E.mMemo.value.trim().slice(0,80),at:Date.now()};
+  if(mType==='market_buy'&&meso>t.bal){note('금고에 있는 메소('+fmt(Math.max(0,t.bal))+')보다 많이 낼 수 없어요.');return}
   if(mType==='adj'){const d=mp-t.mpb;if(!d){note('이미 메포 지갑과 같아서 맞출 게 없어요.');return}data.mp=d}else data.mp=mp;
   if(u.meso)data.meso=meso;if(won)data.won=won;if(cnt)data.cnt=cnt;
   note('');
   const msg={charge:'메포 +'+mp.toLocaleString()+' 충전했어요'+(won?' ('+won.toLocaleString()+'원)':''),event:'메포 +'+mp.toLocaleString()+' 적립했어요',
-    market_buy:fmt(meso)+'로 메포 '+mp.toLocaleString()+'를 샀어요'+(meso>t.bal?' (메소 잔액보다 많아요)':''),market_sell:'메포 '+mp.toLocaleString()+'를 팔아 '+fmt(meso)+'를 받았어요'+(mp>t.mpb?' (메포 잔액보다 많아요)':''),
+    market_buy:fmt(meso)+'로 메포 '+mp.toLocaleString()+'를 샀어요',market_sell:'메포 '+mp.toLocaleString()+'를 팔아 '+fmt(meso)+'를 받았어요'+(mp>t.mpb?' (메포 잔액보다 많아요)':''),
     cash_shop:'메포 '+mp.toLocaleString()+'를 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':''),auction_fee:'메포 '+mp.toLocaleString()+'를 썼어요',adj:'메포 지갑을 맞췄어요 ('+sg(data.mp)+')'}[mType];
   try{put(newId(),data);for(const x of[E.mMp,E.mMeso,E.mWon,E.mCnt,E.mMemo])x.value='';mpHints();toast(msg)}catch(e){}});
 
@@ -1340,6 +1351,7 @@ E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
   const amount=parse(E.oAmt.value);
   if(isNaN(amount)||amount<=0){note('뺄 금액을 적어 주세요. 예: 8000만');return}
   const bal=stats().bal;
+  if(amount>bal){note('금고에 있는 메소('+fmt(Math.max(0,bal))+')보다 많이 뺄 수 없어요. 게임 속 메소가 더 많다면 "잔액 맞추기"로 먼저 맞춰 주세요.');return}
   const data={kind:'out',date:E.oDate.value||today(),cat,amount,memo:E.oMemo.value.trim().slice(0,80),at:Date.now()};
   note('');
   try{put(newId(),data);E.oAmt.value='';E.oMemo.value='';live(E.oAmt,'hOut');
@@ -1350,7 +1362,16 @@ E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
         for(let n=s.symbol_level;n<to;n++)have-=n===s.symbol_level?s.symbol_require_growth_count:symNeed(p.t,n);
         s.symbol_level=to;s.symbol_growth_count=Math.max(0,have);s.symbol_require_growth_count=to<mx?symNeed(p.t,to):0;symDraw()}
       if(to<mx){E.sFrom.value=String(to);E.sTo.value='';symTo()}else{E.sHint.textContent=SYM[E.sType.value].regs[+E.sReg.value]+' 만렙이에요!';symSel=null}}
-    toast(cat+'에 '+fmt(amount)+' 썼어요'+(amount>bal?' (잔액보다 많이 뺐어요)':''))}catch(e){}});
+    toast(cat+'에 '+fmt(amount)+' 썼어요')}catch(e){}});
+// 페이지 전환 (#more = 기록·통계). 뒤로 가기로 금고 화면에 돌아온다
+function showPage(){const p=location.hash==='#more'?'more':'home';if(document.body.dataset.page===p)return;document.body.dataset.page=p;
+  for(const b of E.tabbar.children){const on=b.dataset.p===p;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')}
+  window.scrollTo(0,0)}
+let pgPushed=false;
+E.tabbar.onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=b.dataset.p;
+  if(p==='more'&&location.hash!=='#more'){pgPushed=true;location.hash='more'}
+  else if(p==='home'&&location.hash==='#more'){if(pgPushed){pgPushed=false;history.back()}else{history.replaceState(null,'',location.pathname+location.search);showPage()}}};
+addEventListener('hashchange',showPage);showPage();
 E.aBody.addEventListener('submit',ev=>{ev.preventDefault();
   const hasM=!!E.aAmt.value.trim(),hasF=!!E.aFrag.value.trim(),hasU=!!E.aFragU.value.trim(),actual=parse(E.aAmt.value),fNow=fragNow(E.aFrag),uNow=fragNow(E.aFragU);
   if(!hasM&&!hasF&&!hasU){note('지금 게임 속 메소나 조각 개수를 적어 주세요.');return}

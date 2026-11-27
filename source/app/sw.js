@@ -1,7 +1,7 @@
 // 메소 금고 가계부 서비스 워커
 // 인터넷이 되면 항상 새 버전을 받고(network-first), 안 되면 저장해 둔 화면을 보여 준다.
 // 기록 데이터는 Firebase(Firestore)가 따로 오프라인 저장을 하므로 여기서는 화면 파일만 다룬다.
-const CACHE = 'meso-safe-v33';
+const CACHE = 'meso-safe-v34';
 const SHELL = ['./', './index.html', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './favicon.png'];
 
 self.addEventListener('install', e => {
