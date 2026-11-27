@@ -653,7 +653,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 // 에픽던전은 메이플포인트로 쓰므로 메소 지출 종류에서 빠지고 메이플포인트 서랍으로 옮김
 const CATS=['도핑','템 구매','심볼'];
 const PAGE=50,KEY='meso-safe-v1',NKEY='meso-safe-nexon',CKEY='meso-safe-char';
-let entries=[],goal={name:'',amount:0},bosses=[],nexon={},prefs={fragPrice:0,mpRate:0,goalBasis:'meso',mvp:'none',monthReset:'thu'},viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
+let entries=[],goal={name:'',amount:0},bosses=[],nexon={},prefs={fragPrice:0,mpRate:0,goalBasis:'meso',mvp:'none',monthReset:'thu'},viewMon=null,hq='',mType='market_buy',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
 const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const today=()=>ymd(new Date());
 const parse=s=>{s=String(s||'').replace(/[,\s]/g,'').replace(/메소$/,'');if(!s)return 0;if(!/^([\d.]+(억|만)?)+$/.test(s))return NaN;let t=0;for(const m of s.matchAll(/([\d.]+)(억|만)?/g)){const v=parseFloat(m[1]);if(isNaN(v))return NaN;t+=v*(m[2]==='억'?1e8:m[2]==='만'?1e4:1)}return Math.round(t)};
@@ -1289,7 +1289,9 @@ const MP_UI={charge:{mp:'받은 메포',d:'넥슨캐시로 메이플포인트를
   auction_fee:{mp:'쓴 메포',d:'메이플 옥션 수수료나 선물하기에 쓴 메이플포인트예요.',btn:'사용 기록하기'},
   epic:{mp:'쓴 메포',d:'에픽던전에 쓴 메이플포인트예요. 메포 지갑에서 빠지고, 메소 냉장고는 그대로예요.',cnt:1,btn:'에픽던전 기록하기'},
   adj:{mp:'지금 게임 속 메포',d:'게임 속 메이플포인트와 다르면 지금 갖고 있는 메포를 적어 주세요. 차이만큼 맞춰 드려요.',btn:'이대로 맞추기'}};
-E.mTypes.innerHTML=Object.keys(MPT).map(k=>`<button type="button" class="chip${k===mType?' on':''}" data-t="${k}" aria-pressed="${k===mType}">${MPT[k].l}</button>`).join('');
+// 서랍에는 자주 쓰는 종류만 보여 준다 (예전 충전·적립·캐시샵·옥션 기록은 그대로 읽고 수정할 수 있음)
+const MP_SHOW=['market_buy','market_sell','epic','adj'];
+E.mTypes.innerHTML=MP_SHOW.map(k=>`<button type="button" class="chip${k===mType?' on':''}" data-t="${k}" aria-pressed="${k===mType}">${MPT[k].l}</button>`).join('');
 const intOf=inp=>{const v=inp.value.replace(/,/g,'').trim();return v?(/^\d+$/.test(v)?parseInt(v,10):NaN):0};
 function mpHints(){const u=MP_UI[mType],mp=intOf(E.mMp),me=parse(E.mMeso.value);
   if(mType==='adj'&&E.mMp.value.trim()&&!isNaN(mp)){const d=mp-stats().mpb;E.hMp.textContent=d===0?'메포 지갑과 같아요':'지갑보다 '+Math.abs(d).toLocaleString()+(d>0?' 많아요 → +':' 적어요 → -')+Math.abs(d).toLocaleString()+' 맞춰요';E.hMp.className='hint ok'}
