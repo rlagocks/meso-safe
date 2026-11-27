@@ -410,12 +410,12 @@ html{overflow-x:hidden}
         <div><label for="iTime">사냥 시간 <span class="small" style="font-weight:400">(선택)</span></label><input id="iTime" inputmode="text" placeholder="예: 1시간 30분" autocomplete="off"><div class="hint" id="hTime"></div></div>
       </div>
       <div class="f"><div class="fragrow" style="align-items:center;justify-content:space-between;margin-bottom:4px"><label style="margin:0">조각 개수</label>
-        <div class="seg" role="group" aria-label="조각 더하기 또는 빼기"><button type="button" class="p on" id="fP" aria-pressed="true">+</button><button type="button" class="m" id="fM" aria-pressed="false">−</button></div></div>
+        <div class="seg" role="group" aria-label="조각 더하기 또는 빼기" id="fSeg"><button type="button" class="p on" id="fP" aria-pressed="true">+</button><button type="button" class="m" id="fM" aria-pressed="false">−</button></div></div>
         <div class="two">
-          <div><label for="iFrag" class="small" style="font-weight:700">교환 가능</label><input id="iFrag" inputmode="numeric" autocomplete="off" placeholder="0"></div>
-          <div><label for="iFragU" class="small" style="font-weight:700">교환 불가</label><input id="iFragU" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+          <div><label for="iFrag" class="small" style="font-weight:700" id="iFragL">교환 가능</label><input id="iFrag" inputmode="numeric" autocomplete="off" placeholder="0"><div class="hint" id="hFrag"></div></div>
+          <div><label for="iFragU" class="small" style="font-weight:700" id="iFragUL">교환 불가</label><input id="iFragU" inputmode="numeric" autocomplete="off" placeholder="0"><div class="hint" id="hFragU"></div></div>
         </div>
-        <div class="hint">얻은 조각은 +, 쓴 조각은 −로 적어요 (두 칸 모두에 적용)</div></div>
+        <div class="hint" id="fHint">얻은 조각은 +, 쓴 조각은 −로 적어요 (두 칸 모두에 적용)</div></div>
       <div class="total"><span>도시락에 담긴 메소</span><b id="iSum">0</b></div>
       <button class="btn orange" type="submit" id="inBtn" style="width:100%">냉장고에 넣기</button>
     </form>
@@ -866,7 +866,7 @@ const render=()=>{needTop=true;sched()};
 const mq=matchMedia('(max-width:420px)');
 mq.addEventListener?.('change',render);
 
-function renderTop(){todayLine();nowCalc();
+function renderTop(){todayLine();nowCalc();fragCalc();
   const t=stats();
   // 총 자산 = 메소 + 교환 가능 조각 × 시세 + 메포 × (1,000P당 시세 ÷ 1,000). 교환 불가 조각은 팔 수 없어 넣지 않는다
   // 조각과 판매 대기 드롭은 경매장에 팔아야 메소가 되므로 MVP 등급 수수료를 빼고 센다
@@ -945,7 +945,18 @@ let hMode='calc';try{hMode=localStorage.getItem('meso-safe-hmode')==='direct'?'d
 function setHMode(m){hMode=m;try{localStorage.setItem('meso-safe-hmode',m)}catch(e){}
   for(const b of E.hMode.children){const on=b.dataset.m===m;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)}
   E.nowBox.hidden=m!=='calc';E.iHunt.readOnly=m==='calc';E.iHunt.placeholder=m==='calc'?'위에 지금 메소를 적으면 자동으로 채워져요':'예: 3억 2500만';
-  if(m==='calc')nowCalc();else{E.hNow.textContent=''}}
+  E.fSeg.hidden=m==='calc';setText(E.iFragL,m==='calc'?'지금 교환 가능':'교환 가능');setText(E.iFragUL,m==='calc'?'지금 교환 불가':'교환 불가');
+  E.iFrag.placeholder=E.iFragU.placeholder=m==='calc'?'지금 개수':'0';
+  setText(E.fHint,m==='calc'?'지금 가진 조각 수를 적으면 냉장고 조각과의 차이만큼 기록돼요. 쓴 조각은 저절로 −가 돼요.':'얻은 조각은 +, 쓴 조각은 −로 적어요 (두 칸 모두에 적용)');
+  fragCalc();if(m==='calc')nowCalc();else{E.hNow.textContent=''}}
+// 조각도 같은 방식: 지금 개수 − 냉장고 조각 = 오늘 얻은(또는 쓴) 조각
+const fragInt=inp=>{const v=inp.value.replace(/[,\s]/g,'');return v===''?null:/^\d+$/.test(v)?parseInt(v,10):NaN};
+function fragDelta(){const t=stats(),a=fragInt(E.iFrag),b=fragInt(E.iFragU);
+  return{fr:a==null||isNaN(a)?0:a-t.f,frU:b==null||isNaN(b)?0:b-t.fu,bad:(a!=null&&isNaN(a))||(b!=null&&isNaN(b)),t,a,b}}
+function fragCalc(){if(hMode!=='calc'){E.hFrag.textContent=E.hFragU.textContent='';return}const d=fragDelta();
+  const one=(h,now,have,diff)=>{h.style.color='';if(now==null){h.textContent='냉장고 '+have.toLocaleString()+'개';h.className='hint';return}if(isNaN(now)){h.textContent='숫자만 적어 주세요';h.className='hint';return}
+    h.textContent=(diff>0?'+':diff<0?'−':'±')+Math.abs(diff).toLocaleString()+'개'+(diff<0?' 줄어요 (냉장고 '+have.toLocaleString()+'개)':'');h.className='hint'+(diff>0?' ok':'');h.style.color=diff<0?'var(--minus)':''};
+  one(E.hFrag,d.a,d.t.f,d.fr);one(E.hFragU,d.b,d.t.fu,d.frU)}
 function nowCalc(){if(hMode!=='calc')return;const v=parse(E.iNow.value),h=E.hNow;
   if(!E.iNow.value.trim()){h.textContent='냉장고 잔액 '+fmt(stats().bal)+'에서 늘어난 만큼이 사냥 수익이 돼요';h.className='hint';E.iHunt.value='';live(E.iHunt,'hHunt');sumIn();timeHint();return}
   if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint';return}
@@ -954,10 +965,12 @@ function nowCalc(){if(hMode!=='calc')return;const v=parse(E.iNow.value),h=E.hNow
   h.textContent=fmt(v)+' − 냉장고 '+fmt(bal)+' = 오늘 사냥 +'+fmt(d);h.className='hint ok';
   E.iHunt.value=d?mesoTxt(d):'';commaize(E.iHunt);live(E.iHunt,'hHunt');sumIn();timeHint()}
 // 오늘 하루 수익 (사냥·보스·판매 합계)
-function todayLine(){const td=today();let hu=0,bo=0,sa=0;for(const e of entries)if(e.kind==='in'&&e.date===td){hu+=e.hunt||0;bo+=e.boss||0;sa+=(e.sale||0)-(e.fee||0)}
-  const tot=hu+bo+sa;setHTML(E.todaySum,`<span>오늘 수익</span><b class="${tot<0?'m':''}">${tot>0?'+':''}${esc(fmt(tot))}</b><span class="small">${['사냥 '+short(hu),'보스 '+short(bo),...(sa?['판매 '+short(sa)]:[])].map(esc).join(' · ')}</span>`)}
+function todayLine(){const td=today();let hu=0,bo=0,sa=0,f=0,fu=0;for(const e of entries)if(e.kind==='in'&&e.date===td){hu+=e.hunt||0;bo+=e.boss||0;sa+=(e.sale||0)-(e.fee||0);f+=e.frag||0;fu+=e.fragU||0}
+  const tot=hu+bo+sa,sgn=n=>(n>0?'+':n<0?'−':'')+Math.abs(n).toLocaleString();
+  setHTML(E.todaySum,`<span>오늘 수익</span><b class="${tot<0?'m':''}">${tot>0?'+':''}${esc(fmt(tot))}</b><span class="small">${['사냥 '+short(hu),'보스 '+short(bo),...(sa?['판매 '+short(sa)]:[]),...(f||fu?['조각 '+sgn(f)+(fu?' (교환 불가 '+sgn(fu)+')':'')]:[])].map(esc).join(' · ')}</span>`)}
 E.hMode.onclick=e=>{const b=e.target.closest('button');if(b)setHMode(b.dataset.m)};
 E.iNow.addEventListener('input',()=>{commaize(E.iNow);nowCalc()});
+E.iFrag.addEventListener('input',fragCalc);E.iFragU.addEventListener('input',fragCalc);
 setHMode(hMode);
 function commaize(inp){const v=inp.value,pos=inp.selectionStart??v.length;
   const before=v.slice(0,pos).replace(/,/g,'').length;
@@ -1431,7 +1444,8 @@ E.hMore.onclick=()=>{histLimit+=PAGE;needHist=true;sched()};
 // 기록 저장
 const put=(id,data)=>{if(!store)throw 0;return store.put(id,data)};
 E.inForm.addEventListener('submit',ev=>{ev.preventDefault();
-  const hunt=parse(E.iHunt.value),boss=0,fr=Math.abs(parseInt(E.iFrag.value.replace(/,/g,''),10)||0)*fragSign,frU=Math.abs(parseInt(E.iFragU.value.replace(/,/g,''),10)||0)*fragSign;
+  const fd=hMode==='calc'?fragDelta():null;if(fd&&fd.bad){note('조각은 숫자로 적어 주세요. 예: 1,250');return}
+  const hunt=parse(E.iHunt.value),boss=0,fr=fd?fd.fr:Math.abs(parseInt(E.iFrag.value.replace(/,/g,''),10)||0)*fragSign,frU=fd?fd.frU:Math.abs(parseInt(E.iFragU.value.replace(/,/g,''),10)||0)*fragSign;
   if(isNaN(hunt)){note('사냥 수익을 다시 확인해 주세요. 예: 3억 2500만');return}
   const huntMin=parseDur(E.iTime.value);if(isNaN(huntMin)){note('사냥 시간을 다시 확인해 주세요. 예: 1시간 30분');return}
   if(!hunt&&!fr&&!frU){note('사냥 수익이나 조각 중 하나는 적어 주세요. 보스 수익은 아래 "이번 주 보스"에서 체크해요.');return}
