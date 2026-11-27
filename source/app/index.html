@@ -838,6 +838,8 @@ Object.assign(ITEM_ICON,{'컴플리트 언더컨트롤':'becbbb4ed948ceba6aced8a
 // 반지 상자에서 나오는 돈 되는 반지 (넥슨 공식 반지 확률표의 최저 확률 등급 + 컨티뉴어스 링)
 const RINGS=[['리스트레인트 링',1113098],['컨티뉴어스 링',1113329],['웨폰퍼프 - S링',1113113],['웨폰퍼프 - D링',1113114],['웨폰퍼프 - I링',1113115],['웨폰퍼프 - L링',1113116],['리스크테이커 링',1113122]];
 for(const[n,id]of RINGS)ITEM_ICON[n]=id;
+// 익셉셔널 해머 7종 (같은 게시글의 아이콘)
+Object.assign(ITEM_ICON,{'익셉셔널 해머 (벨트)':'hammer-belt.png','익셉셔널 해머 (얼굴장식)':'hammer-face.png','익셉셔널 해머 (눈장식)':'hammer-eye.png','익셉셔널 해머 (훈장)':'hammer-medal.png','익셉셔널 해머 (귀고리)':'hammer-earring.png','익셉셔널 해머 (포켓)':'hammer-pocket.png','익셉셔널 해머 (펜던트)':'hammer-pendant.png'});
 const isRingBox=n=>/보스 반지 상자/.test(n||'');
 const itemIcon=n=>(n=ITEM_ICON[n]?n:String(n||'').replace(/\s*\d+레벨$/,''),ITEM_ICON[n])?`<img src="items/${typeof ITEM_ICON[n]==='string'?ITEM_ICON[n]:ITEM_ICON[n]+'.png'}" alt="" width="32" height="32" loading="lazy">`:
   `<span class="ph" aria-hidden="true">${/로이드/.test(n)?'🤖':/반지 상자/.test(n)?'💍':/연마석/.test(n)?'💎':/에테르(?!넬)/.test(n)?'✨':/해머/.test(n)?'🔨':/소울/.test(n)?'👻':/상자/.test(n)?'📦':/포션/.test(n)?'🧪':/조각|결정|흔적|편린|잔재|단편|결의|의지|고리/.test(n)?'🧩':esc(n[0])}</span>`;
@@ -992,7 +994,7 @@ function dPick(n){dSel=n;const custom=n==='\u0003',box=isRingBox(n);
   dGrid()}
 const ACC=new Set(['루즈 컨트롤 머신 마크','컴플리트 언더컨트롤','마력이 깃든 안대','몽환의 벨트','저주받은 마도서 선택 상자','거대한 공포','고통의 근원','커맨더 포스 이어링','창세의 뱃지','미트라의 분노 선택 상자',
   '근원의 속삭임','황홀한 악몽','죽음의 맹세','불멸의 유산','오만의 원죄','굶주리는 핏빛 원혼','트와일라이트 마크','에스텔라 이어링','데이브레이크 펜던트','가디언 엔젤 링','혼돈의 칠흑 장신구 상자']);
-const itemRank=n=>ACC.has(n)?0:/보스 반지 상자/.test(n)?1:/연마석/.test(n)?2:/소울 에테르/.test(n)?3:/로이드$/.test(n)?4:-1;
+const itemRank=n=>ACC.has(n)?0:/익셉셔널 해머/.test(n)?1:/보스 반지 상자/.test(n)?2:/연마석/.test(n)?3:/소울 에테르/.test(n)?4:/로이드$/.test(n)?5:-1;
 const valuable=list=>list.filter(n=>itemRank(n)>=0).sort((a,b)=>itemRank(a)-itemRank(b));
 const DROPS_ALL=new Set(Object.values(DROPS).flatMap(x=>Object.values(x).flat()));
 const dItemPicked=()=>{};
