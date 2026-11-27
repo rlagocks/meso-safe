@@ -89,6 +89,30 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .temp{flex:none;background:#0f2230;color:#8fe3ff;border-radius:10px;padding:5px 10px;font-family:Jua;font-size:20px;line-height:1.1;text-align:center;box-shadow:inset 0 2px 6px rgba(0,0,0,.6)}
 .temp small{display:block;font:11px "Noto Sans KR",sans-serif;color:#5fb6d6}
 .assets{margin-bottom:26px!important}
+/* 냉장고 문: 평소엔 닫혀 있고, 누르면 문이 왼쪽 경첩을 축으로 열리며 안(잔액·조각·밀프랩·서랍)이 보인다 */
+.fdoor{display:flex;flex-direction:column;gap:10px;flex:1;min-height:420px;width:100%;padding:0;border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;text-align:center}
+.fdoor .plate{margin-bottom:2px}
+.fz,.fm{position:relative;display:block;border-radius:14px;border:2px solid light-dark(#cfd9df,#263038);background:linear-gradient(100deg,light-dark(#fbfdfe,#56626b),light-dark(#e5edf1,#414c54));box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset -6px 0 10px -6px rgba(0,0,0,.15)}
+.fz{height:28%;min-height:110px}.fm{flex:1;display:grid;place-items:center}
+.fz::after,.fm::after{content:"";position:absolute;right:14px;width:9px;border-radius:5px;background:linear-gradient(90deg,#8f9ba3,#f4f7f9 45%,#a9b4bb);border:1px solid light-dark(#8d99a1,#1a2025)}
+.fz::after{bottom:16px;height:56px}.fm::after{top:22px;height:96px}
+.magnet{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 18px 12px;background:#fff6c9;color:#3b3220;border-radius:4px;transform:rotate(-4deg);box-shadow:0 6px 12px -4px rgba(0,0,0,.3);position:relative}
+.magnet::before{content:"";position:absolute;top:-9px;left:50%;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff9a8a,#d9463b);box-shadow:0 2px 3px rgba(0,0,0,.35)}
+.magnet img{width:40px;height:40px;image-rendering:pixelated}.magnet b{font-size:16px}.magnet small{font-size:12px;opacity:.75}
+.fdoor:hover .magnet{transform:rotate(-2deg) translateY(-2px)}
+.fdoor:focus-visible{outline:3px solid var(--safe);outline-offset:4px;border-radius:18px}
+.fclose{position:absolute!important;top:14px;right:16px;z-index:3!important;min-height:34px;padding:4px 14px;border-radius:999px;border:2px solid light-dark(#b9d6e2,#3f5f70);background:light-dark(#fff,#24323b);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.safe.closed>*:not(.fdoor):not(.hinge){display:none!important}
+.safe:not(.closed):not(.opening):not(.closing)>.fdoor{display:none}
+.safe.opening>.fdoor,.safe.closing>.fdoor{position:absolute;inset:0;z-index:5;min-height:0;padding:18px;border-radius:23px;transform-origin:0 50%;
+  background:linear-gradient(100deg,light-dark(#f8fbfc,#4a565f) 0%,light-dark(#eaf1f4,#3d4850) 62%,light-dark(#dbe5ea,#333d45) 100%);box-shadow:12px 0 24px -10px rgba(0,0,0,.35)}
+.safe.opening>.fdoor{animation:fdOpen .55s ease-in forwards}
+.safe.closing>.fdoor{animation:fdOpen .45s ease-out reverse forwards}
+@keyframes fdOpen{0%{transform:perspective(1800px) rotateY(0);opacity:1}80%{opacity:1}100%{transform:perspective(1800px) rotateY(-100deg);opacity:0}}
+.safe.opening>*:not(.fdoor):not(.hinge){animation:fdIn .5s ease-out}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.safe.opening>.fdoor,.safe.closing>.fdoor,.safe.opening>*{animation:none}}
+@media(max-width:420px){.fdoor{min-height:360px}.fz{min-height:90px}}
 .assets::after{content:"";position:absolute;left:-21px;right:-21px;bottom:-16px;height:5px;background:light-dark(#c3cfd6,#1f272d);box-shadow:0 1px 0 rgba(255,255,255,.7)}
 .panel{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .lcd{background:#0f2230;color:#8fe3ff;border-radius:12px;padding:8px 14px;font-family:Jua;font-size:clamp(20px,3vw,28px);white-space:nowrap;box-shadow:inset 0 2px 6px rgba(0,0,0,.6)}
@@ -449,7 +473,13 @@ html{overflow-x:hidden}
     </div>
 
     <div class="safewrap">
-      <div class="safe"><i class="hinge t" aria-hidden="true"></i><i class="hinge b" aria-hidden="true"></i>
+      <div class="safe closed" id="fridge"><i class="hinge t" aria-hidden="true"></i><i class="hinge b" aria-hidden="true"></i>
+        <button type="button" class="fdoor" id="fDoor" aria-expanded="false" aria-controls="fridge" aria-label="냉장고 열기">
+          <span class="plate" aria-hidden="true">MESO FRIDGE</span>
+          <span class="fz" aria-hidden="true"></span>
+          <span class="fm" aria-hidden="true"><span class="magnet"><img src="items/food-lunchbox.png" alt="" width="40" height="40"><b>냉장고 열기</b><small>눌러서 메소·조각 보기</small></span></span>
+        </button>
+        <button type="button" class="fclose" id="fClose">닫기</button>
         <div class="plate" aria-hidden="true">MESO FRIDGE</div>
         <div class="panel">
           <div class="lcd"><small>냉장고 잔액</small><span id="bal">0</span></div>
@@ -1455,6 +1485,13 @@ E.symList.onclick=e=>{const b=e.target.closest('.symitem');if(!b||b.disabled)ret
 const symFree=()=>{if(!symSel)return;symSel=null;for(const x of E.symList.children)x.classList.remove('on')};
 E.sType.onchange=()=>{symFree();symFill(false)};E.sReg.onchange=()=>{symFree();symTo()};E.sFrom.onchange=()=>{symFree();symTo()};E.sTo.onchange=symCalc;
 symFill(false);
+// 냉장고 열고 닫기 (들어올 때마다 닫힌 상태로 시작)
+const fridgeReduce=matchMedia('(prefers-reduced-motion: reduce)');let fTimer=0;
+function fridgeSet(open){const f=E.fridge;clearTimeout(fTimer);f.classList.remove('opening','closing');E.fDoor.setAttribute('aria-expanded',open);
+  if(fridgeReduce.matches){f.classList.toggle('closed',!open);if(!open)E.fDoor.focus();return}
+  if(open){f.classList.remove('closed');f.classList.add('opening');fTimer=setTimeout(()=>f.classList.remove('opening'),560)}
+  else{f.classList.add('closing');fTimer=setTimeout(()=>{f.classList.remove('closing');f.classList.add('closed');E.fDoor.focus()},460)}}
+E.fDoor.onclick=()=>fridgeSet(true);E.fClose.onclick=()=>fridgeSet(false);
 E.dBtn.onclick=()=>{const o=E.drawer.classList.toggle('open');E.dBtn.setAttribute('aria-expanded',o);if(o)E.oAmt.focus()};
 E.gEdit.onclick=()=>{const f=E.gForm;f.classList.toggle('on');E.gN.value=goal.name||'';E.gA.value=goal.amount?fmt(goal.amount):'';if(f.classList.contains('on'))E.gN.focus()};
 E.tabs.onclick=e=>{const b=e.target.closest('button');if(!b||b.dataset.f===filter)return;filter=b.dataset.f;histLimit=PAGE;for(const x of E.tabs.children)x.classList.toggle('on',x===b);needHist=true;sched()};
