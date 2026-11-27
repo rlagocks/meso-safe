@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>메생여전</title>
 <meta name="description" content="사냥·보스 수익과 지출, 메이플포인트를 매일 기록하는 메소 가계부. 아이디로 로그인하면 휴대폰·PC 어디서든 같은 기록이 열려요.">
-<meta name="theme-color" content="#ffd23f">
+<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1b1c21" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -17,20 +17,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light dark;
---bg:light-dark(#ffffff,#15171f);--sun:light-dark(#ffd23f,#3a2f0c);--sun2:light-dark(#ffe789,#2a2410);
+--bg:light-dark(#f4f2ee,#1b1c21);--sun:light-dark(#ffd23f,#3a2f0c);--sun2:light-dark(#ffe789,#2a2410);
 --ink:light-dark(#1d2340,#f3f1ea);--mute:light-dark(#5b6078,#a9aabb);--line:light-dark(#e7e3d6,#2f3242);
 --card:light-dark(#ffffff,#1d2029);--soft:light-dark(#fff7d6,#22242e);
 --safe:light-dark(#ff8a1f,#d9661a);--safe2:light-dark(#e06a00,#a94c0f);--safeIn:light-dark(#fff3e2,#2a1e14);
 --plus:light-dark(#178a4c,#4fd08a);--minus:light-dark(#d93d42,#ff7a7e);--lid:light-dark(#3bb273,#2f9a62);--box:light-dark(#eaf8f0,#1c3327)}
 *{box-sizing:border-box;min-width:0}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans KR",system-ui,sans-serif;overflow-x:clip}
+body{margin:0;background:var(--bg) var(--marble) 0 0/1000px 1000px;color:var(--ink);font:16px/1.55 "Noto Sans KR",system-ui,sans-serif;overflow-x:clip}
 .band{padding:clamp(20px,3.4vw,48px) max(5vw,16px)}
 .wrap{max-width:1240px;margin:0 auto}
 h1,h2,.num,.jua{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400}
 h1{font-size:clamp(32px,4.4vw,46px);line-height:1.05;margin:0;text-wrap:balance}
 h2{font-size:24px;line-height:1.1;margin:0 0 14px}
-.top{background:var(--sun);padding-top:max(clamp(20px,3.4vw,48px),env(safe-area-inset-top))}
+.top{background:transparent;padding-top:max(clamp(20px,3.4vw,48px),env(safe-area-inset-top))}
 .head{display:flex;flex-wrap:wrap;gap:18px 32px;align-items:end;justify-content:space-between}
 .goal{flex:1 1 380px;max-width:620px}
 .goalrow{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
@@ -119,7 +119,7 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .chip{min-height:44px;padding:6px 16px;border-radius:99px;border:2px solid var(--safe2);background:var(--card);cursor:pointer;font-weight:700}
 .chip.on{background:var(--minus);border-color:var(--minus);color:#fff}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
-.card{border:2px solid var(--line);border-radius:18px;padding:18px;background:var(--card)}
+.card{border:2px solid var(--line);border-radius:18px;padding:18px;background:var(--card);box-shadow:0 10px 26px -14px rgba(0,0,0,.35)}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .kpi{min-width:0}.kpi.wide{grid-column:1/-1}.kpi .num{font-size:24px;line-height:1.2;word-break:keep-all;overflow-wrap:anywhere}
 .kpi .num.p{color:var(--plus)}.kpi .num.m{color:var(--minus)}
@@ -232,13 +232,16 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .xpbar{height:8px;border-radius:99px;background:var(--sun2);border:1.5px solid var(--ink);overflow:hidden;margin:4px 0 2px}.xpbar i{display:block;height:100%;background:var(--ink)}
 .char .btn.link{min-height:36px;padding:4px;font-size:13px;align-self:flex-start}
 @media (prefers-color-scheme:dark){.char{background:rgba(0,0,0,.2)}}
+/* 배경: 주방 대리석 상판 (밝은 화면은 흰 카라라 대리석, 어두운 화면은 검은 대리석) */
+:root{--marble:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%271000%27%20height%3D%271000%27%3E%3Cdefs%3E%3Cfilter%20id%3D%27v%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%20color-interpolation-filters%3D%27sRGB%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0021%200.0042%27%20numOctaves%3D%275%27%20seed%3D%2711%27%20stitchTiles%3D%27stitch%27%20result%3D%27n%27%2F%3E%3CfeColorMatrix%20in%3D%27n%27%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%201.5%200%200%200%20-0.25%27%20result%3D%27g%27%2F%3E%3CfeComponentTransfer%20in%3D%27g%27%20result%3D%27b%27%3E%3CfeFuncA%20type%3D%27table%27%20tableValues%3D%270%200%200%200%200%200%200%200%200%200%200%200%200%200.08%200.55%200.08%200%200%200%200%200%200%200%200%200%200%200%200.04%200.3%200.04%200%200%200%200%200%200%200%200%200%200%27%2F%3E%3C%2FfeComponentTransfer%3E%3CfeFlood%20flood-color%3D%27%238a8e96%27%20flood-opacity%3D%270.55%27%20result%3D%27f%27%2F%3E%3CfeComposite%20in%3D%27f%27%20in2%3D%27b%27%20operator%3D%27in%27%2F%3E%3C%2Ffilter%3E%3Cfilter%20id%3D%27c%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%20color-interpolation-filters%3D%27sRGB%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0022%27%20numOctaves%3D%273%27%20seed%3D%2714%27%20stitchTiles%3D%27stitch%27%20result%3D%27n%27%2F%3E%3CfeColorMatrix%20in%3D%27n%27%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%201.8%200%200%200%20-0.75%27%20result%3D%27a%27%2F%3E%3CfeFlood%20flood-color%3D%27%23c9c2b6%27%20flood-opacity%3D%270.28%27%20result%3D%27f%27%2F%3E%3CfeComposite%20in%3D%27f%27%20in2%3D%27a%27%20operator%3D%27in%27%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Crect%20width%3D%271000%27%20height%3D%271000%27%20fill%3D%27%23f4f2ee%27%2F%3E%3Crect%20width%3D%271000%27%20height%3D%271000%27%20filter%3D%27url(%23c)%27%2F%3E%3Crect%20width%3D%271000%27%20height%3D%271000%27%20filter%3D%27url(%23v)%27%2F%3E%3C%2Fsvg%3E")}
+@media (prefers-color-scheme:dark){:root{--marble:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%271000%27%20height%3D%271000%27%3E%3Cdefs%3E%3Cfilter%20id%3D%27v%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%20color-interpolation-filters%3D%27sRGB%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0021%200.0042%27%20numOctaves%3D%275%27%20seed%3D%2711%27%20stitchTiles%3D%27stitch%27%20result%3D%27n%27%2F%3E%3CfeColorMatrix%20in%3D%27n%27%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%201.5%200%200%200%20-0.25%27%20result%3D%27g%27%2F%3E%3CfeComponentTransfer%20in%3D%27g%27%20result%3D%27b%27%3E%3CfeFuncA%20type%3D%27table%27%20tableValues%3D%270%200%200%200%200%200%200%200%200%200%200%200%200%200.08%200.55%200.08%200%200%200%200%200%200%200%200%200%200%200%200.04%200.3%200.04%200%200%200%200%200%200%200%200%200%200%27%2F%3E%3C%2FfeComponentTransfer%3E%3CfeFlood%20flood-color%3D%27%23c9c6bf%27%20flood-opacity%3D%270.3%27%20result%3D%27f%27%2F%3E%3CfeComposite%20in%3D%27f%27%20in2%3D%27b%27%20operator%3D%27in%27%2F%3E%3C%2Ffilter%3E%3Cfilter%20id%3D%27c%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%20color-interpolation-filters%3D%27sRGB%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0022%27%20numOctaves%3D%273%27%20seed%3D%2714%27%20stitchTiles%3D%27stitch%27%20result%3D%27n%27%2F%3E%3CfeColorMatrix%20in%3D%27n%27%20type%3D%27matrix%27%20values%3D%270%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%201.8%200%200%200%20-0.75%27%20result%3D%27a%27%2F%3E%3CfeFlood%20flood-color%3D%27%23000000%27%20flood-opacity%3D%270.45%27%20result%3D%27f%27%2F%3E%3CfeComposite%20in%3D%27f%27%20in2%3D%27a%27%20operator%3D%27in%27%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Crect%20width%3D%271000%27%20height%3D%271000%27%20fill%3D%27%231b1c21%27%2F%3E%3Crect%20width%3D%271000%27%20height%3D%271000%27%20filter%3D%27url(%23c)%27%2F%3E%3Crect%20width%3D%271000%27%20height%3D%271000%27%20filter%3D%27url(%23v)%27%2F%3E%3C%2Fsvg%3E")}}
 /* 총 자산 */
 .assets{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;background:light-dark(#2f5566,#16222a);color:#fff;border-radius:12px;padding:8px 12px;margin:-4px 0 14px}
 .assets b{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400;font-size:22px}
 .assets .ad{font-size:13px;opacity:.9;flex:1 1 100%;min-width:0;order:3}
 .assets .btn.link{color:#fff;min-height:32px;padding:2px 4px;font-size:13px}
 /* 주간 보스 */
-.wk{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px}
+.wk{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;box-shadow:0 10px 26px -14px rgba(0,0,0,.35)}
 .wk .mhead{margin-bottom:6px}
 /* 보스 밀프랩: 도마 위 재료(아직 안 잡은 보스)를 누르면 도시락통 칸에 담긴다. 담긴 칸을 누르면 다시 꺼낸다 */
 .ing.d-e,.mpc.d-e,.leds i.d-e{--c:#4f9a43}.ing.d-n,.mpc.d-n,.leds i.d-n{--c:#2f72b8}.ing.d-h,.mpc.d-h,.leds i.d-h{--c:#c0392b}
