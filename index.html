@@ -643,7 +643,8 @@ import { firebaseConfig } from './firebase-config.js';
 const FB='https://www.gstatic.com/firebasejs/10.12.2/';
 const E={};for(const n of document.querySelectorAll('[id]'))E[n.id]=n;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CATS=['도핑','에픽던전','템 구매','심볼'];
+// 에픽던전은 메이플포인트로 쓰므로 메소 지출 종류에서 빠지고 메이플포인트 서랍으로 옮김
+const CATS=['도핑','템 구매','심볼'];
 const PAGE=50,KEY='meso-safe-v1',NKEY='meso-safe-nexon',CKEY='meso-safe-char';
 let entries=[],goal={name:'',amount:0},bosses=[],nexon={},prefs={fragPrice:0,mpRate:0,goalBasis:'meso',mvp:'none',monthReset:'thu'},viewMon=null,hq='',mType='charge',justId=null,fragSign=1,cat=CATS[0],filter='all',undoData=null,tTimer=null,histLimit=PAGE,pending=null,store=null;
 const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
@@ -663,7 +664,7 @@ function show(which){E.boot.hidden=true;E.gate.hidden=which!=='gate';E.app.hidde
 const num=v=>{v=Number(v);return isFinite(v)?Math.round(v):0};
 const newId=()=>'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 // 메이플포인트 기록 종류: s = 메포 부호, m = 메소 부호 (메소마켓만)
-const MPT={charge:{l:'현금 충전',s:1},event:{l:'이벤트·페이백 적립',s:1},market_buy:{l:'메소마켓 구매',s:1,m:-1},market_sell:{l:'메소마켓 판매',s:-1,m:1},cash_shop:{l:'캐시샵·가챠',s:-1},auction_fee:{l:'옥션 수수료·선물하기',s:-1},adj:{l:'메포 잔액 맞추기',s:0}};
+const MPT={charge:{l:'현금 충전',s:1},event:{l:'이벤트·페이백 적립',s:1},market_buy:{l:'메소마켓 구매',s:1,m:-1},market_sell:{l:'메소마켓 판매',s:-1,m:1},cash_shop:{l:'캐시샵·가챠',s:-1},auction_fee:{l:'옥션 수수료·선물하기',s:-1},epic:{l:'에픽던전',s:-1},adj:{l:'메포 잔액 맞추기',s:0}};
 const mpDelta=e=>e.type==='adj'?(e.mp||0):MPT[e.type].s*(e.mp||0);
 const mesoDelta=e=>(MPT[e.type].m||0)*(e.meso||0);
 const mkRate=e=>e.mp>0&&e.meso>0?e.meso/e.mp*1000:0;
@@ -674,7 +675,7 @@ function clean(e){if(!e||typeof e!=='object')return null;const kind=e.kind;if(![
   if(kind==='drop'){const item=String(e.item||'').trim().slice(0,40);if(!item)return null;return{id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,item,dropBoss:String(e.dropBoss||'').slice(0,20),dropChar:String(e.dropChar||'').slice(0,20),...(num(e.est)>0?{est:num(e.est)}:{}),date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()}}
   if(kind==='mp'){if(!MPT[e.type])return null;const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,type:e.type,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
     o.mp=e.type==='adj'?num(e.mp):Math.max(0,num(e.mp));if(MPT[e.type].m)o.meso=Math.max(0,num(e.meso));
-    if(e.type==='charge'&&e.won)o.won=Math.max(0,num(e.won));if(e.type==='cash_shop'&&e.cnt)o.cnt=Math.max(0,num(e.cnt));return o}
+    if(e.type==='charge'&&e.won)o.won=Math.max(0,num(e.won));if((e.type==='cash_shop'||e.type==='epic')&&e.cnt)o.cnt=Math.max(0,num(e.cnt));return o}
   const o={id:String(e.id||newId()).replace(/[^\w.-]/g,'').slice(0,60)||newId(),kind,date:/^\d{4}-\d\d-\d\d$/.test(e.date)?e.date:today(),memo:String(e.memo||'').slice(0,80),at:num(e.at)||Date.now()};
   if(kind==='in'){o.hunt=Math.max(0,num(e.hunt));o.boss=Math.max(0,num(e.boss));o.frag=num(e.frag);if(e.fragU)o.fragU=num(e.fragU);if(e.huntMin)o.huntMin=Math.max(0,num(e.huntMin));if(e.bossN)o.bossN=String(e.bossN).slice(0,20);if(e.bossC)o.bossC=String(e.bossC).slice(0,20);if(e.dropChar)o.dropChar=String(e.dropChar).slice(0,20);if(e.sale)o.sale=Math.max(0,num(e.sale));if(e.list&&e.sale){o.list=Math.max(0,num(e.list));o.fee=Math.max(0,num(e.fee))}if(e.item)o.item=String(e.item).slice(0,40);if(e.dropBoss)o.dropBoss=String(e.dropBoss).slice(0,20)}
   else{o.amount=num(e.amount);if(kind==='adj'){if(e.frag)o.frag=num(e.frag);if(e.fragU)o.fragU=num(e.fragU)}if(kind==='out'){o.cat=CATS.includes(e.cat)?e.cat:String(e.cat||'기타').slice(0,20);o.amount=Math.max(0,o.amount);if(e.cnt)o.cnt=Math.max(0,num(e.cnt))}}
@@ -823,7 +824,7 @@ function compute(){
   const byAt=entries.slice().sort((a,b)=>(b.at||0)-(a.at||0));const days={};
   for(const e of byAt){const isIn=e.kind==='in',a=isIn?inAmt(e):(e.amount||0),ym=(e.date||'').slice(0,7);if(ym&&ym<minMon)minMon=ym;
     if(e.kind==='mp'){const mt=MPT[e.type];mpb+=mpDelta(e);mk+=mesoDelta(e);if(mt.m&&rates.length<5&&mkRate(e))rates.push(mkRate(e));
-      if(ym===mon){if(e.type==='charge')won+=e.won||0;if(e.type==='cash_shop'||e.type==='auction_fee')mpUse+=e.mp||0;if(mt.m){mkMeso+=mesoDelta(e);mkMp+=mpDelta(e);mkN++}}continue}
+      if(ym===mon){if(e.type==='charge')won+=e.won||0;if(e.type==='cash_shop'||e.type==='auction_fee'||e.type==='epic')mpUse+=e.mp||0;if(mt.m){mkMeso+=mesoDelta(e);mkMp+=mpDelta(e);mkN++}}continue}
     if(e.kind==='drop')continue;
     // 도핑: 살 때는 메소만 빠지고(재고), 쓸 때 지출로 잡는다
     if(e.kind==='dope'){if(e.type==='buy'){dopeOut+=e.meso;continue}
@@ -1279,6 +1280,7 @@ const MP_UI={charge:{mp:'받은 메포',d:'넥슨캐시로 메이플포인트를
   market_sell:{mp:'낸 메포',meso:'받은 메소',d:'메소마켓에서 메이플포인트를 팔고 메소를 받았어요. 메포 지갑에서 빠지고 메소 냉장고에 들어가요. 메소는 수수료를 뺀, 실제로 받은 양을 적어요.',btn:'판매 기록하기'},
   cash_shop:{mp:'쓴 메포',d:'캐시샵 아이템이나 가챠에 쓴 메이플포인트예요.',cnt:1,btn:'사용 기록하기'},
   auction_fee:{mp:'쓴 메포',d:'메이플 옥션 수수료나 선물하기에 쓴 메이플포인트예요.',btn:'사용 기록하기'},
+  epic:{mp:'쓴 메포',d:'에픽던전에 쓴 메이플포인트예요. 메포 지갑에서 빠지고, 메소 냉장고는 그대로예요.',cnt:1,btn:'에픽던전 기록하기'},
   adj:{mp:'지금 게임 속 메포',d:'게임 속 메이플포인트와 다르면 지금 갖고 있는 메포를 적어 주세요. 차이만큼 맞춰 드려요.',btn:'이대로 맞추기'}};
 E.mTypes.innerHTML=Object.keys(MPT).map(k=>`<button type="button" class="chip${k===mType?' on':''}" data-t="${k}" aria-pressed="${k===mType}">${MPT[k].l}</button>`).join('');
 const intOf=inp=>{const v=inp.value.replace(/,/g,'').trim();return v?(/^\d+$/.test(v)?parseInt(v,10):NaN):0};
@@ -1306,7 +1308,7 @@ E.mBody.addEventListener('submit',ev=>{ev.preventDefault();const u=MP_UI[mType],
   note('');
   const msg={charge:'메포 +'+mp.toLocaleString()+' 충전했어요'+(won?' ('+won.toLocaleString()+'원)':''),event:'메포 +'+mp.toLocaleString()+' 적립했어요',
     market_buy:fmt(meso)+'로 메포 '+mp.toLocaleString()+'를 샀어요',market_sell:'메포 '+mp.toLocaleString()+'를 팔아 '+fmt(meso)+'를 받았어요'+(mp>t.mpb?' (메포 잔액보다 많아요)':''),
-    cash_shop:'메포 '+mp.toLocaleString()+'를 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':''),auction_fee:'메포 '+mp.toLocaleString()+'를 썼어요',adj:'메포 지갑을 맞췄어요 ('+sg(data.mp)+')'}[mType];
+    cash_shop:'메포 '+mp.toLocaleString()+'를 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':''),auction_fee:'메포 '+mp.toLocaleString()+'를 썼어요',epic:'에픽던전에 메포 '+mp.toLocaleString()+'를 썼어요'+(cnt?' ('+cnt.toLocaleString()+'회)':''),adj:'메포 지갑을 맞췄어요 ('+sg(data.mp)+')'}[mType];
   try{put(newId(),data);for(const x of[E.mMp,E.mMeso,E.mWon,E.mCnt,E.mMemo])x.value='';mpHints();toast(msg)}catch(e){}});
 
 function adjHint(){const v=parse(E.aAmt.value),h=E.hAdj;
