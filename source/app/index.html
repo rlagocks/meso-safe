@@ -113,11 +113,10 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 @keyframes fdIn{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.safe.opening>.fdoor,.safe.closing>.fdoor,.safe.opening>*{animation:none}}
 @media(max-width:420px){.fdoor{min-height:360px}.fz{min-height:90px}}
-/* 닫힌 냉장고는 왼쪽 칸 길이와 상관없이 크기 고정 (보스 칸이 늘어나도 문과 메모가 움직이지 않게) */
-.safewrap>.safe.closed{flex:none}
-.safe.closed>.fdoor{flex:none;height:540px;min-height:0}
-.fz{flex:none;height:150px;min-height:0}
-@media(max-width:420px){.safe.closed>.fdoor{height:400px}.fz{height:110px}}
+/* 닫힌 냉장고 크기 고정: 처음(보스 캐릭터 목록일 때) 왼쪽 칸 높이로 정해 두고, 보스 캐릭터 창을 열어도 바뀌지 않게 */
+.stage:has(.safe.closed){align-items:start}
+.safewrap>.safe.closed{flex:none;height:var(--fh,auto)}
+.fz{flex:none}
 .assets::after{content:"";position:absolute;left:-21px;right:-21px;bottom:-16px;height:5px;background:light-dark(#c3cfd6,#1f272d);box-shadow:0 1px 0 rgba(255,255,255,.7)}
 .panel{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .lcd{background:#0f2230;color:#8fe3ff;border-radius:12px;padding:8px 14px;font-family:Jua;font-size:clamp(20px,3vw,28px);white-space:nowrap;box-shadow:inset 0 2px 6px rgba(0,0,0,.6)}
@@ -1496,6 +1495,10 @@ function fridgeSet(open){const f=E.fridge;clearTimeout(fTimer);f.classList.remov
   if(fridgeReduce.matches){f.classList.toggle('closed',!open);if(!open)E.fDoor.focus();return}
   if(open){f.classList.remove('closed');f.classList.add('opening');fTimer=setTimeout(()=>f.classList.remove('opening'),560)}
   else{f.classList.add('closing');fTimer=setTimeout(()=>{f.classList.remove('closing');f.classList.add('closed');E.fDoor.focus()},460)}}
+// 왼쪽 칸이 보스 캐릭터 목록 상태일 때의 높이를 닫힌 냉장고 높이로 쓴다 (PC 두 칸 화면에서만)
+const twoCol=matchMedia('(min-width: 901px)'),leftCol=document.querySelector('.leftcol');
+function lockFridge(){if(!twoCol.matches){E.fridge.style.removeProperty('--fh');return}if(wkChar!==null)return;E.fridge.style.setProperty('--fh',Math.round(leftCol.getBoundingClientRect().height)+'px')}
+if(window.ResizeObserver)new ResizeObserver(lockFridge).observe(leftCol);twoCol.addEventListener('change',lockFridge);
 E.fDoor.onclick=()=>fridgeSet(true);E.fClose.onclick=()=>fridgeSet(false);
 E.dBtn.onclick=()=>{const o=E.drawer.classList.toggle('open');E.dBtn.setAttribute('aria-expanded',o);if(o)E.oAmt.focus()};
 E.gEdit.onclick=()=>{const f=E.gForm;f.classList.toggle('on');E.gN.value=goal.name||'';E.gA.value=goal.amount?fmt(goal.amount):'';if(f.classList.contains('on'))E.gN.focus()};
