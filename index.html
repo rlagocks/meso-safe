@@ -115,13 +115,13 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
 .card{border:2px solid var(--line);border-radius:18px;padding:18px;background:var(--card)}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.kpi.wide{grid-column:1/-1}.kpi .num{font-size:24px;white-space:nowrap;line-height:1.2}
+.kpi{min-width:0}.kpi.wide{grid-column:1/-1}.kpi .num{font-size:24px;line-height:1.2;word-break:keep-all;overflow-wrap:anywhere}
 .kpi .num.p{color:var(--plus)}.kpi .num.m{color:var(--minus)}
 .week{display:flex;gap:6px;align-items:flex-end;height:150px;border-bottom:2px solid var(--line);padding-top:6px}
 .day{flex:1;display:flex;gap:2px;align-items:flex-end;height:100%;justify-content:center}
 .day i{width:42%;max-width:16px;border-radius:5px 5px 0 0;min-height:2px}
 .day .in{background:var(--plus)}.day .out{background:var(--minus)}
-.wlab{display:flex;gap:6px;font-size:12px;color:var(--mute)}.wlab span{flex:1;text-align:center}
+.wlab{display:flex;gap:6px;font-size:12px;color:var(--mute)}.wlab span{flex:1;min-width:0;text-align:center;overflow:hidden}
 .legend{display:flex;gap:14px;font-size:13px;color:var(--mute);margin-top:8px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .row{margin-bottom:10px}.row .t{display:flex;justify-content:space-between;font-size:14px;gap:8px}
@@ -272,6 +272,11 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .chbar{grid-column:1;display:block;height:6px;margin-top:8px;border-radius:9px;background:var(--soft);overflow:hidden}.chbar i{display:block;height:100%;background:#2f9e7d;border-radius:9px}
 .ing .em img{width:24px;height:24px}.mpc .em img{width:34px;height:34px}
 .tabbar img{width:22px;height:22px}
+/* 휴대폰에서 화면이 옆으로 밀리지 않게: 페이지 전체를 가로로 자르고, 줄바꿈 안 되던 숫자·탭도 화면 안에 들어오게 */
+html{overflow-x:hidden}
+.tabbar{max-width:calc(100vw - 20px)}
+@media(max-width:400px){.tabbar button{padding:6px 12px;font-size:14px}}
+.lcd{max-width:100%;white-space:normal;word-break:keep-all}.panel>*{min-width:0}
 @media(max-width:420px){.mpc{min-height:66px}.mpc .em img{width:28px;height:28px}.mpcells{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}}
 .mpmonth{margin-top:16px;padding:10px 10px 12px;border-radius:18px;border:2px dashed #e0b43a;background:light-dark(#fff8e1,#2e2814)}
 .mpmh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 2px}.mpmh b{font-size:15px;color:light-dark(#8a6400,#f3c63f)}
