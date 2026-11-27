@@ -450,6 +450,8 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <div class="two"><div class="f"><label for="dBoss">보스</label><select id="dBoss" style="font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)"></select></div>
       <div class="f"><label>고른 아이템</label><div class="dpick" id="dPicked">아래에서 골라 주세요</div></div></div>
     <div class="igrid" id="dItemGrid" role="listbox" aria-label="드롭 아이템"></div>
+    <div class="f" id="dRingBox" hidden><label>반지 상자에서 나온 것</label>
+      <div class="igrid" id="dRingGrid" role="listbox" aria-label="반지 상자 결과" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:0"></div></div>
     <div class="f" id="dItemBox"><label for="dItem">아이템 이름</label><input id="dItem" maxlength="40" autocomplete="off" placeholder="예: 몽환의 벨트"></div>
     <div class="small" id="dRef" style="margin:-6px 0 12px"></div>
     <div class="f" id="dEstBox" hidden><label for="dEst">예상 판매 가격 <span class="small" style="font-weight:400">(선택)</span></label><input id="dEst" inputmode="text" autocomplete="off" placeholder="예: 40억"><div class="hint" id="hDEst">적어 두면 수수료를 뺀 금액이 총 자산에 들어가요</div></div>
@@ -970,7 +972,7 @@ function dCalc(){const v=parse(E.dPrice.value);if(!E.dPrice.value.trim()||isNaN(
 function dPriceHint(){const h=E.hDPrice,c=dCalc();if(!E.dPrice.value.trim()){h.className='hint';h.textContent=dPriceMode==='list'?'수수료 '+Math.round(feeRate(prefs.mvp,E.dPc.checked)*100)+'% ('+(E.dPc.checked?'PC방':MVP[prefs.mvp])+') · MVP 등급은 "시세 · MVP"에서 바꿔요':'경매장 수수료를 뺀, 실제로 받은 금액이에요';return}
   if(!c){h.className='hint';h.textContent='숫자와 억, 만만 쓸 수 있어요';return}
   h.className='hint ok';h.textContent=c.list?'수수료 '+Math.round(c.r*100)+'% '+fmt(c.fee)+' → 받는 메소 '+fmt(c.net):'= '+fmt(c.net)+' 메소'}
-const setDState=st=>{dState=st;for(const x of E.dState.children){x.classList.toggle('on',x.dataset.s===st);x.setAttribute('aria-pressed',x.dataset.s===st)}E.dSoldBox.hidden=st!=='sold';E.dEstBox.hidden=st!=='wait';setText(E.dSave,st==='sold'?'수익으로 넣기':'판매 대기로 저장')};
+const setDState=st=>{dState=st;for(const x of E.dState.children){x.classList.toggle('on',x.dataset.s===st);x.setAttribute('aria-pressed',x.dataset.s===st)}E.dSoldBox.hidden=st!=='sold';E.dEstBox.hidden=st!=='wait';setText(E.dSave,st==='sold'?'수익으로 넣기':'판매 대기로 저장');if(typeof dSel!=='undefined'&&isRingBox(dSel))dRingSync()};
 // 보스 칸 값: 등록한 보스 = "캐릭터\u0001보스이름", 등록 안 한 보스 = "\u0002보스\u0002난이도"
 function dBossVal(){const v=E.dBoss.value;if(!v)return{char:'',name:'',boss:'',diff:''};
   if(v[0]==='\u0002'){const[,b,d]=v.split('\u0002');return{char:'',name:b+' '+d,boss:b,diff:d}}
@@ -982,12 +984,22 @@ function dGrid(){const b=dBossVal(),list=valuable(b.boss&&DROPS[b.boss]?(b.diff&
   const custom=`<button type="button" class="itile custom${dSel==='\u0003'?' on':''}" data-n="\u0003" role="option"><span class="ph" aria-hidden="true">✏️</span><span>직접 입력</span></button>`;
   setHTML(E.dItemGrid,(list.length?'':`<div class="small empty">${E.dBoss.value?'이 보스는 돈 되는 드롭 목록이 없어요. 직접 입력해 주세요.':'보스를 고르면 드롭 아이템이 그림으로 나와요.'}</div>`)+tiles.join('')+custom)}
 // 아이템을 고르면 이름을 채운다. 가격은 사용자가 직접 적고, 내가 전에 판 가격은 참고로만 보여 준다
-function dPick(n){dSel=n;const custom=n==='\u0003',box=isRingBox(n);
-  if(dMode!=='sell'){E.dStateBox.hidden=box;if(box)setDState('wait')}E.dEstBox.hidden=box||dState!=='wait';setText(E.dSave,box?'획득 기록하기':dState==='sold'?'수익으로 넣기':'판매 대기로 저장');E.dItemBox.hidden=!custom;if(n&&!custom)E.dItem.value=n;else if(!n)E.dItem.value='';else if(n==='\u0003'&&DROPS_ALL.has(E.dItem.value))E.dItem.value='';
+function dPick(n){if(n!==dSel)dRing='';dSel=n;const custom=n==='\u0003';
+  if(dMode!=='sell')E.dStateBox.hidden=false;E.dSoldBox.hidden=dState!=='sold';E.dEstBox.hidden=dState!=='wait';setText(E.dSave,dState==='sold'?'수익으로 넣기':'판매 대기로 저장');E.dItemBox.hidden=!custom;if(n&&!custom)E.dItem.value=n;else if(!n)E.dItem.value='';else if(n==='\u0003'&&DROPS_ALL.has(E.dItem.value))E.dItem.value='';
   E.dPicked.innerHTML=!n?'아래에서 골라 주세요':custom?'<span class="ph" aria-hidden="true">✏️</span>직접 입력':itemIcon(n)+'<span>'+esc(n)+'</span>';
   const it=custom?'':n,mine=it?lastSold(it):0;
   E.dRef.innerHTML=it?[mine?'내가 마지막으로 판 가격 <b>'+esc(short(mine))+'</b>':'','<a href="https://mitemprice.kr/" target="_blank" rel="noopener">경매장 시세 보기 ↗</a>'].filter(Boolean).join(' · '):'';
-  dGrid()}
+  dGrid();dRingSync()}
+// 반지 상자를 고르면 바로 결과 세 가지(꽝 / 리스트레인트 링 4레벨 / 컨티뉴어스 링 4레벨)를 보여 준다
+let dRing='';
+function dRingSync(){const box=isRingBox(dSel);E.dRingBox.hidden=!box;if(!box)return;
+  setHTML(E.dRingGrid,RING_OPTS.map(([v,l,ic])=>`<button type="button" class="itile${v===dRing?' on':''}" data-n="${esc(v)}" role="option" aria-selected="${v===dRing}">${ic||itemIcon(v)}<span>${esc(v==='bad'?'꽝':l)}</span></button>`).join(''));
+  const ring=!!dRing&&dRing!=='bad';
+  E.dStateBox.hidden=!ring||dMode==='sell';E.dSoldBox.hidden=!ring||dState!=='sold';E.dEstBox.hidden=!ring||dState!=='wait';
+  if(ring)E.dItem.value=dRing;else E.dItem.value=dSel;
+  E.dRef.innerHTML=ring&&lastSold(dRing)?'내가 마지막으로 판 가격 <b>'+esc(short(lastSold(dRing)))+'</b>':'';
+  setText(E.dSave,!dRing?'결과를 골라 주세요':dRing==='bad'?'꽝 (기록 안 함)':dState==='sold'?'수익으로 넣기':'판매 대기로 저장')}
+E.dRingGrid.addEventListener('click',e=>{const t=e.target.closest('.itile');if(t){dRing=t.dataset.n;setText(E.dErr,'');dRingSync()}});
 const ACC=new Set(['루즈 컨트롤 머신 마크','컴플리트 언더컨트롤','마력이 깃든 안대','몽환의 벨트','저주받은 마도서 선택 상자','거대한 공포','고통의 근원','커맨더 포스 이어링','창세의 뱃지','미트라의 분노 선택 상자',
   '근원의 속삭임','황홀한 악몽','죽음의 맹세','불멸의 유산','오만의 원죄','굶주리는 핏빛 원혼','트와일라이트 마크','에스텔라 이어링','데이브레이크 펜던트','가디언 엔젤 링','혼돈의 칠흑 장신구 상자']);
 const itemRank=n=>ACC.has(n)?0:/익셉셔널 해머/.test(n)?1:/보스 반지 상자/.test(n)?2:/연마석/.test(n)?3:/소울 에테르/.test(n)?4:/로이드$/.test(n)?5:-1;
@@ -1031,6 +1043,7 @@ E.rForm.addEventListener('submit',ev=>{ev.preventDefault();const old=entries.fin
     const item=rRing,nd={...body(old),item,memo:(old.memo?old.memo+' · ':'')+old.item+'에서 나옴',at:Date.now()};delete nd.est;put(rId,nd);
     E.rDlg.close();toast(item+'! 판매 대기에 넣었어요',{id:rId,rest:body(old)})}catch(err){setText(E.rErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
 E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.dErr,t),item=E.dItem.value.trim().slice(0,40),bv=dBossVal(),dChar=bv.char,boss=bv.name;
+  if(isRingBox(dSel)){if(!dRing)return err('반지 상자에서 나온 것을 골라 주세요.');if(dRing==='bad'){E.dDlg.close();toast(dSel+' 꽝 — 기록하지 않았어요');return}}
   if(!item)return err(dSel==='\u0003'?'아이템 이름을 적어 주세요.':'아이템을 골라 주세요.');
   try{if(dState==='wait'&&dMode==='new'){const est=parse(E.dEst.value);if(E.dEst.value.trim()&&(isNaN(est)||est<0))return err('예상 판매 가격을 다시 확인해 주세요. 예: 40억');
       put(newId(),{kind:'drop',item,dropBoss:boss,dropChar:dChar,...(est>0?{est}:{}),date:today(),memo:'',at:Date.now()});E.dDlg.close();toast(item+(isRingBox(item)?' 획득! 열어 본 뒤 "열었어요"를 눌러 주세요':' 판매 대기로 적었어요'));return}
