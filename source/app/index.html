@@ -61,6 +61,12 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .prep h2 img,.ttlic{width:30px;height:30px;vertical-align:-6px;margin-right:6px}
 .prep .total{background:light-dark(#eef8f4,#1c2b27);border:2px dashed light-dark(#a8d8cb,#3f7c6e);border-radius:14px;padding:10px 14px}
 .prep .btn.orange{background:#2f9e7d;border-color:#237a60}
+.today{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:-6px 0 14px;padding:8px 12px;border-radius:12px;background:light-dark(#eef8f4,#1c2b27)}
+.today>span:first-child{font-size:13px;font-weight:700;color:var(--mute)}.today b{font-family:Jua;font-weight:400;font-size:22px;color:var(--plus)}.today b.m{color:var(--minus)}.today .small{flex:1 1 100%}
+.hmode{display:flex;gap:4px;padding:4px;margin-bottom:12px;border-radius:12px;background:var(--soft)}
+.hmode button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--mute);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.hmode button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.prep input[readonly]{background:var(--soft);color:var(--ink)}
 .f{margin-bottom:14px}
 .hint{font-size:13px;color:var(--mute);min-height:20px;margin-top:3px}
 .hint.ok{color:var(--plus)}
@@ -395,7 +401,10 @@ html{overflow-x:hidden}
     <div class="leftcol">
     <form class="prep" id="inForm" aria-labelledby="prepT">
       <h2 id="prepT"><img src="items/food-lunchbox.png" alt="" width="30" height="30">오늘의 밀프랩</h2>
+      <div class="today" id="todaySum" aria-live="polite"></div>
       <div class="f"><label for="iDate">날짜</label><input type="date" id="iDate"></div>
+      <div class="hmode" role="group" aria-label="사냥 수익 적는 방법" id="hMode"><button type="button" data-m="calc" aria-pressed="false">지금 메소로 계산</button><button type="button" data-m="direct" aria-pressed="false">번 메소 직접 적기</button></div>
+      <div class="f" id="nowBox" hidden><label for="iNow">지금 게임 속 메소</label><input id="iNow" inputmode="text" placeholder="예: 152억 3000만" autocomplete="off"><div class="hint" id="hNow"></div></div>
       <div class="two f">
         <div><label for="iHunt">사냥 수익</label><input id="iHunt" inputmode="text" placeholder="예: 3억 2500만" autocomplete="off"><div class="hint" id="hHunt"></div></div>
         <div><label for="iTime">사냥 시간 <span class="small" style="font-weight:400">(선택)</span></label><input id="iTime" inputmode="text" placeholder="예: 1시간 30분" autocomplete="off"><div class="hint" id="hTime"></div></div>
@@ -857,7 +866,7 @@ const render=()=>{needTop=true;sched()};
 const mq=matchMedia('(max-width:420px)');
 mq.addEventListener?.('change',render);
 
-function renderTop(){
+function renderTop(){todayLine();nowCalc();
   const t=stats();
   // 총 자산 = 메소 + 교환 가능 조각 × 시세 + 메포 × (1,000P당 시세 ÷ 1,000). 교환 불가 조각은 팔 수 없어 넣지 않는다
   // 조각과 판매 대기 드롭은 경매장에 팔아야 메소가 되므로 MVP 등급 수수료를 빼고 센다
@@ -931,6 +940,25 @@ function matchQ(e,q){const txt=entryText(e),ams=[e.hunt,e.boss,e.sale,e.amount,e
 // 입력 칸
 function live(inp,hint){const v=parse(inp.value);const h=E[hint];if(!inp.value.trim()){h.textContent='';h.className='hint'}else if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint'}else{h.textContent='= '+fmt(v)+' 메소';h.className='hint ok'}}
 function sumIn(){const a=parse(E.iHunt.value);E.iSum.textContent=fmt(isNaN(a)?0:a)}
+// 사냥 수익 계산: 지금 게임 속 메소 − 냉장고 잔액(전날까지 + 오늘 이미 적은 보스·판매 등) = 오늘 사냥으로 늘어난 메소
+let hMode='calc';try{hMode=localStorage.getItem('meso-safe-hmode')==='direct'?'direct':'calc'}catch(e){}
+function setHMode(m){hMode=m;try{localStorage.setItem('meso-safe-hmode',m)}catch(e){}
+  for(const b of E.hMode.children){const on=b.dataset.m===m;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)}
+  E.nowBox.hidden=m!=='calc';E.iHunt.readOnly=m==='calc';E.iHunt.placeholder=m==='calc'?'위에 지금 메소를 적으면 자동으로 채워져요':'예: 3억 2500만';
+  if(m==='calc')nowCalc();else{E.hNow.textContent=''}}
+function nowCalc(){if(hMode!=='calc')return;const v=parse(E.iNow.value),h=E.hNow;
+  if(!E.iNow.value.trim()){h.textContent='냉장고 잔액 '+fmt(stats().bal)+'에서 늘어난 만큼이 사냥 수익이 돼요';h.className='hint';E.iHunt.value='';live(E.iHunt,'hHunt');sumIn();timeHint();return}
+  if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint';return}
+  const bal=stats().bal,d=v-bal;
+  if(d<0){h.textContent='냉장고 잔액('+fmt(bal)+')보다 '+fmt(-d)+' 적어요. 쓴 메소를 먼저 "메소 꺼내기"로 적어 주세요.';h.className='hint';E.iHunt.value='';live(E.iHunt,'hHunt');sumIn();timeHint();return}
+  h.textContent=fmt(v)+' − 냉장고 '+fmt(bal)+' = 오늘 사냥 +'+fmt(d);h.className='hint ok';
+  E.iHunt.value=d?mesoTxt(d):'';commaize(E.iHunt);live(E.iHunt,'hHunt');sumIn();timeHint()}
+// 오늘 하루 수익 (사냥·보스·판매 합계)
+function todayLine(){const td=today();let hu=0,bo=0,sa=0;for(const e of entries)if(e.kind==='in'&&e.date===td){hu+=e.hunt||0;bo+=e.boss||0;sa+=(e.sale||0)-(e.fee||0)}
+  const tot=hu+bo+sa;setHTML(E.todaySum,`<span>오늘 수익</span><b class="${tot<0?'m':''}">${tot>0?'+':''}${esc(fmt(tot))}</b><span class="small">${['사냥 '+short(hu),'보스 '+short(bo),...(sa?['판매 '+short(sa)]:[])].map(esc).join(' · ')}</span>`)}
+E.hMode.onclick=e=>{const b=e.target.closest('button');if(b)setHMode(b.dataset.m)};
+E.iNow.addEventListener('input',()=>{commaize(E.iNow);nowCalc()});
+setHMode(hMode);
 function commaize(inp){const v=inp.value,pos=inp.selectionStart??v.length;
   const before=v.slice(0,pos).replace(/,/g,'').length;
   const out=v.replace(/,/g,'').replace(/(^|[^\d.])(\d+)/g,(m,p,d)=>p+d.replace(/\B(?=(\d{3})+(?!\d))/g,','));
@@ -1409,7 +1437,7 @@ E.inForm.addEventListener('submit',ev=>{ev.preventDefault();
   if(!hunt&&!fr&&!frU){note('사냥 수익이나 조각 중 하나는 적어 주세요. 보스 수익은 아래 "이번 주 보스"에서 체크해요.');return}
   const data={kind:'in',date:E.iDate.value||today(),hunt,boss,frag:fr,...(frU?{fragU:frU}:{}),...(huntMin&&hunt?{huntMin}:{}),at:Date.now()};
   note('');const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
-  try{put(id,data);for(const s of['iHunt','iTime','iFrag','iFragU'])E[s].value='';timeHint();live(E.iHunt,'hHunt');sumIn();setSign(1);toast(hunt?'밀프랩을 냉장고에 넣었어요: +'+fmt(hunt):'조각을 기록했어요')}catch(e){justId=null}});
+  try{put(id,data);for(const s of['iHunt','iTime','iFrag','iFragU','iNow'])E[s].value='';timeHint();live(E.iHunt,'hHunt');sumIn();setSign(1);toast(hunt?'밀프랩을 냉장고에 넣었어요: +'+fmt(hunt):'조각을 기록했어요')}catch(e){justId=null}});
 E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
   if(cat==='심볼'&&!E.symBox.hidden){const lim=symLimit(),to=+E.sTo.value;
     if(lim!=null&&(!to||to>lim)){const s=symData[symSel.i];note(lim>s.symbol_level?'업그레이드 실패: 가진 심볼 개수로는 Lv.'+lim+'까지만 올릴 수 있어요.':'업그레이드 실패: 심볼 개수가 부족해요 ('+s.symbol_growth_count+' / '+s.symbol_require_growth_count+'). 개수가 다 차야 올릴 수 있어요.');return}}
