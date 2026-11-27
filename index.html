@@ -232,9 +232,18 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .wkb:focus-visible{outline:3px solid var(--safe);outline-offset:1px}.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}
 .wklegend{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:12px;color:var(--mute)}.wklegend i{display:inline-block;width:9px;height:13px;border-radius:2px;margin-right:4px;vertical-align:-2px}
 .leds{grid-column:1;display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px;margin-top:6px;padding:3px 4px 0;border-bottom:3px solid light-dark(#b07a45,#6b4626);border-radius:2px;width:max-content;max-width:100%}
+.leds:empty{display:none}
 .leds i{width:6px;height:16px;border-radius:1px 1px 0 0;background:var(--c,#8a5a2b)}.leds i.d-e{--c:#4f9a43;height:13px}.leds i.d-n{--c:#2f72b8;height:14px}.leds i.d-h{--c:#c0392b;height:16px}.leds i.d-c{--c:#6d1f5c;height:17px}.leds i.d-x{--c:#1c1c1c;height:18px}
 .leds i.on{opacity:.3}.leds i.m{box-shadow:inset 0 3px 0 #f3c63f}
 .chlist{display:grid;gap:8px;margin-top:12px}
+.chlv{font-size:12px;font-weight:700;color:var(--mute);margin-left:2px}.chadd{border-style:dashed;grid-template-columns:1fr}
+.wkbar{display:flex;justify-content:space-between;align-items:center;margin-top:6px}.wkbar .btn{min-height:36px;padding:4px 0;text-decoration:none;font-weight:700}
+.wkdel{color:var(--mute);font-weight:400!important;font-size:13px}.wkdel.sure{color:var(--minus)}
+.wkempty{text-align:center;padding:22px 10px;border:2px dashed var(--line);border-radius:14px;margin-top:10px;color:var(--mute)}.wkempty .btn{margin-top:10px}
+.clist{display:grid;gap:6px;max-height:260px;overflow:auto;margin-bottom:14px}
+.crow{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:8px;text-align:left;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.crow span{font-size:12px;color:var(--mute)}.crow .chlv{grid-column:2;grid-row:1}.crow em{grid-column:2;grid-row:2;font-style:normal;font-size:12px;font-weight:700;color:var(--plus);text-align:right}
+.crow.on{border-color:var(--lid);background:var(--box)}.crow:disabled{opacity:.5;cursor:default}
 .chtile{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
 .chtile:hover{border-color:var(--lid)}.chn{font-weight:700;font-size:16px}.chtile .small{grid-column:1}.chgo{grid-row:1/3;grid-column:2;font-size:26px;color:var(--mute)}
 .wkback{min-height:36px;padding:4px 0;margin-top:6px;text-decoration:none;font-weight:700}
@@ -491,6 +500,20 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <div class="acts"><button class="btn" type="button" id="dClose">취소</button><button class="btn dark" type="submit" id="dSave">저장</button></div>
   </form>
 </dialog>
+<dialog class="edlg" id="cDlg" aria-labelledby="cTitle">
+  <form id="cForm" novalidate>
+    <h2 id="cTitle">캐릭터 추가</h2>
+    <div id="cNxBox" hidden>
+      <p class="small sub">넥슨 계정의 캐릭터예요 (레벨 높은 순). 추가할 캐릭터를 골라 주세요.</p>
+      <div class="clist" id="cNxList"></div>
+    </div>
+    <p class="small sub" id="cManualT">캐릭터 이름과 레벨을 적어 주세요. 캐릭터 목록은 레벨 높은 순으로 정렬돼요.</p>
+    <div class="two"><div class="f"><label for="cName">캐릭터 이름</label><input id="cName" maxlength="20" autocomplete="off" placeholder="예: 삶치아크"></div>
+      <div class="f"><label for="cLv">레벨</label><input id="cLv" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="예: 285"></div></div>
+    <div class="gerr" id="cErr" role="alert"></div>
+    <div class="acts"><button class="btn" type="button" id="cClose">취소</button><button class="btn dark" type="submit">추가하기</button></div>
+  </form>
+</dialog>
 <dialog class="edlg" id="rDlg" aria-labelledby="rTitle">
   <form id="rForm" novalidate>
     <h2 id="rTitle">반지 상자 열기</h2>
@@ -531,7 +554,7 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     <h2 id="bTitle">캐릭터별 보스</h2>
     <p class="small sub">캐릭터마다 매주 잡는 보스와 한 번에 받는 금액(결정석 등)을 적어 주세요. 금액은 패치마다 바뀌니 직접 적어요.</p>
     <div class="chips" id="bChars" role="tablist" aria-label="캐릭터"></div>
-    <div class="two" style="margin:14px 0 6px;align-items:end"><div><label for="bCharName">캐릭터 이름</label><input id="bCharName" list="bCharSug" maxlength="20" autocomplete="off" placeholder="예: 삶치아크"></div>
+    <div class="two" id="bCharRow" style="margin:14px 0 6px;align-items:end"><div><label for="bCharName">캐릭터 이름</label><input id="bCharName" list="bCharSug" maxlength="20" autocomplete="off" placeholder="예: 삶치아크"></div>
       <div><button class="btn" type="button" id="bCharDel" style="width:100%;color:var(--minus);border-color:var(--minus)">캐릭터 삭제</button></div></div>
     <datalist id="bCharSug"></datalist>
     <div class="small" style="margin:10px 0 6px">이 캐릭터의 보스 · 보스와 난이도, 파티 인원을 고르면 1인당 결정석 금액이 채워져요 (<span id="bPriceDate"></span> 기준, 직접 고칠 수 있어요)</div>
@@ -592,7 +615,11 @@ function cleanNexon(n){n=n&&typeof n==='object'?n:{};const key=String(n.key||'')
 // 경매장 판매 수수료: 기본 5%, MVP 실버 이상이거나 프리미엄 PC방에서 대금을 받으면 3% (브론즈는 혜택 없음)
 const MVP={none:'일반 (MVP 아님)',bronze:'브론즈',silver:'실버',gold:'골드',diamond:'다이아몬드',red:'레드',black:'블랙'};
 const feeRate=(mvp,pc)=>pc||['silver','gold','diamond','red','black'].includes(mvp)?0.03:0.05;
-function cleanPrefs(p){p=p&&typeof p==='object'?p:{};return{fragPrice:Math.max(0,num(p.fragPrice)),mpRate:Math.max(0,num(p.mpRate)),goalBasis:p.goalBasis==='total'?'total':'meso',mvp:MVP[p.mvp]?p.mvp:'none',monthReset:p.monthReset==='first'?'first':'thu'}}
+function cleanPrefs(p){p=p&&typeof p==='object'?p:{};return{fragPrice:Math.max(0,num(p.fragPrice)),mpRate:Math.max(0,num(p.mpRate)),goalBasis:p.goalBasis==='total'?'total':'meso',mvp:MVP[p.mvp]?p.mvp:'none',monthReset:p.monthReset==='first'?'first':'thu',
+  chars:(Array.isArray(p.chars)?p.chars:[]).slice(0,40).map(c=>typeof c==='string'?{name:c.trim().slice(0,20),level:0}:{name:String(c&&c.name||'').trim().slice(0,20),level:Math.max(0,Math.min(300,num(c&&c.level)))}).filter(c=>c.name)}}
+// 캐릭터: 사용자가 추가한 목록(레벨 높은 순) + 예전에 보스만 등록된 캐릭터
+function charList(){const list=(prefs.chars||[]).slice().sort((a,b)=>b.level-a.level||a.name.localeCompare(b.name));const names=list.map(c=>c.name);
+  for(const b of bosses)if(!names.includes(b.char)){names.push(b.char);list.push({name:b.char,level:0})}return list}
 function cleanGoal(g){return g&&typeof g==='object'?{name:String(g.name||'').slice(0,40),amount:Math.max(0,num(g.amount))}:{name:'',amount:0}}
 function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');return d?{entries:(Array.isArray(d.entries)?d.entries:[]).map(clean).filter(Boolean),goal:cleanGoal(d.goal),bosses:cleanBosses(d.bosses),prefs:cleanPrefs(d.prefs)}:null}catch(e){return null}}
 
@@ -902,7 +929,32 @@ function bDraw(){setHTML(E.bChars,bState.map((g,i)=>`<button type="button" class
 async function bSuggest(){const names=new Set(bosses.map(b=>b.char).filter(Boolean));if(nexon.name)names.add(nexon.name);
   if(nexon.key){try{const j=await nx('character/list',nexon.key);for(const a of j.account_list||[])for(const c of a.character_list||[])names.add(c.character_name)}catch(e){}}
   E.bCharSug.innerHTML=[...names].map(n=>`<option value="${esc(n)}"></option>`).join('')}
-function openBosses(){setText(E.bPriceDate,BOSS_PRICE_DATE);setText(E.bErr,'');bState=bGroups();if(!bState.length)bState=[{char:nexon.name||'',list:[]}];bCur=0;bDraw();bSuggest();E.bDlg.showModal();E.bCharName.focus()}
+// 캐릭터 추가: 넥슨 계정 캐릭터(레벨순) 중 고르거나, 이름·레벨을 직접 적는다
+let cPick=new Set(),cNx=[];
+function drawCNx(){const have=new Set((prefs.chars||[]).map(c=>c.name));
+  setHTML(E.cNxList,cNx.map(c=>{const on=cPick.has(c.character_name),had=have.has(c.character_name);return `<button type="button" class="crow${on?' on':''}" data-n="${esc(c.character_name)}"${had?' disabled':''}><b>${esc(c.character_name)}</b><span>${esc(c.world_name)} · ${esc(c.character_class)}</span><span class="chlv">Lv.${esc(c.character_level)}</span>${had?'<em>추가됨</em>':on?'<em>✓</em>':''}</button>`}).join(''))}
+async function openAddChar(){setText(E.cErr,'');E.cName.value='';E.cLv.value='';cPick=new Set();cNx=[];E.cNxBox.hidden=true;setText(E.cManualT,'캐릭터 이름과 레벨을 적어 주세요. 캐릭터 목록은 레벨 높은 순으로 정렬돼요.');E.cDlg.showModal();E.cName.focus();
+  if(!nexon.key)return;try{const j=await nx('character/list',nexon.key);cNx=(j.account_list||[]).flatMap(a=>a.character_list||[]).sort((a,b)=>b.character_level-a.character_level);
+    if(cNx.length){E.cNxBox.hidden=false;setText(E.cManualT,'목록에 없으면 이름과 레벨을 직접 적어 주세요.');drawCNx();
+      // 이미 추가한 캐릭터의 레벨을 최신으로
+      const upd=(prefs.chars||[]).map(c=>{const f=cNx.find(x=>x.character_name===c.name);return f&&f.character_level!==c.level?{...c,level:f.character_level}:c});
+      if(upd.some((c,i)=>c!==prefs.chars[i]))store.setPrefs({...prefs,chars:upd})}}catch(e){}}
+E.cNxList.onclick=e=>{const r=e.target.closest('.crow');if(!r||r.disabled)return;const n=r.dataset.n;cPick.has(n)?cPick.delete(n):cPick.add(n);drawCNx()};
+E.cClose.onclick=()=>E.cDlg.close();
+E.cForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.cErr,t),cur=(prefs.chars||[]).slice(),add=[];
+  for(const n of cPick){const f=cNx.find(x=>x.character_name===n);add.push({name:n,level:f?f.character_level:0})}
+  const nm=E.cName.value.trim().slice(0,20),lv=E.cLv.value.trim();
+  if(nm){const l=parseInt(lv,10);if(lv&&(isNaN(l)||l<1||l>300))return err('레벨은 1~300 사이 숫자로 적어 주세요.');add.push({name:nm,level:l||0})}
+  if(!add.length)return err(cNx.length?'추가할 캐릭터를 고르거나 이름을 적어 주세요.':'캐릭터 이름을 적어 주세요.');
+  const names=new Set(charList().map(c=>c.name));for(const c of add)if(names.has(c.name))return err(c.name+'은(는) 이미 있어요.');
+  if(cur.length+add.length>40)return err('캐릭터는 40개까지 추가할 수 있어요.');
+  try{store.setPrefs({...prefs,chars:cur.concat(add)});E.cDlg.close();toast(add.length===1?add[0].name+' 캐릭터를 추가했어요':'캐릭터 '+add.length+'개를 추가했어요');renderWeek()}catch(e){err('저장하지 못했어요. 다시 시도해 주세요.')}});
+// 보스 편집: 캐릭터 화면에서 열면 그 캐릭터의 보스만 편집한다 (bOnly)
+let bOnly=null;
+function openBosses(only){bOnly=typeof only==='string'?only:null;setText(E.bPriceDate,BOSS_PRICE_DATE);setText(E.bErr,'');
+  bState=bOnly!==null?[{char:bOnly,list:bGroups().find(g=>g.char===bOnly)?.list||[]}]:bGroups();if(!bState.length)bState=[{char:nexon.name||'',list:[]}];bCur=0;bDraw();
+  E.bChars.hidden=E.bCharRow.hidden=bOnly!==null;setText(E.bTitle,bOnly!==null?(bOnly||'캐릭터 미지정')+'의 보스':'캐릭터별 보스');
+  bSuggest();E.bDlg.showModal();(bOnly!==null?E.bRows.querySelector('select'):E.bCharName).focus()}
 E.bChars.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;bSync();
   if(b.dataset.c==='new'){if(bState.length>=10)return setText(E.bErr,'캐릭터는 10개까지 넣을 수 있어요.');bState.push({char:'',list:[]});bCur=bState.length-1}else bCur=+b.dataset.c;
   setText(E.bErr,'');bDraw();E.bCharName.focus()};
@@ -920,7 +972,8 @@ E.bForm.addEventListener('submit',ev=>{ev.preventDefault();bSync();const list=[]
     if(rows.filter(x=>x.cycle!=='m').length>12)return err((g.char||'캐릭터 미지정')+'의 주간 보스가 '+rows.filter(x=>x.cycle!=='m').length+'마리예요. 주간 보스는 캐릭터당 12마리까지예요.',gi);
     for(const x of rows){const amount=parse(x.raw);if(!x.name)return err('보스 이름을 적어 주세요.',gi);if(isNaN(amount)||amount<=0)return err(x.name+'의 금액을 다시 확인해 주세요. 예: 12억',gi);
       if(names.has(x.name))return err((g.char||'캐릭터 미지정')+'에 '+x.name+'이(가) 두 번 있어요.',gi);names.add(x.name);list.push({char:g.char,name:x.name.slice(0,30),amount,cycle:x.cycle,...(x.boss?{boss:x.boss,diff:x.diff,party:x.party||1}:{})})}}
-  try{store.setBosses(list);E.bDlg.close();toast(list.length?'캐릭터 '+seen.size+'개 · 보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
+  const finalList=bOnly!==null?bosses.filter(b=>b.char!==bOnly).concat(list):list;
+  try{store.setBosses(finalList);E.bDlg.close();toast(list.length?'캐릭터 '+seen.size+'개 · 보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
 // ===== 도핑 (화면은 없앴지만, 예전에 적은 도핑 기록의 잔액 계산을 위해 남겨 둠) =====
 const DOPES={boss:[['반짝이는 빨간 별 물약',2003587],['반짝이는 파란 별 물약',2003586],['고급 보스 킬러의 비약',2003596],['고급 관통의 비약',2003598],['대영웅의 비약',2003593],['익스트림 레드',2023125],['익스트림 블루',2023127],['유니온의 힘',2024188]],
   hunt:[['경험 축적의 비약',2003550],['소형 경험 축적의 비약',2003607],['재물 획득의 비약',2003551],['소형 재물 획득의 비약',2003611],['익스트림 골드',2023128],['유니온의 부',2023664],['VIP 부스터',2637168],['MVP 슈퍼파워 버프',2023544]]};
@@ -993,20 +1046,22 @@ function renderWeek(){renderDrops();const ws=ymd(weekStart()),next=new Date(week
   const key=(c,n)=>(c||'')+'\u0001'+n;
   // 보스마다 자기 주기(주간/월간)의 시작일 이후 기록이 있으면 처치한 것
   for(const e of entries)if(e.kind==='in'&&e.bossN){const k=key(e.bossC,e.bossN);if(!done[k]||e.date>done[k].date)done[k]=e}
-  if(!bosses.length){setText(E.wkSub,'"보스 등록"에서 캐릭터마다 매주 잡는 보스와 받는 금액을 등록하면 여기서 체크할 수 있어요.');E.wkBar.style.width='0';setHTML(E.wkList,'');setText(E.wkEdit,'보스 등록');return}
-  setText(E.wkEdit,'보스 편집');
+  const allC=charList();if(wkChar!==null&&!allC.some(c=>c.name===wkChar))wkChar=null;
+  setText(E.wkEdit,wkChar===null?'+ 캐릭터 추가':'보스 편집');
+  if(!allC.length){setText(E.wkSub,'"+ 캐릭터 추가"로 캐릭터를 만들고, 캐릭터를 눌러 잡는 보스를 넣어 주세요.');E.wkBar.style.width='0';
+    setHTML(E.wkList,'<div class="chlist"><button type="button" class="chtile chadd" id="wkAddChar"><span class="chn">+ 캐릭터 추가</span><span class="small">보스를 잡는 캐릭터를 먼저 추가해 주세요</span></button></div>');return}
   const dk=b=>{const e=done[key(b.char,b.name)];return e&&e.date>=periodStart(b)?e:null},got=bosses.filter(dk),sum=got.reduce((a,b)=>a+(dk(b).boss||0),0),max=bosses.reduce((a,b)=>a+b.amount,0);
   const hasM=bosses.some(b=>b.cycle==='m'),mn=monthNext();
   setText(E.wkSub,got.length+'/'+bosses.length+' 처치 · '+short(sum)+' / '+short(max)+' · 주간 초기화까지 '+(left<=1?'오늘':left+'일')+(hasM?' · 월간 초기화 '+(mn.getMonth()+1)+'/'+mn.getDate():''));
   E.wkBar.style.width=(bosses.length?got.length/bosses.length*100:0)+'%';
-  const chars=[...new Set(bosses.map(b=>b.char))];if(wkChar!==null&&!chars.includes(wkChar))wkChar=null;
+  const chars=allC.map(c=>c.name),lvOf=n=>(allC.find(c=>c.name===n)||{}).level||0;
   const grp=c=>{const idx=bosses.map((b,i)=>[b,i]).filter(([b])=>b.char===c),g=idx.filter(([b])=>dk(b));return{idx,g,gs:g.reduce((a,[b])=>a+(dk(b).boss||0),0)}};
   // 1단계: 캐릭터 목록 (누르면 그 캐릭터의 보스 책장으로)
   if(wkChar===null){setHTML(E.wkList,'<div class="chlist">'+chars.map(c=>{const{idx,g,gs}=grp(c);
-      return `<button type="button" class="chtile" data-c="${esc(c)}"><span class="chn">${esc(c||'캐릭터 미지정')}</span><span class="small">${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span><span class="leds" aria-hidden="true">${idx.map(([b])=>`<i class="${diffCls(b)}${dk(b)?' on':''}${b.cycle==='m'?' m':''}"></i>`).join('')}</span><span class="chgo" aria-hidden="true">›</span></button>`}).join('')+'</div>');return}
+      return `<button type="button" class="chtile" data-c="${esc(c)}"><span class="chn">${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</span><span class="small">${idx.length?`${g.length}/${idx.length} 처치 · ${esc(short(gs))}`:'보스를 추가해 주세요'}</span><span class="leds" aria-hidden="true">${idx.map(([b])=>`<i class="${diffCls(b)}${dk(b)?' on':''}${b.cycle==='m'?' m':''}"></i>`).join('')}</span><span class="chgo" aria-hidden="true">›</span></button>`}).join('')+'</div>');return}
   // 2단계: 고른 캐릭터의 보스 책장 + 방금 체크한 보스의 드롭 아이템
   setHTML(E.wkList,[wkChar].map(c=>{const{idx,g,gs}=grp(c);
-    return `<button type="button" class="btn link wkback" id="wkBack">‹ 캐릭터 목록</button><div class="wkg"><div class="wkh"><b>${esc(c||'캐릭터 미지정')}</b><span class="small">주간 ${idx.filter(([b])=>b.cycle!=='m').length}/12 · ${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span></div><div class="wkl">`+
+    return `<div class="wkbar"><button type="button" class="btn link wkback" id="wkBack">‹ 캐릭터 목록</button><button type="button" class="btn link wkdel" id="wkDelChar">캐릭터 삭제</button></div>${idx.length?'':`<div class="wkempty">아직 보스가 없어요.<br><button type="button" class="btn dark" id="wkAddBoss">이 캐릭터의 보스 추가</button></div>`}<div class="wkg"${idx.length?'':' hidden'}><div class="wkh"><b>${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</b><span class="small">주간 ${idx.filter(([b])=>b.cycle!=='m').length}/12 · ${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span></div><div class="wkl">`+
       idx.map(([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name,df=b.diff?({이지:'이',노멀:'노',하드:'하',카오스:'카',익스트림:'익'})[b.diff]||'':'',
         full=b.name+(b.cycle==='m'?' (월간)':'')+' · +'+short(amt)+(on?' · 처치함':'');
         return `<button type="button" class="wkb ${diffCls(b)}${on?' on':''}${b.cycle==='m'?' m':''}${i===wkSel?' sel':''}" data-i="${i}" aria-pressed="${on}" title="${esc(full)}" aria-label="${esc(full)}"><i aria-hidden="true"></i><span>${esc(lab)}</span>${df?`<b class="df">${df}</b>`:''}</button>`}).join('')+'</div><div class="wklegend" aria-hidden="true"><span><i style="background:#4f9a43"></i>이지</span><span><i style="background:#2f72b8"></i>노멀</span><span><i style="background:#c0392b"></i>하드</span><span><i style="background:#6d1f5c"></i>카오스</span><span><i style="background:#1c1c1c"></i>익스트림</span><span><i style="background:#f3c63f"></i>월간</span><span>✓ 처치</span></div></div>'+wkDropPanel(dk)}).join(''))}
@@ -1018,7 +1073,7 @@ function wkDropPanel(dk){const b=bosses[wkSel];if(!b||b.char!==wkChar||!dk(b))re
     its.map(n=>`<button type="button" class="itile" data-item="${esc(n)}">${itemIcon(n)}<span>${esc(n)}</span></button>`).join('')+
     `<button type="button" class="itile custom" data-item="\u0003"><span class="ph" aria-hidden="true">✏️</span><span>직접 입력</span></button></div><div class="small">돈 되는 게 안 나왔으면 "닫기"를 누르면 돼요.</div></div>`}
 let wkChar=null,wkSel=null;
-E.wkEdit.onclick=()=>openBosses();
+E.wkEdit.onclick=()=>wkChar===null?openAddChar():openBosses(wkChar);
 // 드롭 아이템: 나왔을 때 "판매 대기"로 적고, 팔리면 받은 메소를 적어 수익으로 바꾼다
 let dMode='new',dId=null,dState='sold',dPriceMode='list';
 const setDPriceMode=m=>{dPriceMode=m;for(const x of E.dMode.children){x.classList.toggle('on',x.dataset.m===m);x.setAttribute('aria-pressed',x.dataset.m===m)}
@@ -1115,7 +1170,10 @@ function renderDrops(){const ws=ymd(weekStart()),wait=entries.filter(e=>e.kind==
   // 드롭은 보스 책장에서 체크할 때 추가한다. 여기는 아직 안 판 아이템이 있을 때만 보인다
   E.dropWait.hidden=!wait.length;setText(E.dropSub,wait.length+'개'+(soldWk.length?' · 이번 주 판매 +'+short(sum):''));
   setHTML(E.dropList,wait.map(e=>`<div class="drow">${itemIcon(e.item)}<span>${esc(e.item)}<small>${esc(md(e.date))}${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · ${isRingBox(e.item)?'열기 전':e.est?'예상 '+esc(short(e.est)):'판매 대기'}</small></span>${isRingBox(e.item)?`<button class="btn" type="button" data-open="${esc(e.id)}">열었어요</button>`:`<button class="btn" type="button" data-sell="${esc(e.id)}">팔았어요</button>`}</div>`).join(''))}
-E.wkList.onclick=e=>{const ct=e.target.closest('.chtile');if(ct){wkChar=ct.dataset.c;wkSel=null;renderWeek();return}
+E.wkList.onclick=e=>{if(e.target.closest('#wkAddChar'))return openAddChar();if(e.target.closest('#wkAddBoss'))return openBosses(wkChar);
+  const dl=e.target.closest('#wkDelChar');if(dl){if(!dl.classList.contains('sure')){dl.classList.add('sure');dl.textContent='정말 삭제할까요? (보스도 같이 지워져요)';setTimeout(()=>{if(dl.isConnected){dl.classList.remove('sure');dl.textContent='캐릭터 삭제'}},4000);return}
+    const c=wkChar;try{store.setPrefs({...prefs,chars:(prefs.chars||[]).filter(x=>x.name!==c)});store.setBosses(bosses.filter(b=>b.char!==c));wkChar=null;wkSel=null;toast((c||'캐릭터 미지정')+' 캐릭터를 지웠어요');renderWeek()}catch(err){}return}
+  const ct=e.target.closest('.chtile');if(ct){wkChar=ct.dataset.c;wkSel=null;renderWeek();return}
   if(e.target.closest('#wkBack')){wkChar=null;wkSel=null;renderWeek();return}
   if(e.target.closest('#wkDropClose')){wkSel=null;renderWeek();return}
   const it=e.target.closest('[data-item]');if(it){const b=bosses[wkSel];if(b)openDropFor(b,it.dataset.item);return}
