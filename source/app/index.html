@@ -329,9 +329,8 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
       <div class="small" id="wkSub"></div>
       <div class="wkmeter" aria-hidden="true"><i id="wkBar" style="width:0"></i></div>
       <div id="wkList"></div>
-      <div class="mhead" style="margin:18px 0 0"><h3 style="margin:0;font-size:16px">드롭 아이템</h3><button class="btn" type="button" id="dropAdd" style="min-height:38px;padding:4px 12px;font-size:14px">+ 드롭 아이템</button></div>
-      <div class="small" id="dropSub" style="margin-top:4px"></div>
-      <div id="dropList"></div>
+      <div id="dropWait" hidden><h3 style="margin:18px 0 0;font-size:16px">판매 대기 <span class="small" id="dropSub" style="font-weight:400"></span></h3>
+      <div id="dropList"></div></div>
     </section>
     </div>
 
@@ -1065,7 +1064,7 @@ function openDrop(sellId){setText(E.dErr,'');const ex=sellId?entries.find(x=>x.i
   setText(E.dTitle,ex?'팔았어요':'드롭 아이템');E.dStateBox.hidden=!!ex;setDState('sold');if(!ex)E.dBoss.value='';
   dSel='';dGrid();if(ex){const inList=[...E.dItemGrid.querySelectorAll('.itile')].some(t=>t.dataset.n===ex.item);dPick(inList?ex.item:'\u0003');E.dItem.value=ex.item}else dPick('');
   E.dDlg.showModal();(ex?E.dPrice:E.dBoss).focus()}
-E.dropAdd.onclick=()=>openDrop();E.dClose.onclick=()=>E.dDlg.close();
+E.dClose.onclick=()=>E.dDlg.close();
 E.dState.onclick=e=>{const b=e.target.closest('.chip');if(b)setDState(b.dataset.s)};
 E.dPrice.addEventListener('input',()=>{commaize(E.dPrice);dPriceHint()});E.dPc.addEventListener('change',dPriceHint);
 E.dEst.addEventListener('input',()=>{commaize(E.dEst);const v=parse(E.dEst.value),r=feeRate(prefs.mvp);
@@ -1098,7 +1097,8 @@ E.dForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(
     else{const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);put(id,data);E.dDlg.close();toast(item+' 판매! +'+fmt(price)+(c.fee?' (수수료 '+short(c.fee)+')':''),{ids:[id]})}}
   catch(e){err('저장하지 못했어요. 다시 시도해 주세요.')}});
 function renderDrops(){const ws=ymd(weekStart()),wait=entries.filter(e=>e.kind==='drop').sort((a,b)=>(b.at||0)-(a.at||0)),soldWk=entries.filter(e=>e.kind==='in'&&e.sale&&e.date>=ws),sum=soldWk.reduce((a,e)=>a+e.sale,0);
-  setText(E.dropSub,(soldWk.length?'이번 주 판매 '+soldWk.length+'개 · +'+short(sum):'이번 주 판매 없음')+(wait.length?' · 판매 대기 '+wait.length+'개':''));
+  // 드롭은 보스 책장에서 체크할 때 추가한다. 여기는 아직 안 판 아이템이 있을 때만 보인다
+  E.dropWait.hidden=!wait.length;setText(E.dropSub,wait.length+'개'+(soldWk.length?' · 이번 주 판매 +'+short(sum):''));
   setHTML(E.dropList,wait.map(e=>`<div class="drow">${itemIcon(e.item)}<span>${esc(e.item)}<small>${esc(md(e.date))}${e.dropBoss?' · '+esc(e.dropBoss):''}${e.dropChar?' · '+esc(e.dropChar):''} · ${isRingBox(e.item)?'열기 전':e.est?'예상 '+esc(short(e.est)):'판매 대기'}</small></span>${isRingBox(e.item)?`<button class="btn" type="button" data-open="${esc(e.id)}">열었어요</button>`:`<button class="btn" type="button" data-sell="${esc(e.id)}">팔았어요</button>`}</div>`).join(''))}
 E.wkList.onclick=e=>{const ct=e.target.closest('.chtile');if(ct){wkChar=ct.dataset.c;wkSel=null;renderWeek();return}
   if(e.target.closest('#wkBack')){wkChar=null;wkSel=null;renderWeek();return}
