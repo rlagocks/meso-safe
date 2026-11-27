@@ -239,6 +239,14 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .symbox{margin-top:12px;padding:12px;border:2px solid var(--safe2);border-radius:14px;background:var(--card)}
 .symbox select{font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
 .symbox .two{margin-bottom:10px}
+.symnx{margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.symnxh{display:flex;gap:6px;align-items:center;margin-bottom:6px}.symnxh b{flex:none}.symnxh select{flex:1;min-width:0}.symnxh .btn{flex:none;min-height:44px;padding:4px 12px;font-size:14px}
+.symlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.symitem{display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto auto;column-gap:8px;row-gap:3px;align-items:center;text-align:left;padding:6px 8px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.symitem img{grid-row:1/4;width:32px;height:32px}.symitem .sn{font-size:13px;font-weight:700;line-height:1.2}.symitem .sn b{color:var(--safe2)}
+.symitem .sg{height:5px;border-radius:9px;background:var(--soft);overflow:hidden}.symitem .sg i{display:block;height:100%;background:var(--safe)}
+.symitem .sc{font-size:11px;color:var(--mute);line-height:1.2}.symitem.on{border-color:var(--safe);background:light-dark(#fff3e2,#2a1e14)}
+.symitem.full{opacity:.55;cursor:default}.symitem.full .sc{color:var(--plus);font-weight:700}
 .chlv{font-size:12px;font-weight:700;color:var(--mute);margin-left:2px}.chadd{border-style:dashed;grid-template-columns:1fr}
 .wkbar{display:flex;justify-content:space-between;align-items:center;margin-top:6px}.wkbar .btn{min-height:36px;padding:4px 0;text-decoration:none;font-weight:700}
 .wkdel{color:var(--mute);font-weight:400!important;font-size:13px}.wkdel.sure{color:var(--minus)}
@@ -376,6 +384,11 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
             <label>어디에 썼나요</label>
             <div class="chips" id="cats" role="group" aria-label="지출 종류"></div>
             <div class="symbox" id="symBox" hidden>
+              <div class="symnx" id="symNx" hidden>
+                <div class="symnxh"><b>내 심볼</b><select id="sChar" aria-label="캐릭터"></select><button class="btn" type="button" id="sLoad">불러오기</button></div>
+                <div class="small" id="sNxMsg">캐릭터를 고르고 불러오면 장착한 심볼과 레벨을 넥슨에서 가져와요.</div>
+                <div class="symlist" id="symList"></div>
+              </div>
               <div class="two"><div><label for="sType">심볼 종류</label><select id="sType"><option value="arc">아케인 심볼</option><option value="aut">어센틱 심볼</option><option value="grd">그랜드 어센틱 심볼</option></select></div>
                 <div><label for="sReg">지역</label><select id="sReg"></select></div></div>
               <div class="two"><div><label for="sFrom">지금 레벨</label><select id="sFrom"></select></div><div><label for="sTo">올릴 레벨</label><select id="sTo"></select></div></div>
@@ -1248,7 +1261,7 @@ E.aBtnOpen.onclick=()=>{const o=E.aDrawer.classList.toggle('open');E.aBtnOpen.se
 const setSign=s=>{fragSign=s;E.fP.classList.toggle('on',s>0);E.fM.classList.toggle('on',s<0);E.fP.setAttribute('aria-pressed',s>0);E.fM.setAttribute('aria-pressed',s<0)};
 E.fP.onclick=()=>setSign(1);E.fM.onclick=()=>setSign(-1);
 E.cats.innerHTML=CATS.map(c=>`<button type="button" class="chip${c===cat?' on':''}" data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('');
-E.cats.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;for(const x of E.cats.children){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)}E.symBox.hidden=cat!=='심볼';if(cat==='심볼')symCalc()};
+E.cats.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;for(const x of E.cats.children){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)}E.symBox.hidden=cat!=='심볼';if(cat==='심볼'){symNxInit();symCalc()}};
 // ===== 심볼 강화 비용 계산 =====
 // 아케인: (n³ + (80+20r)n² + 11n + 880+220r) × 1,000 (만 단위 버림) → 2026-09-17 30% 인하로 × 0.7
 // 어센틱/그랜드: 필요 성장치(9n²+20n) × (지역 단가 − 60,000 × (n−1)) (10만 단위 버림)
@@ -1268,6 +1281,24 @@ function symCalc(){if(E.symBox.hidden)return;const type=E.sType.value,t=SYM[type
   E.oAmt.value=mesoTxt(c);commaize(E.oAmt);live(E.oAmt,'hOut');
   E.oMemo.value=t.label+' '+t.regs[r]+' '+f+'→'+to;
   E.sHint.textContent=t.regs[r]+' '+f+'→'+to+'레벨: '+fmt(c)+(to-f>1?' ('+Array.from({length:to-f},(_,i)=>f+i).map(n=>short(symStep(type,r,n))).join(' + ')+')':'')}
+// 넥슨 Open API: 캐릭터가 장착한 심볼(종류·지역·레벨·성장치)을 불러와 계산기에 채운다
+let symData=[];
+function symParse(n){const t=/그랜드/.test(n)?'grd':/어센틱/.test(n)?'aut':/아케인/.test(n)?'arc':'';if(!t)return null;const reg=String(n.split(':').pop()).trim();
+  const r=SYM[t].regs.findIndex(x=>x===reg||x.includes(reg)||reg.includes(x));return r<0?null:{t,r}}
+function symNxInit(){E.symNx.hidden=!nexon.key;if(!nexon.key)return;const names=[...new Set([nexon.name,...charList().map(c=>c.name)].filter(Boolean))];
+  const cur=E.sChar.value;E.sChar.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${esc(n)}</option>`).join('')}
+function symDraw(){setHTML(E.symList,symData.map((s,i)=>{const p=symParse(s.symbol_name),max=p?SYM[p.t].max:0,lv=s.symbol_level,full=lv>=max;
+  const next=p&&!full?symStep(p.t,p.r,lv):0,toMax=p&&!full?symCost(p.t,p.r,lv,max):0,pct=s.symbol_require_growth_count?Math.min(100,s.symbol_growth_count/s.symbol_require_growth_count*100):100;
+  return `<button type="button" class="symitem${full?' full':''}" data-i="${i}"${!p||full?' disabled':''}><img src="${esc(s.symbol_icon)}" alt="" width="32" height="32"><span class="sn">${esc(p?SYM[p.t].regs[p.r]:s.symbol_name)} <b>Lv.${lv}</b></span>`+
+    `<span class="sg"><i style="width:${pct}%"></i></span><span class="sc">${full?'만렙':'다음 '+esc(short(next))+' · 만렙까지 '+esc(short(toMax))}</span></button>`}).join(''))}
+E.sLoad.onclick=async()=>{const name=E.sChar.value;if(!name)return;setText(E.sNxMsg,'불러오는 중…');E.sLoad.disabled=true;
+  try{let ocid=name===nexon.name?nexon.ocid:'';if(!ocid)ocid=(await nx('id?character_name='+encodeURIComponent(name),nexon.key)).ocid;
+    const j=await nx('character/symbol-equipment?ocid='+encodeURIComponent(ocid),nexon.key);symData=(j.symbol||[]).slice().sort((a,b)=>{const x=symParse(a.symbol_name),y=symParse(b.symbol_name);return (x?['arc','aut','grd'].indexOf(x.t)*10+x.r:99)-(y?['arc','aut','grd'].indexOf(y.t)*10+y.r:99)});
+    setText(E.sNxMsg,symData.length?name+'의 심볼 '+symData.length+'개 · 누르면 아래 계산기에 채워져요':'장착한 심볼이 없어요.');symDraw()}
+  catch(e){setText(E.sNxMsg,e.message||'불러오지 못했어요.')}E.sLoad.disabled=false};
+E.symList.onclick=e=>{const b=e.target.closest('.symitem');if(!b||b.disabled)return;const s=symData[+b.dataset.i],p=symParse(s.symbol_name);if(!p)return;
+  E.sType.value=p.t;symFill(false);E.sReg.value=String(p.r);E.sFrom.value=String(s.symbol_level);E.sTo.value='';symTo();
+  for(const x of E.symList.children)x.classList.toggle('on',x===b)};
 E.sType.onchange=()=>symFill(false);E.sReg.onchange=symCalc;E.sFrom.onchange=symTo;E.sTo.onchange=symCalc;
 symFill(false);
 E.dBtn.onclick=()=>{const o=E.drawer.classList.toggle('open');E.dBtn.setAttribute('aria-expanded',o);if(o)E.oAmt.focus()};
