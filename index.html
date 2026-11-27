@@ -271,6 +271,10 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .chbar{grid-column:1;display:block;height:6px;margin-top:8px;border-radius:9px;background:var(--soft);overflow:hidden}.chbar i{display:block;height:100%;background:#2f9e7d;border-radius:9px}
 .ing .em img{width:24px;height:24px}.mpc .em img{width:34px;height:34px}
 .tabbar img{width:22px;height:22px}
+.mpmonth{margin-top:16px;padding:10px 10px 12px;border-radius:18px;border:2px dashed #e0b43a;background:light-dark(#fff8e1,#2e2814)}
+.mpmh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 2px}.mpmh b{font-size:15px;color:light-dark(#8a6400,#f3c63f)}
+.mpmonth .mpboard{margin-top:8px}
+.ledsep{width:2px;align-self:stretch;margin:2px 3px;border-radius:2px;background:#e0b43a}
 .mpic{width:22px;height:22px;vertical-align:-5px;margin-right:5px}
 .toast{width:max-content}.toast button{flex:none;white-space:nowrap}
 .chlist{display:grid;gap:8px;margin-top:12px}
@@ -1127,9 +1131,10 @@ function renderWeek(){renderDrops();const ws=ymd(weekStart()),next=new Date(week
 const bossPower=b=>{const e=BOSSES.find(([n])=>n===b.boss),p=e&&(e[1].find(([d])=>d===b.diff)||[])[1];return p===0?1e13:p||b.amount*(b.party||1)};
 const bossOrder=([a],[b])=>(a.cycle==='m')-(b.cycle==='m')||bossPower(a)-bossPower(b);
 const grp=c=>{const idx=bosses.map((b,i)=>[b,i]).filter(([b])=>b.char===c).sort(bossOrder),g=idx.filter(([b])=>dk(b));return{idx,g,gs:g.reduce((a,[b])=>a+(dk(b).boss||0),0)}};
+  const tray=l=>[...l].sort((x,y)=>!!dk(y[0])-!!dk(x[0])).map(([b])=>`<i class="${diffCls(b)}${dk(b)?' on':''}${b.cycle==='m'?' m':''}">${ingImg(b,22)}</i>`).join('');
   // 1단계: 캐릭터 목록 (누르면 그 캐릭터의 보스 책장으로)
   if(wkChar===null){setHTML(E.wkList,'<div class="chlist">'+chars.map(c=>{const{idx,g,gs}=grp(c);
-      return `<button type="button" class="chtile" data-c="${esc(c)}"><span class="chn">${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</span><span class="small">${idx.length?`${g.length}/${idx.length} 처치 · ${esc(short(gs))}`:'보스를 추가해 주세요'}</span><span class="leds" aria-hidden="true">${[...idx].sort((x,y)=>!!dk(y[0])-!!dk(x[0])).map(([b])=>`<i class="${diffCls(b)}${dk(b)?' on':''}${b.cycle==='m'?' m':''}">${ingImg(b,22)}</i>`).join('')}</span>${idx.length?`<span class="chbar" aria-hidden="true"><i style="width:${g.length/idx.length*100}%"></i></span>`:''}<span class="chgo" aria-hidden="true">›</span></button>`}).join('')+'</div>');return}
+      return `<button type="button" class="chtile" data-c="${esc(c)}"><span class="chn">${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</span><span class="small">${idx.length?`${g.length}/${idx.length} 처치 · ${esc(short(gs))}`:'보스를 추가해 주세요'}</span><span class="leds" aria-hidden="true">${tray(idx.filter(([b])=>b.cycle!=='m'))}${idx.some(([b])=>b.cycle==='m')?'<b class="ledsep"></b>'+tray(idx.filter(([b])=>b.cycle==='m')):''}</span>${idx.length?`<span class="chbar" aria-hidden="true"><i style="width:${g.length/idx.length*100}%"></i></span>`:''}<span class="chgo" aria-hidden="true">›</span></button>`}).join('')+'</div>');return}
   // 2단계: 고른 캐릭터의 보스 책장 + 방금 체크한 보스의 드롭 아이템
   setHTML(E.wkList,[wkChar].map(c=>{const{idx,g,gs}=grp(c);
     return `<div class="wkbar"><button type="button" class="btn link wkback" id="wkBack">‹ 캐릭터 목록</button><button type="button" class="btn link wkdel" id="wkDelChar">캐릭터 삭제</button></div>${idx.length?'':`<div class="wkempty">아직 보스가 없어요.<br><button type="button" class="btn dark" id="wkAddBoss">이 캐릭터의 보스 추가</button></div>`}<div class="wkg"${idx.length?'':' hidden'}><div class="wkh"><b>${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</b><span class="small">주간 ${idx.filter(([b])=>b.cycle!=='m').length}/12 · ${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span></div>`+mealPrep(idx,dk)+'</div>'+wkDropPanel(dk)}).join(''));wkPop=null}
@@ -1137,15 +1142,18 @@ const grp=c=>{const idx=bosses.map((b,i)=>[b,i]).filter(([b])=>b.char===c).sort(
 // 난이도별 재료: 메이플 음식 아이템 (초록사과·달걀·짐승의 고기·통닭·피자), 그 밖은 샐러드
 const ING={이지:'food-easy.png',노멀:'food-normal.png',하드:'food-hard.png',카오스:'food-chaos.png',익스트림:'food-extreme.png'};
 const ingImg=(b,s)=>`<img src="items/${ING[b.diff]||'food-etc.png'}" alt="" width="${s}" height="${s}">`;
-function mealPrep(idx,dk){const info=([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name;
+// 주간 보스와 월간 보스는 따로: 각자 재료 도마 + 도시락통
+function mealPrep(idx,dk){const wk=idx.filter(([b])=>b.cycle!=='m'),mo=idx.filter(([b])=>b.cycle==='m'),mn=monthNext();
+  return (wk.length?mpSection(wk,dk,false):'')+(mo.length?`<div class="mpmonth"><div class="mpmh"><b><img class="mpic" src="items/food-honey.png" alt="">월간 보스</b><span class="small">한 달에 한 번 · ${mn.getMonth()+1}/${mn.getDate()} 초기화</span></div>`+mpSection(mo,dk,true)+'</div>':'')}
+function mpSection(idx,dk,m){const info=([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name;
     return{b,i,on,amt,lab,em:ingImg(b,30),cls:diffCls(b)+(b.cycle==='m'?' m':'')+(i===wkSel?' sel':''),full:b.name+(b.cycle==='m'?' (월간)':'')+' · +'+short(amt)+(on?' · 처치함':'')}};
   const all=idx.map(info),todo=all.filter(x=>!x.on),done=all.filter(x=>x.on);
-  const ings=todo.map(x=>`<button type="button" class="wkb ing ${x.cls}" data-i="${x.i}" aria-pressed="false" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 담기"><span class="em" aria-hidden="true">${x.em}</span>${esc(x.lab)}${x.b.diff?`<span class="df">${esc(x.b.diff)}</span>`:''}${x.b.cycle==='m'?'<i class="mtag">월간</i>':''}<span class="pr">${esc(short(x.amt))}</span></button>`).join('');
+  const ings=todo.map(x=>`<button type="button" class="wkb ing ${x.cls}" data-i="${x.i}" aria-pressed="false" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 담기"><span class="em" aria-hidden="true">${x.em}</span>${esc(x.lab)}${x.b.diff?`<span class="df">${esc(x.b.diff)}</span>`:''}<span class="pr">${esc(short(x.amt))}</span></button>`).join('');
   const cells=done.map(x=>`<button type="button" class="wkb mpc on ${x.cls}${x.i===wkPop?' pop':''}" data-i="${x.i}" aria-pressed="true" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 빼기"><span class="ck" aria-hidden="true">✓</span><span class="em" aria-hidden="true">${x.em}</span><span class="nm">${esc(x.lab)}${x.b.diff?' '+esc(x.b.diff):''}</span><span class="pr">+${esc(short(x.amt))}</span></button>`).join('')+
     todo.map(()=>'<div class="mpc" aria-hidden="true"></div>').join('');
   return `<div class="mpboard"><div class="mplab"><span><img class="mpic" src="items/food-apple.png" alt="">재료 손질 중</span><span class="small">잡은 보스를 눌러 통에 담아요</span></div>`+
-    (ings?`<div class="mpings">${ings}</div>`:'<div class="mpdone">재료를 다 담았어요! 이번 주 밀프랩 완성 🎉</div>')+'</div>'+
-    `<div class="mpbox"><div class="mplid"><span><img class="mpic" src="items/food-lunchbox.png" alt="">이번 주 도시락통</span><span>${done.length}/${all.length}칸</span></div><div class="mpcells">${cells}</div></div>`}
+    (ings?`<div class="mpings">${ings}</div>`:`<div class="mpdone">재료를 다 담았어요! ${m?'이번 달':'이번 주'} 밀프랩 완성 🎉</div>`)+'</div>'+
+    `<div class="mpbox"><div class="mplid"><span><img class="mpic" src="items/food-lunchbox.png" alt="">${m?'이번 달 도시락통':'이번 주 도시락통'}</span><span>${done.length}/${all.length}칸</span></div><div class="mpcells">${cells}</div></div>`}
 const diffCls=b=>'d-'+(({이지:'e',노멀:'n',하드:'h',카오스:'c',익스트림:'x'})[b.diff]||'u');
 // 체크한 보스가 드롭하는 돈 되는 아이템 (누르면 보스·아이템이 채워진 드롭 창)
 function wkDropPanel(dk){const b=bosses[wkSel];if(!b||b.char!==wkChar||!dk(b))return'';
