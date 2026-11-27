@@ -205,17 +205,20 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .assets{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;background:rgba(0,0,0,.18);color:#fff;border-radius:12px;padding:8px 12px;margin:-4px 0 14px}
 .assets b{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400;font-size:22px}
 .assets .ad{font-size:13px;opacity:.9;flex:1 1 100%;min-width:0;order:3}
-#dpTabs .chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .assets .btn.link{color:#fff;min-height:32px;padding:2px 4px;font-size:13px}
 /* 주간 보스 */
 .wk{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px}
 .wk .mhead{margin-bottom:6px}
-.wkl{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:6px}
+/* 보스 책장: 캐릭터마다 선반 한 줄, 보스 하나는 얇은 세로 칸 (불이 켜지면 처치) */
+.wkl{display:flex;flex-wrap:wrap;gap:3px;align-items:flex-end;margin-top:6px;padding:6px 6px 0;background:light-dark(#fbf3e4,#262019);border-radius:8px 8px 0 0;border-bottom:6px solid light-dark(#c99a63,#5a3f25)}
 .wkg{margin-top:14px}.wkh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.wkh b{font-size:15px}
-.wkb{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 10px;border:2px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;text-align:left;color:var(--ink);font:inherit}
-.wkb i{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--lid);display:grid;place-items:center;font-style:normal;font-size:14px;color:#fff}
-.wkb.on{background:var(--box);border-color:var(--lid)}.wkb.on i{background:var(--lid)}.wkb.on i::after{content:"✓"}
-.wkb span{min-width:0;flex:1;line-height:1.2}.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}.wkb small{display:block;color:var(--plus);font-size:12px}
+.wkb{display:flex;flex-direction:column;align-items:center;gap:4px;width:30px;height:100px;padding:6px 0 4px;border:2px solid var(--line);border-bottom:0;border-radius:5px 5px 0 0;background:var(--card);cursor:pointer;color:var(--ink);font:inherit;overflow:hidden}
+.wkb i{flex:none;width:9px;height:9px;border-radius:50%;background:light-dark(#d9d3c4,#4a4a4a)}
+.wkb.on{background:var(--box);border-color:var(--lid)}.wkb.on i{background:#2fd46b;box-shadow:0 0 6px #2fd46b}
+.wkb.m{border-top:4px solid #7c4dd6}
+.wkb span{writing-mode:vertical-rl;font-size:12px;line-height:1;letter-spacing:-.5px;flex:1;min-height:0;overflow:hidden;white-space:nowrap}
+.wkb .df{font-size:10px;font-weight:700;color:var(--mute);line-height:1}.wkb.on .df{color:var(--plus)}
+.wkb:focus-visible{outline:3px solid var(--safe);outline-offset:1px}.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}.wkb small{display:block;color:var(--plus);font-size:12px}
 .edlg .chip{border-color:var(--line)}.edlg .chip.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;max-height:260px;overflow:auto;margin:-4px 0 12px;padding:2px}
 .itile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;min-height:84px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer;font:inherit;font-size:12px;line-height:1.25;text-align:center}
@@ -224,7 +227,6 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
 .igrid .empty{grid-column:1/-1;padding:12px;text-align:center}
 .dpick{min-height:44px;display:flex;align-items:center;gap:8px;padding:6px 10px;border:2px solid var(--line);border-radius:12px;font-weight:700;font-size:14px;overflow:hidden}.dpick img,.dpick .ph{width:28px;height:28px;flex:none;font-size:18px}
 #dRef b{color:var(--ink)}#dRef a{color:inherit}
-.dpq{font-size:11px;font-weight:700;color:var(--plus)}.dpq.z{color:var(--mute);font-weight:400}
 .drow img,.drow .ph{width:28px;height:28px;flex:none;font-size:18px;display:grid;place-items:center}
 .drow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}.drow span{flex:1;min-width:0;line-height:1.3}.drow small{display:block;color:var(--mute)}
 .drow .btn{min-height:38px;padding:4px 12px;font-size:14px;flex:none}
@@ -315,12 +317,6 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
       <div class="total"><span>상자에 담긴 메소</span><b id="iSum">0</b></div>
       <button class="btn orange" type="submit" id="inBtn" style="width:100%">금고에 넣기</button>
     </form>
-    <section class="wk" aria-labelledby="dpT">
-      <div class="mhead"><h2 id="dpT">도핑 창고</h2></div>
-      <div class="small" id="dpSub">산 도핑은 재고로 쌓이고, 쓸 때 산 가격의 평균 단가만큼 지출로 잡혀요.</div>
-      <div class="chips" id="dpTabs" role="tablist" style="margin:10px 0 8px"><button type="button" class="chip on" data-c="boss" role="tab">보스 도핑</button><button type="button" class="chip" data-c="hunt" role="tab">사냥 도핑</button></div>
-      <div class="igrid" id="dpGrid" role="listbox" aria-label="도핑 아이템" style="max-height:none"></div>
-    </section>
     <section class="wk" aria-labelledby="wkT">
       <div class="mhead"><h2 id="wkT">보스</h2><button class="btn link" type="button" id="wkEdit" style="min-height:36px;padding:4px">보스 편집</button></div>
       <div class="small" id="wkSub"></div>
@@ -473,23 +469,6 @@ footer{padding:8px max(5vw,16px) max(28px,env(safe-area-inset-bottom));font-size
     </div>
     <div class="gerr" id="dErr" role="alert"></div>
     <div class="acts"><button class="btn" type="button" id="dClose">취소</button><button class="btn dark" type="submit" id="dSave">저장</button></div>
-  </form>
-</dialog>
-<dialog class="edlg" id="dpDlg" aria-labelledby="dpTitle">
-  <form id="dpForm" novalidate>
-    <h2 id="dpTitle">도핑</h2>
-    <div class="dpick" id="dpItem" style="margin-bottom:12px"></div>
-    <div class="f" id="dpNameBox" hidden><label for="dpName">도핑 이름</label><input id="dpName" maxlength="40" autocomplete="off" placeholder="예: 익스트림 그린"></div>
-    <div class="chips" id="dpMode" role="group" aria-label="샀어요 또는 썼어요" style="margin-bottom:12px"><button type="button" class="chip" data-m="use">썼어요</button><button type="button" class="chip" data-m="buy">샀어요</button></div>
-    <div class="two"><div class="f"><label for="dpQty">개수</label><input id="dpQty" inputmode="numeric" autocomplete="off" value="1"></div>
-      <div class="f"><label for="dpDate">날짜</label><input type="date" id="dpDate"></div></div>
-    <div id="dpBuyBox">
-      <div class="chips" id="dpPriceMode" role="group" aria-label="가격 적는 방식" style="margin-bottom:8px"><button type="button" class="chip" data-p="unit">개당 가격</button><button type="button" class="chip" data-p="total">총 가격</button></div>
-      <div class="f"><label for="dpPrice" id="dpPriceL">개당 가격</label><input id="dpPrice" inputmode="text" autocomplete="off" placeholder="예: 300만"></div>
-    </div>
-    <div class="hint ok" id="dpHint" style="margin-bottom:10px"></div>
-    <div class="gerr" id="dpErr" role="alert"></div>
-    <div class="acts"><button class="btn" type="button" id="dpClose">취소</button><button class="btn dark" type="submit" id="dpSave">저장</button></div>
   </form>
 </dialog>
 <dialog class="edlg" id="rDlg" aria-labelledby="rTitle">
@@ -773,7 +752,7 @@ function renderTop(){
     if(avg>0){const days=Math.ceil((goal.amount-gv)/avg);if(days>3650)msg='이 속도면 10년 넘게 걸려요';else{const d=new Date();d.setDate(d.getDate()+days);msg='이 속도면 '+(d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'년 ':'')+(d.getMonth()+1)+'월 '+d.getDate()+'일쯤 달성 (최근 7일 하루 평균 +'+short(Math.round(avg))+')'}}
     else msg=t.wk.some(w=>w.i||w.o)?'최근 7일은 잔액이 줄고 있어서 달성일을 예상할 수 없어요':'최근 7일 기록이 없어서 달성일을 예상할 수 없어요';
     setText(E.gEta,msg);E.gEta.hidden=false}else E.gEta.hidden=true;
-  renderWeek();renderDope();
+  renderWeek();
   const show=t.boxes;
   if(!show.length)setHTML(E.inside,'<div class="empty">금고가 비어 있어요.<br>오늘의 수익 상자를 넣어 보세요.<br>가계부 쓰기 전에 있던 메소는 아래 \'잔액 맞추기\'로 넣어요.</div>');
   else{const per=mq.matches?3:4;let h='';
@@ -922,7 +901,7 @@ E.bForm.addEventListener('submit',ev=>{ev.preventDefault();bSync();const list=[]
     for(const x of rows){const amount=parse(x.raw);if(!x.name)return err('보스 이름을 적어 주세요.',gi);if(isNaN(amount)||amount<=0)return err(x.name+'의 금액을 다시 확인해 주세요. 예: 12억',gi);
       if(names.has(x.name))return err((g.char||'캐릭터 미지정')+'에 '+x.name+'이(가) 두 번 있어요.',gi);names.add(x.name);list.push({char:g.char,name:x.name.slice(0,30),amount,cycle:x.cycle,...(x.boss?{boss:x.boss,diff:x.diff,party:x.party||1}:{})})}}
   try{store.setBosses(list);E.bDlg.close();toast(list.length?'캐릭터 '+seen.size+'개 · 보스 '+list.length+'개를 저장했어요':'보스 목록을 비웠어요')}catch(e){setText(E.bErr,'저장하지 못했어요. 다시 시도해 주세요.')}});
-// ===== 도핑 창고 =====
+// ===== 도핑 (화면은 없앴지만, 예전에 적은 도핑 기록의 잔액 계산을 위해 남겨 둠) =====
 const DOPES={boss:[['반짝이는 빨간 별 물약',2003587],['반짝이는 파란 별 물약',2003586],['고급 보스 킬러의 비약',2003596],['고급 관통의 비약',2003598],['대영웅의 비약',2003593],['익스트림 레드',2023125],['익스트림 블루',2023127],['유니온의 힘',2024188]],
   hunt:[['경험 축적의 비약',2003550],['소형 경험 축적의 비약',2003607],['재물 획득의 비약',2003551],['소형 재물 획득의 비약',2003611],['익스트림 골드',2023128],['유니온의 부',2023664],['VIP 부스터',2637168],['MVP 슈퍼파워 버프',2023544]]};
 for(const c of['boss','hunt'])for(const[n,id]of DOPES[c])ITEM_ICON[n]=ITEM_ICON[n]||id;
@@ -930,35 +909,6 @@ for(const c of['boss','hunt'])for(const[n,id]of DOPES[c])ITEM_ICON[n]=ITEM_ICON[
 function dopeStock(){const st={};for(const e of entries.filter(x=>x.kind==='dope').sort((a,b)=>(a.at||0)-(b.at||0))){const s=st[e.item]||(st[e.item]={qty:0,cost:0,dc:e.dc});
     if(e.type==='buy'){s.qty+=e.qty;s.cost+=e.meso}else{s.qty-=e.qty;s.cost-=e.meso}}
   for(const k in st){const s=st[k];if(s.qty<=0){s.qty=Math.max(0,s.qty);s.cost=0}s.cost=Math.max(0,s.cost);s.unit=s.qty>0?s.cost/s.qty:0;s.value=s.cost}return st}
-let dpCat='boss',dpCur='',dpModeV='use',dpPM='unit';
-function renderDope(){if(!E.dpGrid)return;const st=stats().dope,names=[...DOPES[dpCat].map(x=>x[0]),...Object.keys(st).filter(n=>st[n].dc===dpCat&&!DOPES[dpCat].some(x=>x[0]===n))];
-  setHTML(E.dpGrid,names.map(n=>{const s=st[n];return `<button type="button" class="itile" data-n="${esc(n)}">${itemIcon(n)}<span>${esc(n)}</span><small class="dpq${s&&s.qty?'':' z'}">${s&&s.qty?'재고 '+s.qty.toLocaleString()+'개':'재고 없음'}</small></button>`}).join('')+
-    '<button type="button" class="itile custom" data-n="\u0003"><span class="ph" aria-hidden="true">➕</span><span>직접 추가</span></button>');
-  const tot=Object.values(st).reduce((a,x)=>a+x.value,0);setText(E.dpSub,tot?'재고 가치 '+short(Math.round(tot))+' · 쓸 때 산 가격의 평균 단가만큼 지출로 잡혀요':'산 도핑은 재고로 쌓이고, 쓸 때 산 가격의 평균 단가만큼 지출로 잡혀요.')}
-E.dpTabs.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;dpCat=b.dataset.c;for(const x of E.dpTabs.children)x.classList.toggle('on',x===b);renderDope()};
-function dpSync(){const n=dpCur==='\u0003'?E.dpName.value.trim():dpCur,s=stats().dope[n],q=parseInt(E.dpQty.value.replace(/,/g,''),10)||0,p=parse(E.dpPrice.value);
-  for(const x of E.dpMode.children)x.classList.toggle('on',x.dataset.m===dpModeV);for(const x of E.dpPriceMode.children)x.classList.toggle('on',x.dataset.p===dpPM);
-  E.dpBuyBox.hidden=dpModeV!=='buy';setText(E.dpPriceL,dpPM==='unit'?'개당 가격':'총 가격');
-  E.dpItem.innerHTML=(dpCur==='\u0003'?'<span class="ph" aria-hidden="true">➕</span><span>새 도핑</span>':itemIcon(n)+'<span>'+esc(n)+'</span>')+`<small style="margin-left:auto;font-weight:400" class="small">${s&&s.qty?'재고 '+s.qty.toLocaleString()+'개 · 평균 '+esc(short(Math.round(s.unit))):'재고 없음'}</small>`;
-  let h='';if(dpModeV==='use'){if(q>0&&s&&s.qty)h=q>s.qty?'재고가 '+s.qty+'개뿐이에요':'지출 '+fmt(Math.round(s.unit*q))+' · 재고 '+s.qty+' → '+(s.qty-q)+'개';else if(!s||!s.qty)h='재고가 없어요. 먼저 "샀어요"로 산 것을 기록해 주세요.'}
-  else if(q>0&&E.dpPrice.value.trim()&&!isNaN(p)){const total=dpPM==='unit'?p*q:p;h='총 '+fmt(total)+' (개당 '+fmt(Math.round(total/q))+') · 금고에서 빠지고 재고에 들어가요'}
-  E.dpHint.textContent=h;setText(E.dpSave,dpModeV==='use'?'썼어요':'샀어요')}
-function openDope(n){dpCur=n;dpPM='unit';setText(E.dpErr,'');E.dpQty.value='1';E.dpPrice.value='';E.dpDate.value=today();E.dpName.value='';E.dpNameBox.hidden=n!=='\u0003';
-  const s=n!=='\u0003'&&stats().dope[n];dpModeV=s&&s.qty?'use':'buy';setText(E.dpTitle,dpCat==='boss'?'보스 도핑':'사냥 도핑');dpSync();E.dpDlg.showModal();(n==='\u0003'?E.dpName:E.dpQty).focus()}
-E.dpGrid.onclick=e=>{const t=e.target.closest('.itile');if(t)openDope(t.dataset.n)};
-E.dpMode.onclick=e=>{const b=e.target.closest('.chip');if(b){dpModeV=b.dataset.m;dpSync()}};
-E.dpPriceMode.onclick=e=>{const b=e.target.closest('.chip');if(b){dpPM=b.dataset.p;dpSync()}};
-for(const x of[E.dpQty,E.dpName])x.addEventListener('input',dpSync);
-E.dpPrice.addEventListener('input',()=>{commaize(E.dpPrice);dpSync()});
-E.dpClose.onclick=()=>E.dpDlg.close();
-E.dpForm.addEventListener('submit',ev=>{ev.preventDefault();const err=t=>setText(E.dpErr,t),n=(dpCur==='\u0003'?E.dpName.value.trim():dpCur).slice(0,40),q=parseInt(E.dpQty.value.replace(/,/g,''),10);
-  if(!n)return err('도핑 이름을 적어 주세요.');if(!q||q<=0)return err('개수를 숫자로 적어 주세요.');
-  const date=/^\d{4}-\d\d-\d\d$/.test(E.dpDate.value)?E.dpDate.value:today(),s=stats().dope[n],dc=(s&&s.dc)||dpCat;
-  try{if(dpModeV==='use'){if(!s||s.qty<q)return err(s&&s.qty?'재고가 '+s.qty+'개뿐이에요. 개수를 줄이거나 먼저 산 것을 기록해 주세요.':'재고가 없어요. 먼저 "샀어요"로 산 것을 기록해 주세요.');
-      const cost=Math.round(s.unit*q),id=newId();put(id,{kind:'dope',type:'use',item:n,dc,qty:q,meso:cost,date,memo:'',at:Date.now()});E.dpDlg.close();toast(n+' '+q+'개 썼어요 · 지출 '+fmt(cost),{ids:[id]})}
-    else{const p=parse(E.dpPrice.value);if(!E.dpPrice.value.trim()||isNaN(p)||p<=0)return err('가격을 적어 주세요. 예: 300만');
-      const total=dpPM==='unit'?p*q:p,id=newId();put(id,{kind:'dope',type:'buy',item:n,dc,qty:q,meso:total,date,memo:'',at:Date.now()});E.dpDlg.close();toast(n+' '+q+'개 샀어요 · '+fmt(total)+' (재고 '+((s?s.qty:0)+q)+'개)',{ids:[id]})}}
-  catch(e2){err('저장하지 못했어요. 다시 시도해 주세요.')}});
 // 넥슨 Open API: 캐릭터 카드 (키는 이 사용자 계정에만 저장, 결과는 10분 동안 이 기기에 캐시)
 const NX='https://open.api.nexon.com/maplestory/v1/';
 async function nx(path,key){const r=await fetch(NX+path,{headers:{'x-nxopen-api-key':key}});let j=null;try{j=await r.json()}catch(e){}
@@ -1032,7 +982,9 @@ function renderWeek(){renderDrops();const ws=ymd(weekStart()),next=new Date(week
   const chars=[...new Set(bosses.map(b=>b.char))];
   setHTML(E.wkList,chars.map(c=>{const idx=bosses.map((b,i)=>[b,i]).filter(([b])=>b.char===c),g=idx.filter(([b])=>dk(b)),gs=g.reduce((a,[b])=>a+(dk(b).boss||0),0);
     return `<div class="wkg"><div class="wkh"><b>${esc(c||'캐릭터 미지정')}</b><span class="small">주간 ${idx.filter(([b])=>b.cycle!=='m').length}/12 · ${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span></div><div class="wkl">`+
-      idx.map(([b,i])=>{const on=!!dk(b);return `<button type="button" class="wkb${on?' on':''}" data-i="${i}" aria-pressed="${on}"><i aria-hidden="true"></i><span>${esc(b.name)}${b.cycle==='m'?' <em class="mtag">월간</em>':''}<small>+${esc(short(on?dk(b).boss||b.amount:b.amount))}</small></span></button>`}).join('')+'</div></div>'}).join(''))}
+      idx.map(([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name,df=b.diff?({이지:'이',노멀:'노',하드:'하',카오스:'카',익스트림:'익'})[b.diff]||'':'',
+        full=b.name+(b.cycle==='m'?' (월간)':'')+' · +'+short(amt)+(on?' · 처치함':'');
+        return `<button type="button" class="wkb${on?' on':''}${b.cycle==='m'?' m':''}" data-i="${i}" aria-pressed="${on}" title="${esc(full)}" aria-label="${esc(full)}"><i aria-hidden="true"></i><span>${esc(lab)}</span>${df?`<b class="df">${df}</b>`:''}</button>`}).join('')+'</div></div>'}).join(''))}
 E.wkEdit.onclick=()=>openBosses();
 // 드롭 아이템: 나왔을 때 "판매 대기"로 적고, 팔리면 받은 메소를 적어 수익으로 바꾼다
 let dMode='new',dId=null,dState='sold',dPriceMode='list';
