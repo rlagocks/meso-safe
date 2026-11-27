@@ -52,8 +52,9 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .install{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .goalform{display:none;gap:10px;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto auto;margin-top:10px;align-items:end}
 .goalform.on{display:grid}
-.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:clamp(20px,3vw,40px);grid-template-areas:"form safe"}
-.leftcol{grid-area:form;display:grid;gap:20px;align-self:start;min-width:0}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);grid-template-areas:"form safe";align-items:stretch}
+.leftcol{grid-area:form;display:flex;flex-direction:column;gap:20px;min-width:0}.leftcol>.wk{flex:1}
+.safewrap{display:flex;flex-direction:column}.safewrap>.safe{flex:1;display:flex;flex-direction:column}.safe>.inside{flex:1}
 .prep{background:var(--soft);border:2px solid var(--line);border-radius:22px;padding:20px;align-self:start}
 .f{margin-bottom:14px}
 .hint{font-size:13px;color:var(--mute);min-height:20px;margin-top:3px}
@@ -237,32 +238,39 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 /* 주간 보스 */
 .wk{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px}
 .wk .mhead{margin-bottom:6px}
-/* 보스 책장: 나무 책장 안에 보스마다 책 한 권. 난이도별 색·높이, 처치하면 색이 옅어지고 ✓ 도장 */
-.wkl{--row:126px;--board:12px;display:flex;flex-wrap:wrap;column-gap:3px;row-gap:var(--board);align-items:flex-end;margin-top:6px;padding:0 8px var(--board);
-  border:6px solid light-dark(#7a4a24,#4b2d16);border-bottom:0;border-radius:8px 8px 4px 4px;
-  background:repeating-linear-gradient(180deg,light-dark(#5a3820,#2a1b10) 0,light-dark(#4a2d18,#22160c) calc(var(--row) - 1px),light-dark(#b07a45,#6b4626) var(--row),light-dark(#9a6535,#5a3a1f) calc(var(--row) + var(--board)));
-  box-shadow:inset 0 10px 14px -6px rgba(0,0,0,.55),0 3px 0 light-dark(#7a4a24,#3a230f)}
-.wkb{--h:104px;--c:#8a5a2b;--t:#fff;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;width:32px;height:var(--h);margin-top:calc(var(--row) - var(--h));padding:16px 0 6px;
-  border:0;border-radius:3px 3px 1px 1px;background:var(--c);color:var(--t);font:inherit;cursor:pointer;overflow:hidden;
-  box-shadow:inset 0 5px 0 rgba(255,255,255,.22),inset 0 -6px 0 rgba(0,0,0,.25),inset 3px 0 0 rgba(255,255,255,.18),inset -3px 0 0 rgba(0,0,0,.28);transition:transform .12s,filter .12s}
-.wkb:hover{transform:translateY(-3px)}
-.wkb.d-e{--h:94px;--c:#4f9a43}.wkb.d-n{--h:102px;--c:#2f72b8}.wkb.d-h{--h:110px;--c:#c0392b}.wkb.d-c{--h:114px;--c:#6d1f5c}.wkb.d-x{--h:120px;--c:#1c1c1c;--t:#f3c63f}.wkb.d-u{--h:104px;--c:#8a5a2b}
-.wkb span{writing-mode:vertical-rl;font-size:13px;font-weight:700;line-height:1;letter-spacing:-.5px;flex:1;min-height:0;overflow:hidden;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.wkb .df{font-size:10px;font-weight:700;line-height:1;padding:2px 3px;border-radius:3px;background:rgba(0,0,0,.28)}
-.wkb i{position:absolute;top:3px;left:50%;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;border:2px solid rgba(255,255,255,.7);font-style:normal}
-.wkb.m{box-shadow:inset 0 5px 0 #f3c63f,inset 0 9px 0 rgba(0,0,0,.25),inset 0 -6px 0 rgba(0,0,0,.25),inset 3px 0 0 rgba(255,255,255,.18),inset -3px 0 0 rgba(0,0,0,.28)}
-.wkb.on{background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)),var(--c);color:light-dark(#3a3a3a,#eee)}
-.wkb.on span{text-shadow:none;opacity:.75}.wkb.on .df{background:rgba(0,0,0,.12)}
-.wkb.on i{width:20px;height:20px;margin-left:-10px;top:2px;border:0;background:#1fa855;box-shadow:0 0 0 2px #fff,0 2px 4px rgba(0,0,0,.4)}
-.wkb.on i::after{content:"✓";display:grid;place-items:center;height:100%;color:#fff;font-size:13px;font-weight:900}
-.wkb.on{padding-top:24px}
-.wkb.sel{outline:3px solid var(--safe);outline-offset:1px}
-.wkb:focus-visible{outline:3px solid var(--safe);outline-offset:1px}.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}
-.wklegend{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:12px;color:var(--mute)}.wklegend i{display:inline-block;width:9px;height:13px;border-radius:2px;margin-right:4px;vertical-align:-2px}
-.leds{grid-column:1;display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px;margin-top:6px;padding:3px 4px 0;border-bottom:3px solid light-dark(#b07a45,#6b4626);border-radius:2px;width:max-content;max-width:100%}
+/* 보스 밀프랩: 도마 위 재료(아직 안 잡은 보스)를 누르면 도시락통 칸에 담긴다. 담긴 칸을 누르면 다시 꺼낸다 */
+.ing.d-e,.mpc.d-e,.leds i.d-e{--c:#4f9a43}.ing.d-n,.mpc.d-n,.leds i.d-n{--c:#2f72b8}.ing.d-h,.mpc.d-h,.leds i.d-h{--c:#c0392b}
+.ing.d-c,.mpc.d-c,.leds i.d-c{--c:#8e2a78}.ing.d-x,.mpc.d-x,.leds i.d-x{--c:light-dark(#2b2b2b,#b9b9b9)}.ing.d-u,.mpc.d-u,.leds i.d-u{--c:#8a5a2b}
+.mpboard{margin-top:10px;padding:10px 10px 12px;border-radius:14px;background:light-dark(#f3e2c4,#3a2c1c);border:2px solid light-dark(#d9bf93,#5a4428);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08)}
+.mplab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700;font-size:14px;margin:0 2px 8px}.mplab .small{font-weight:400}
+.mpings{display:flex;flex-wrap:wrap;gap:6px}
+.mpdone{font-size:14px;color:var(--plus);font-weight:700;padding:6px 2px}
+.ing{--c:#8a5a2b;display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:4px 10px 4px 4px;border:2px solid var(--c);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:transform .12s}
+.ing:hover{transform:translateY(-2px)}
+.ing .em{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--c) 18%,transparent);font-size:17px;flex:none}
+.ing .df{font-size:11px;line-height:1.3;padding:0 5px;border-radius:6px;background:var(--c);color:light-dark(#fff,#111)}
+.ing .pr{font-weight:400;color:var(--mute);font-size:12px}
+.ing.m{box-shadow:0 0 0 2px #f3c63f}
+.mpbox{margin-top:12px;padding:10px;border-radius:20px;background:light-dark(#e6f1f7,#22313b);border:3px solid light-dark(#b9d3e2,#4d6a7d);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 5px 0 light-dark(#9fbdd0,#344a58)}
+.mplid{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:light-dark(#3d6378,#a9cde0);margin:0 4px 8px}
+.mpcells{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px}
+.mpc{--c:#8a5a2b;position:relative;min-height:80px;border-radius:12px;border:2px dashed light-dark(#a9c4d4,#56778b);background:light-dark(rgba(255,255,255,.6),rgba(0,0,0,.18))}
+.mpc.on{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px 6px;border:2px solid var(--c);background:color-mix(in srgb,var(--c) 20%,var(--card));color:var(--ink);font:inherit;text-align:center;cursor:pointer}
+.mpc .em{font-size:26px;line-height:1}
+.mpc .nm{font-size:12px;font-weight:700;line-height:1.2}
+.mpc .pr{font-size:11px;font-weight:700;color:var(--plus)}
+.mpc .ck{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:#1fa855;color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center}
+.mpc.m{box-shadow:inset 0 0 0 2px #f3c63f}
+.mpc.pop{animation:plop .4s cubic-bezier(.3,1.5,.5,1)}
+@keyframes plop{from{transform:translateY(-24px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.mpc.pop{animation:none}}
+.wkb.sel,.wkb:focus-visible{outline:3px solid var(--safe);outline-offset:1px}
+.mtag{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:#7c4dd6;border-radius:6px;padding:1px 5px;vertical-align:1px}
+/* 캐릭터 목록의 작은 도시락통 */
+.leds{grid-column:1;display:grid;grid-template-columns:repeat(6,10px);gap:2px;margin-top:6px;padding:3px;border:2px solid light-dark(#b9d3e2,#4d6a7d);border-radius:6px;background:light-dark(#e6f1f7,#22313b);width:max-content}
 .leds:empty{display:none}
-.leds i{width:6px;height:16px;border-radius:1px 1px 0 0;background:var(--c,#8a5a2b)}.leds i.d-e{--c:#4f9a43;height:13px}.leds i.d-n{--c:#2f72b8;height:14px}.leds i.d-h{--c:#c0392b;height:16px}.leds i.d-c{--c:#6d1f5c;height:17px}.leds i.d-x{--c:#1c1c1c;height:18px}
-.leds i.on{opacity:.3}.leds i.m{box-shadow:inset 0 3px 0 #f3c63f}
+.leds i{--c:#8a5a2b;width:10px;height:10px;border-radius:2px;border:1px dashed light-dark(#a9c4d4,#56778b)}
+.leds i.on{background:var(--c);border:1px solid var(--c)}.leds i.m{box-shadow:0 0 0 1px #f3c63f}
 .chlist{display:grid;gap:8px;margin-top:12px}
 .symbox{margin-top:12px;padding:12px;border:2px solid var(--safe2);border-radius:14px;background:var(--card)}
 .symbox select{font-size:16px;min-height:44px;width:100%;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
@@ -308,7 +316,7 @@ body[data-page="more"] #pgHome,body[data-page="more"] header.top{display:none}
 .pwf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin-bottom:18px}
 .acct3 h3{font-size:16px;margin:16px 0 8px}
 @media(max-width:760px){.pwf{grid-template-columns:minmax(0,1fr)}}
-.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 18px;border-radius:14px;display:none;gap:10px;align-items:center;z-index:9;max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 70px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 18px;border-radius:14px;display:none;gap:10px;align-items:center;z-index:31;max-width:calc(100% - 32px)}
 .toast.on{display:flex}.toast button{white-space:nowrap;background:none;border:0;color:var(--sun);font-weight:700;min-height:40px;cursor:pointer}
 @media(max-width:760px){.stage{grid-template-columns:minmax(0,1fr);grid-template-areas:"safe" "form"}.goalform{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:420px){.panel .wheel{display:none}.panel .dial{width:44px;height:44px}.shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{grid-template-columns:minmax(0,1fr) auto auto}.hist .tag{grid-column:1/-1;justify-self:start}.kpi .num{font-size:20px}}
@@ -1119,13 +1127,21 @@ const bossOrder=([a],[b])=>(a.cycle==='m')-(b.cycle==='m')||bossPower(a)-bossPow
 const grp=c=>{const idx=bosses.map((b,i)=>[b,i]).filter(([b])=>b.char===c).sort(bossOrder),g=idx.filter(([b])=>dk(b));return{idx,g,gs:g.reduce((a,[b])=>a+(dk(b).boss||0),0)}};
   // 1단계: 캐릭터 목록 (누르면 그 캐릭터의 보스 책장으로)
   if(wkChar===null){setHTML(E.wkList,'<div class="chlist">'+chars.map(c=>{const{idx,g,gs}=grp(c);
-      return `<button type="button" class="chtile" data-c="${esc(c)}"><span class="chn">${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</span><span class="small">${idx.length?`${g.length}/${idx.length} 처치 · ${esc(short(gs))}`:'보스를 추가해 주세요'}</span><span class="leds" aria-hidden="true">${idx.map(([b])=>`<i class="${diffCls(b)}${dk(b)?' on':''}${b.cycle==='m'?' m':''}"></i>`).join('')}</span><span class="chgo" aria-hidden="true">›</span></button>`}).join('')+'</div>');return}
+      return `<button type="button" class="chtile" data-c="${esc(c)}"><span class="chn">${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</span><span class="small">${idx.length?`${g.length}/${idx.length} 처치 · ${esc(short(gs))}`:'보스를 추가해 주세요'}</span><span class="leds" aria-hidden="true">${[...idx].sort((x,y)=>!!dk(y[0])-!!dk(x[0])).map(([b])=>`<i class="${diffCls(b)}${dk(b)?' on':''}${b.cycle==='m'?' m':''}"></i>`).join('')}</span><span class="chgo" aria-hidden="true">›</span></button>`}).join('')+'</div>');return}
   // 2단계: 고른 캐릭터의 보스 책장 + 방금 체크한 보스의 드롭 아이템
   setHTML(E.wkList,[wkChar].map(c=>{const{idx,g,gs}=grp(c);
-    return `<div class="wkbar"><button type="button" class="btn link wkback" id="wkBack">‹ 캐릭터 목록</button><button type="button" class="btn link wkdel" id="wkDelChar">캐릭터 삭제</button></div>${idx.length?'':`<div class="wkempty">아직 보스가 없어요.<br><button type="button" class="btn dark" id="wkAddBoss">이 캐릭터의 보스 추가</button></div>`}<div class="wkg"${idx.length?'':' hidden'}><div class="wkh"><b>${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</b><span class="small">주간 ${idx.filter(([b])=>b.cycle!=='m').length}/12 · ${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span></div><div class="wkl">`+
-      idx.map(([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name,df=b.diff?({이지:'이',노멀:'노',하드:'하',카오스:'카',익스트림:'익'})[b.diff]||'':'',
-        full=b.name+(b.cycle==='m'?' (월간)':'')+' · +'+short(amt)+(on?' · 처치함':'');
-        return `<button type="button" class="wkb ${diffCls(b)}${on?' on':''}${b.cycle==='m'?' m':''}${i===wkSel?' sel':''}" data-i="${i}" aria-pressed="${on}" title="${esc(full)}" aria-label="${esc(full)}"><i aria-hidden="true"></i><span>${esc(lab)}</span>${df?`<b class="df">${df}</b>`:''}</button>`}).join('')+'</div><div class="wklegend" aria-hidden="true"><span><i style="background:#4f9a43"></i>이지</span><span><i style="background:#2f72b8"></i>노멀</span><span><i style="background:#c0392b"></i>하드</span><span><i style="background:#6d1f5c"></i>카오스</span><span><i style="background:#1c1c1c"></i>익스트림</span><span><i style="background:#f3c63f"></i>월간</span><span>✓ 처치</span></div></div>'+wkDropPanel(dk)}).join(''))}
+    return `<div class="wkbar"><button type="button" class="btn link wkback" id="wkBack">‹ 캐릭터 목록</button><button type="button" class="btn link wkdel" id="wkDelChar">캐릭터 삭제</button></div>${idx.length?'':`<div class="wkempty">아직 보스가 없어요.<br><button type="button" class="btn dark" id="wkAddBoss">이 캐릭터의 보스 추가</button></div>`}<div class="wkg"${idx.length?'':' hidden'}><div class="wkh"><b>${esc(c||'캐릭터 미지정')}${lvOf(c)?` <span class="chlv">Lv.${lvOf(c)}</span>`:''}</b><span class="small">주간 ${idx.filter(([b])=>b.cycle!=='m').length}/12 · ${g.length}/${idx.length} 처치 · ${esc(short(gs))}</span></div>`+mealPrep(idx,dk)+'</div>'+wkDropPanel(dk)}).join(''));wkPop=null}
+// 밀프랩: 아직 안 잡은 보스 = 도마 위 재료, 잡은 보스 = 도시락통에 담긴 칸 (난이도별 재료 그림)
+const ING={이지:'🥬',노멀:'🥕',하드:'🍅',카오스:'🍆',익스트림:'🥩'};
+function mealPrep(idx,dk){const info=([b,i])=>{const on=!!dk(b),amt=on?dk(b).boss||b.amount:b.amount,lab=b.boss?(b.boss==='가디언 엔젤 슬라임'?'가엔슬':b.boss):b.name;
+    return{b,i,on,amt,lab,em:ING[b.diff]||'🍙',cls:diffCls(b)+(b.cycle==='m'?' m':'')+(i===wkSel?' sel':''),full:b.name+(b.cycle==='m'?' (월간)':'')+' · +'+short(amt)+(on?' · 처치함':'')}};
+  const all=idx.map(info),todo=all.filter(x=>!x.on),done=all.filter(x=>x.on);
+  const ings=todo.map(x=>`<button type="button" class="wkb ing ${x.cls}" data-i="${x.i}" aria-pressed="false" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 담기"><span class="em" aria-hidden="true">${x.em}</span>${esc(x.lab)}${x.b.diff?`<span class="df">${esc(x.b.diff)}</span>`:''}${x.b.cycle==='m'?'<i class="mtag">월간</i>':''}<span class="pr">${esc(short(x.amt))}</span></button>`).join('');
+  const cells=done.map(x=>`<button type="button" class="wkb mpc on ${x.cls}${x.i===wkPop?' pop':''}" data-i="${x.i}" aria-pressed="true" title="${esc(x.full)}" aria-label="${esc(x.full)} · 눌러서 빼기"><span class="ck" aria-hidden="true">✓</span><span class="em" aria-hidden="true">${x.em}</span><span class="nm">${esc(x.lab)}${x.b.diff?' '+esc(x.b.diff):''}</span><span class="pr">+${esc(short(x.amt))}</span></button>`).join('')+
+    todo.map(()=>'<div class="mpc" aria-hidden="true"></div>').join('');
+  return `<div class="mpboard"><div class="mplab"><span>🔪 재료 손질 중</span><span class="small">잡은 보스를 눌러 통에 담아요</span></div>`+
+    (ings?`<div class="mpings">${ings}</div>`:'<div class="mpdone">재료를 다 담았어요! 이번 주 밀프랩 완성 🎉</div>')+'</div>'+
+    `<div class="mpbox"><div class="mplid"><span>🍱 이번 주 도시락통</span><span>${done.length}/${all.length}칸</span></div><div class="mpcells">${cells}</div></div>`}
 const diffCls=b=>'d-'+(({이지:'e',노멀:'n',하드:'h',카오스:'c',익스트림:'x'})[b.diff]||'u');
 // 체크한 보스가 드롭하는 돈 되는 아이템 (누르면 보스·아이템이 채워진 드롭 창)
 function wkDropPanel(dk){const b=bosses[wkSel];if(!b||b.char!==wkChar||!dk(b))return'';
@@ -1133,7 +1149,7 @@ function wkDropPanel(dk){const b=bosses[wkSel];if(!b||b.char!==wkChar||!dk(b))re
   return `<div class="wkdrop"><div class="wkh"><b>${esc(b.name)}에서 나온 아이템</b><button type="button" class="btn link" id="wkDropClose">닫기</button></div><div class="igrid">`+
     its.map(n=>`<button type="button" class="itile" data-item="${esc(n)}">${itemIcon(n)}<span>${esc(n)}</span></button>`).join('')+
     `<button type="button" class="itile custom" data-item="\u0003"><span class="ph" aria-hidden="true">✏️</span><span>직접 입력</span></button></div><div class="small">돈 되는 게 안 나왔으면 "닫기"를 누르면 돼요.</div></div>`}
-let wkChar=null,wkSel=null;
+let wkChar=null,wkSel=null,wkPop=null;
 E.wkEdit.onclick=()=>wkChar===null?openAddChar():openBosses(wkChar);
 // 드롭 아이템: 나왔을 때 "판매 대기"로 적고, 팔리면 받은 메소를 적어 수익으로 바꾼다
 let dMode='new',dId=null,dState='sold',dPriceMode='list';
@@ -1243,7 +1259,7 @@ E.wkList.onclick=e=>{if(e.target.closest('#wkAddChar'))return openAddChar();if(e
   wkSel=ex?(wkSel===+btn.dataset.i?null:wkSel):+btn.dataset.i;
   try{if(ex){store.remove(ex.id);toast(who+b.name+' 체크를 풀고 기록을 지웠어요',{id:ex.id,rest:body(ex)})}
     else{const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
-      put(id,{kind:'in',date:today(),hunt:0,boss:b.amount,frag:0,bossN:b.name,...(b.char?{bossC:b.char}:{}),memo:b.name+(b.char?' · '+b.char:'')+(b.cycle==='m'?' (월간 보스)':' (주간 보스)'),at:Date.now()});toast(who+b.name+' 처치! +'+fmt(b.amount),{ids:[id]})}}catch(err){}};
+      wkPop=+btn.dataset.i;put(id,{kind:'in',date:today(),hunt:0,boss:b.amount,frag:0,bossN:b.name,...(b.char?{bossC:b.char}:{}),memo:b.name+(b.char?' · '+b.char:'')+(b.cycle==='m'?' (월간 보스)':' (주간 보스)'),at:Date.now()});toast(who+b.name+' 처치! +'+fmt(b.amount),{ids:[id]})}}catch(err){}};
 // 메이플포인트 서랍
 const MP_UI={charge:{mp:'받은 메포',d:'넥슨캐시로 메이플포인트를 충전했을 때 적어요. 쓴 돈(원)을 같이 적으면 이번 달 현금 충전이 보여요.',won:1,btn:'충전 기록하기'},
   event:{mp:'받은 메포',d:'이벤트 보상, 페이백 등으로 받은 메이플포인트예요.',btn:'적립 기록하기'},
