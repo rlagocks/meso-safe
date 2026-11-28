@@ -66,7 +66,7 @@ label{display:block;font-size:14px;font-weight:700;margin:0 0 4px}
 .hmode{display:flex;gap:4px;padding:4px;margin-bottom:12px;border-radius:12px;background:var(--soft)}
 .hmode button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--mute);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .hmode button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.prep input[readonly]{background:var(--soft);color:var(--ink)}
+.prep input[readonly],.dbody input[readonly]{background:var(--soft);color:var(--ink)}
 .f{margin-bottom:14px}
 .hint{font-size:13px;color:var(--mute);min-height:20px;margin-top:3px}
 .hint.ok{color:var(--plus)}
@@ -510,6 +510,8 @@ html{overflow-x:hidden}
               <div class="hint ok" id="sHint"></div>
               <div class="small" style="margin-top:4px">레벨을 고르면 강화 비용이 아래 금액 칸에 자동으로 들어가요. 아케인 심볼은 2026년 9월 17일 30% 인하가 반영된 값이에요.</div>
             </div>
+            <div class="hmode" role="group" aria-label="쓴 메소 적는 방법" id="oMode" style="margin-top:12px"><button type="button" data-m="calc" aria-pressed="false">남은 메소로 계산</button><button type="button" data-m="direct" aria-pressed="false">쓴 금액 직접 적기</button></div>
+            <div class="f" id="oNowBox" hidden><label for="oNow">사고 나서 남은 메소 (게임 속)</label><input id="oNow" inputmode="text" placeholder="예: 120억 5000만" autocomplete="off"><div class="hint" id="hONow"></div></div>
             <div class="two" style="margin-top:12px">
               <div><label for="oAmt">금액</label><input id="oAmt" inputmode="text" placeholder="예: 8000만" autocomplete="off"><div class="hint" id="hOut"></div></div>
               <div><label for="oDate">날짜</label><input type="date" id="oDate"></div>
@@ -919,7 +921,7 @@ const render=()=>{needTop=true;sched()};
 const mq=matchMedia('(max-width:420px)');
 mq.addEventListener?.('change',render);
 
-function renderTop(){todayLine();nowCalc();fragCalc();
+function renderTop(){todayLine();nowCalc();fragCalc();outCalc();
   const t=stats();
   // 총 자산 = 메소 + 교환 가능 조각 × 시세 + 메포 × (1,000P당 시세 ÷ 1,000). 교환 불가 조각은 팔 수 없어 넣지 않는다
   // 조각과 판매 대기 드롭은 경매장에 팔아야 메소가 되므로 MVP 등급 수수료를 빼고 센다
@@ -1032,6 +1034,23 @@ function commaize(inp){const v=inp.value,pos=inp.selectionStart??v.length;
   try{inp.setSelectionRange(i,i)}catch(e){}}
 E.iHunt.addEventListener('input',()=>{commaize(E.iHunt);live(E.iHunt,'hHunt');sumIn()});
 E.oAmt.addEventListener('input',()=>{commaize(E.oAmt);live(E.oAmt,'hOut')});
+// 지출도 남은 메소로 계산: 냉장고 잔액 − 사고 나서 남은 메소 = 쓴 메소 (심볼은 계산기가 있어서 직접 적기만)
+let oMode='calc';try{oMode=localStorage.getItem('meso-safe-omode')==='direct'?'direct':'calc'}catch(e){}
+const oCalcOn=()=>oMode==='calc'&&cat!=='심볼';
+function setOMode(m,save){if(m){oMode=m;if(save)try{localStorage.setItem('meso-safe-omode',m)}catch(e){}}
+  E.oMode.hidden=cat==='심볼';for(const b of E.oMode.children){const on=b.dataset.m===oMode;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)}
+  const c=oCalcOn();E.oNowBox.hidden=!c;E.oAmt.readOnly=c;E.oAmt.placeholder=c?'위에 남은 메소를 적으면 자동으로 채워져요':'예: 8000만';
+  if(c)outCalc();else E.hONow.textContent=''}
+function outCalc(){if(!oCalcOn())return;const v=parse(E.oNow.value),h=E.hONow,bal=stats().bal;h.style.color='';
+  if(!E.oNow.value.trim()){h.textContent='냉장고 잔액 '+fmt(bal)+'에서 줄어든 만큼이 쓴 메소가 돼요';h.className='hint';E.oAmt.value='';live(E.oAmt,'hOut');return}
+  if(isNaN(v)){h.textContent='숫자와 억, 만만 쓸 수 있어요';h.className='hint';return}
+  const d=bal-v;
+  if(d<=0){h.textContent=d<0?'냉장고 잔액('+fmt(bal)+')보다 '+fmt(-d)+' 많아요. 번 메소를 먼저 넣거나 "잔액 맞추기"로 맞춰 주세요.':'냉장고 잔액과 같아요. 쓴 메소가 없어요.';h.className='hint';h.style.color='var(--minus)';E.oAmt.value='';live(E.oAmt,'hOut');return}
+  h.textContent='냉장고 '+fmt(bal)+' − 남은 '+fmt(v)+' = '+cat+'에 쓴 메소 '+fmt(d);h.className='hint ok';
+  E.oAmt.value=mesoTxt(d);commaize(E.oAmt);live(E.oAmt,'hOut')}
+E.oMode.onclick=e=>{const b=e.target.closest('button');if(b)setOMode(b.dataset.m,true)};
+E.oNow.addEventListener('input',()=>{commaize(E.oNow);outCalc()});
+setOMode();
 E.gA.addEventListener('input',()=>commaize(E.gA));
 for(const x of[E.iFrag,E.iFragU])x.addEventListener('input',()=>{x.value=x.value.replace(/[^\d,]/g,'');commaize(x)});
 E.iDate.value=E.oDate.value=E.aDate.value=E.mDate.value=today();
@@ -1430,7 +1449,7 @@ E.aBtnOpen.onclick=()=>{const o=E.aDrawer.classList.toggle('open');E.aBtnOpen.se
 const setSign=s=>{fragSign=s;E.fP.classList.toggle('on',s>0);E.fM.classList.toggle('on',s<0);E.fP.setAttribute('aria-pressed',s>0);E.fM.setAttribute('aria-pressed',s<0)};
 E.fP.onclick=()=>setSign(1);E.fM.onclick=()=>setSign(-1);
 E.cats.innerHTML=CATS.map(c=>`<button type="button" class="chip${c===cat?' on':''}" data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join('');
-E.cats.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;for(const x of E.cats.children){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)}E.symBox.hidden=cat!=='심볼';if(cat==='심볼'){symNxInit();symCalc()}};
+E.cats.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;for(const x of E.cats.children){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)}E.symBox.hidden=cat!=='심볼';setOMode();if(cat==='심볼'){symNxInit();symCalc()}};
 // ===== 심볼 강화 비용 계산 =====
 // 아케인: (n³ + (80+20r)n² + 11n + 880+220r) × 1,000 (만 단위 버림) → 2026-09-17 30% 인하로 × 0.7
 // 어센틱/그랜드: 필요 성장치(9n²+20n) × (지역 단가 − 60,000 × (n−1)) (10만 단위 버림)
@@ -1525,7 +1544,7 @@ E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
   if(amount>bal){note('냉장고에 있는 메소('+fmt(Math.max(0,bal))+')보다 많이 뺄 수 없어요. 게임 속 메소가 더 많다면 "잔액 맞추기"로 먼저 맞춰 주세요.');return}
   const data={kind:'out',date:E.oDate.value||today(),cat,amount,memo:E.oMemo.value.trim().slice(0,80),at:Date.now()};
   note('');
-  try{put(newId(),data);E.oAmt.value='';E.oMemo.value='';live(E.oAmt,'hOut');
+  try{put(newId(),data);E.oAmt.value='';E.oMemo.value='';E.oNow.value='';live(E.oAmt,'hOut');
     // 심볼: 방금 올린 레벨을 "지금 레벨"로 넘겨 다음 강화를 바로 이어서 적게 한다
     if(cat==='심볼'){const to=+E.sTo.value,mx=SYM[E.sType.value].max;
       // 불러온 심볼이면 쓴 개수만큼 빼고 레벨을 올려 둔다
