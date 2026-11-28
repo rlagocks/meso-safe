@@ -1460,53 +1460,68 @@ const SYM={arc:{max:20,regs:['소멸의 여로','츄츄 아일랜드','레헬른
 function symStep(type,r,n){if(type==='arc')return Math.round(Math.floor((n**3+(80+20*r)*n**2+11*n+880+220*r)*1000/10000)*10000*0.7);
   const P=type==='aut'?1260000+180000*r:[3920000,4820000][r]||3920000;return Math.floor((9*n*n+20*n)*(P-60000*(n-1))/100000)*100000}
 function symCost(type,r,from,to){let s=0;for(let n=from;n<to;n++)s+=symStep(type,r,n);return s}
-function symFill(keep){const t=SYM[E.sType.value],r0=keep?+E.sReg.value||0:0,f0=keep?+E.sFrom.value||1:1;
-  E.sReg.innerHTML=t.regs.map((n,i)=>`<option value="${i}"${i===r0?' selected':''}>${n}</option>`).join('');
-  E.sFrom.innerHTML=Array.from({length:t.max-1},(_,i)=>i+1).map(n=>`<option value="${n}"${n===Math.min(f0,t.max-1)?' selected':''}>${n}레벨</option>`).join('');symTo()}
-function symTo(){const t=SYM[E.sType.value],f=+E.sFrom.value||1,cur=+E.sTo.value||f+1,lim=symLimit(),top=lim==null?t.max:Math.min(lim,t.max);
-  if(top<=f){E.sTo.innerHTML='<option value="">개수 부족</option>';symCalc();return}
-  E.sTo.innerHTML=Array.from({length:top-f},(_,i)=>f+1+i).map(n=>`<option value="${n}"${n===Math.max(f+1,Math.min(cur,top))?' selected':''}>${n}레벨</option>`).join('');symCalc()}
-function symCalc(){if(E.symBox.hidden)return;const lim=symLimit();
-  if(lim!=null&&lim<=(+E.sFrom.value||1)){const s=symData[symSel.i];E.oAmt.value='';live(E.oAmt,'hOut');E.oMemo.value='';
-    E.sHint.textContent='업그레이드 불가: 심볼 개수가 부족해요 ('+s.symbol_growth_count+' / '+s.symbol_require_growth_count+')';E.sHint.classList.remove('ok');return}
-  E.sHint.classList.add('ok');
-  const type=E.sType.value,t=SYM[type],r=+E.sReg.value||0,f=+E.sFrom.value||1,to=+E.sTo.value||f+1,c=symCost(type,r,f,to);
-  E.oAmt.value=mesoTxt(c);commaize(E.oAmt);live(E.oAmt,'hOut');
-  E.oMemo.value=t.label+' '+t.regs[r]+' '+f+'→'+to;
-  E.sHint.textContent=t.regs[r]+' '+f+'→'+to+'레벨: '+fmt(c)+(to-f>1?' ('+Array.from({length:to-f},(_,i)=>f+i).map(n=>short(symStep(type,r,n))).join(' + ')+')':'')}
-// 넥슨 Open API: 캐릭터가 장착한 심볼(종류·지역·레벨·성장치)을 불러와 계산기에 채운다
-let symData=[],symSel=null;
+// 넥슨 Open API로 캐릭터가 장착한 심볼(레벨·성장치)을 불러오면 계산기에 바로 적용한다:
+// 지금 레벨은 실제 레벨로 고정, 개수가 모자라면 그 레벨까지만, 만렙이면 업그레이드·비용 없음
+let symData=[],symFor='';
 // 레벨업에 필요한 심볼 개수: 아케인 n²+11, 어센틱·그랜드 9n²+20n
 const symNeed=(t,n)=>t==='arc'?n*n+11:9*n*n+20*n;
 // 지금 가진 성장치(개수)로 올릴 수 있는 최고 레벨 — 개수가 다 차야만 다음 레벨로 올라간다
 function symReach(s,p){const max=SYM[p.t].max;let n=s.symbol_level,have=s.symbol_growth_count||0;
   while(n<max){const need=n===s.symbol_level&&s.symbol_require_growth_count?s.symbol_require_growth_count:symNeed(p.t,n);if(have<need)break;have-=need;n++}return n}
-// 불러온 심볼을 고른 상태면 그 심볼이 올라갈 수 있는 한계 레벨, 아니면 null(직접 계산)
-function symLimit(){if(!symSel)return null;const s=symData[symSel.i],p=s&&symParse(s.symbol_name);
-  if(!p||p.t!==E.sType.value||String(p.r)!==E.sReg.value)return null;return symReach(s,p)}
 function symParse(n){const t=/그랜드/.test(n)?'grd':/어센틱/.test(n)?'aut':/아케인/.test(n)?'arc':'';if(!t)return null;const reg=String(n.split(':').pop()).trim();
   const r=SYM[t].regs.findIndex(x=>x===reg||x.includes(reg)||reg.includes(x));return r<0?null:{t,r}}
+// 계산기에서 고른 종류·지역에 해당하는 불러온 심볼 (없으면 null → 직접 계산)
+function symCur(){if(!symData.length)return null;const t=E.sType.value,r=+E.sReg.value||0;
+  for(let i=0;i<symData.length;i++){const p=symParse(symData[i].symbol_name);if(p&&p.t===t&&p.r===r)return{i,s:symData[i],p}}return null}
+const symMax=c=>c&&c.s.symbol_level>=SYM[c.p.t].max;
+function symLimit(){const c=symCur();return c?symReach(c.s,c.p):null}
+function symFill(keep){const type=E.sType.value,t=SYM[type],r0=keep?+E.sReg.value||0:0;
+  const tag=i=>{if(!symData.length)return'';const s=symData.find(x=>{const p=symParse(x.symbol_name);return p&&p.t===type&&p.r===i});return s?(s.symbol_level>=t.max?' (만렙)':' (Lv.'+s.symbol_level+')'):' (장착 안 함)'};
+  E.sReg.innerHTML=t.regs.map((n,i)=>`<option value="${i}"${i===r0?' selected':''}>${n}${tag(i)}</option>`).join('');symSync(keep)}
+function symSync(keep){const t=SYM[E.sType.value],c=symCur(),f0=keep?+E.sFrom.value||1:1;
+  if(symMax(c)){E.sFrom.innerHTML='<option value="">만렙</option>';E.sTo.innerHTML='<option value="">—</option>';E.sFrom.disabled=E.sTo.disabled=true;symMark();symCalc();return}
+  const f=c?c.s.symbol_level:Math.min(f0,t.max-1);E.sTo.disabled=false;E.sFrom.disabled=!!c;
+  E.sFrom.innerHTML=Array.from({length:t.max-1},(_,i)=>i+1).map(n=>`<option value="${n}"${n===f?' selected':''}>${n}레벨</option>`).join('');if(!keep||c)E.sTo.innerHTML='';symMark();symTo()}
+function symTo(){const t=SYM[E.sType.value],f=+E.sFrom.value||1,cur=+E.sTo.value||f+1,lim=symLimit(),top=lim==null?t.max:Math.min(lim,t.max);
+  if(top<=f){E.sTo.innerHTML='<option value="">개수 부족</option>';symCalc();return}
+  E.sTo.innerHTML=Array.from({length:top-f},(_,i)=>f+1+i).map(n=>`<option value="${n}"${n===Math.max(f+1,Math.min(cur,top))?' selected':''}>${n}레벨</option>`).join('');symCalc()}
+const symOff=msg=>{E.oAmt.value='';live(E.oAmt,'hOut');E.oMemo.value='';E.sHint.textContent=msg;E.sHint.classList.remove('ok')};
+function symCalc(){if(E.symBox.hidden)return;const c=symCur(),type=E.sType.value,t=SYM[type],r=+E.sReg.value||0;
+  if(symMax(c))return symOff(t.regs[r]+' 심볼은 만렙이에요. 더 올릴 수 없어서 비용이 들지 않아요.');
+  const lim=symLimit(),f=+E.sFrom.value||1;
+  if(lim!=null&&lim<=f)return symOff('업그레이드 불가: 심볼 개수가 부족해요 ('+c.s.symbol_growth_count+' / '+c.s.symbol_require_growth_count+')');
+  E.sHint.classList.add('ok');
+  const to=+E.sTo.value||f+1,cost=symCost(type,r,f,to);
+  E.oAmt.value=mesoTxt(cost);commaize(E.oAmt);live(E.oAmt,'hOut');
+  E.oMemo.value=t.label+' '+t.regs[r]+' '+f+'→'+to;
+  E.sHint.textContent=t.regs[r]+' '+f+'→'+to+'레벨: '+fmt(cost)+(to-f>1?' ('+Array.from({length:to-f},(_,i)=>f+i).map(n=>short(symStep(type,r,n))).join(' + ')+')':'')}
+function symMark(){const c=symCur();for(const x of E.symList.querySelectorAll('.symitem'))x.classList.toggle('on',!!c&&+x.dataset.i===c.i)}
 function symNxInit(){E.symNx.hidden=!nexon.key;if(!nexon.key)return;const names=[...new Set([nexon.name,...charList().map(c=>c.name)].filter(Boolean))];
-  const cur=E.sChar.value;E.sChar.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${esc(n)}</option>`).join('')}
+  const cur=E.sChar.value;E.sChar.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${esc(n)}</option>`).join('');
+  if(E.sChar.value&&symFor!==E.sChar.value)symLoad()}
 function symDraw(){const mx=symData.filter(s=>{const p=symParse(s.symbol_name);return p&&s.symbol_level>=SYM[p.t].max});
   const mxH=mx.length?`<div class="symmax"><b>만렙 ${mx.length}개</b>`+mx.map(s=>{const p=symParse(s.symbol_name),n=SYM[p.t].regs[p.r];return `<span class="smx" title="${esc(n)} 만렙"><img src="${esc(s.symbol_icon)}" alt="" width="20" height="20">${esc(n)}</span>`}).join('')+'</div>':'';
   setHTML(E.symList,mxH+symData.map((s,i)=>{const p=symParse(s.symbol_name),max=p?SYM[p.t].max:0,lv=s.symbol_level,full=lv>=max;if(p&&full)return '';
   const reach=p&&!full?symReach(s,p):lv,lack=!full&&reach<=lv,next=p&&!full?symStep(p.t,p.r,lv):0,pct=s.symbol_require_growth_count?Math.min(100,s.symbol_growth_count/s.symbol_require_growth_count*100):100;
   const cnt=full?'':' '+s.symbol_growth_count+'/'+s.symbol_require_growth_count;
   const sc=full?'만렙':lack?'개수 부족 ·'+cnt+' · 업그레이드 불가':(reach-lv>1?'Lv.'+reach+'까지 가능 · ':'')+'다음 '+short(next)+' ·'+cnt;
-  return `<button type="button" class="symitem${full?' full':''}${lack?' lack':''}${symSel&&symSel.i===i?' on':''}" data-i="${i}"${!p||full||lack?' disabled':''}><img src="${esc(s.symbol_icon)}" alt="" width="32" height="32"><span class="sn">${esc(p?SYM[p.t].regs[p.r]:s.symbol_name)} <b>Lv.${lv}</b></span>`+
-    `<span class="sg"><i style="width:${pct}%"></i></span><span class="sc">${esc(sc)}</span></button>`}).join(''))}
-E.sLoad.onclick=async()=>{const name=E.sChar.value;if(!name)return;setText(E.sNxMsg,'불러오는 중…');E.sLoad.disabled=true;
+  return `<button type="button" class="symitem${full?' full':''}${lack?' lack':''}" data-i="${i}"${!p||full||lack?' disabled':''}><img src="${esc(s.symbol_icon)}" alt="" width="32" height="32"><span class="sn">${esc(p?SYM[p.t].regs[p.r]:s.symbol_name)} <b>Lv.${lv}</b></span>`+
+    `<span class="sg"><i style="width:${pct}%"></i></span><span class="sc">${esc(sc)}</span></button>`}).join(''));symMark()}
+// 계산기를 그 심볼로 맞춘다
+function symPick(i){const p=symParse(symData[i].symbol_name);if(!p)return;E.sType.value=p.t;symFill(false);E.sReg.value=String(p.r);symFill(true)}
+async function symLoad(){const name=E.sChar.value;if(!name)return;symFor=name;setText(E.sNxMsg,'불러오는 중…');E.sLoad.disabled=true;
   try{let ocid=name===nexon.name?nexon.ocid:'';if(!ocid)ocid=(await nx('id?character_name='+encodeURIComponent(name),nexon.key)).ocid;
-    const j=await nx('character/symbol-equipment?ocid='+encodeURIComponent(ocid),nexon.key);symSel=null;symData=(j.symbol||[]).slice().sort((a,b)=>{const x=symParse(a.symbol_name),y=symParse(b.symbol_name);return (x?['arc','aut','grd'].indexOf(x.t)*10+x.r:99)-(y?['arc','aut','grd'].indexOf(y.t)*10+y.r:99)});
-    setText(E.sNxMsg,symData.length?name+'의 심볼 '+symData.length+'개 · 누르면 아래 계산기에 채워져요':'장착한 심볼이 없어요.');symDraw()}
-  catch(e){setText(E.sNxMsg,e.message||'불러오지 못했어요.')}E.sLoad.disabled=false};
-E.symList.onclick=e=>{const b=e.target.closest('.symitem');if(!b||b.disabled)return;const s=symData[+b.dataset.i],p=symParse(s.symbol_name);if(!p)return;
-  symSel={i:+b.dataset.i};E.sType.value=p.t;symFill(false);E.sReg.value=String(p.r);E.sFrom.value=String(s.symbol_level);E.sTo.value='';symTo();
-  for(const x of E.symList.children)x.classList.toggle('on',x===b)};
-// 계산기를 직접 바꾸면 불러온 심볼 선택을 풀고 자유 계산으로 돌아간다
-const symFree=()=>{if(!symSel)return;symSel=null;for(const x of E.symList.children)x.classList.remove('on')};
-E.sType.onchange=()=>{symFree();symFill(false)};E.sReg.onchange=()=>{symFree();symTo()};E.sFrom.onchange=()=>{symFree();symTo()};E.sTo.onchange=symCalc;
+    const j=await nx('character/symbol-equipment?ocid='+encodeURIComponent(ocid),nexon.key);if(symFor!==name)return;
+    symData=(j.symbol||[]).slice().sort((a,b)=>{const x=symParse(a.symbol_name),y=symParse(b.symbol_name);return (x?['arc','aut','grd'].indexOf(x.t)*10+x.r:99)-(y?['arc','aut','grd'].indexOf(y.t)*10+y.r:99)});
+    symDraw();
+    // 바로 적용: 올릴 수 있는 첫 심볼로 계산기를 맞춘다 (없으면 개수 모으는 중인 심볼, 그것도 없으면 첫 심볼)
+    const st=symData.map((s,i)=>{const p=symParse(s.symbol_name);return{i,p,full:!p||s.symbol_level>=SYM[p.t].max,up:p&&s.symbol_level<SYM[p.t].max&&symReach(s,p)>s.symbol_level}});
+    const pick=(st.find(x=>x.up)||st.find(x=>!x.full)||st[0]);if(pick)symPick(pick.i);else symFill(false);
+    setText(E.sNxMsg,!symData.length?'장착한 심볼이 없어요.':st.some(x=>x.up)?name+'의 심볼을 불러와 계산기에 바로 적용했어요. 다른 심볼은 눌러서 바꿔요.':st.every(x=>x.full)?name+'의 심볼이 모두 만렙이에요.':name+'의 심볼은 지금 올릴 수 있는 게 없어요 (개수 모으는 중).')}
+  catch(e){if(symFor===name){symFor='';setText(E.sNxMsg,e.message||'불러오지 못했어요.')}}E.sLoad.disabled=false}
+E.sLoad.onclick=()=>{symFor='';symLoad()};E.sChar.onchange=()=>symLoad();
+E.symList.onclick=e=>{const b=e.target.closest('.symitem');if(!b||b.disabled)return;symPick(+b.dataset.i)};
+E.sType.onchange=()=>symFill(false);E.sReg.onchange=()=>symSync(true);E.sFrom.onchange=symTo;E.sTo.onchange=symCalc;
 symFill(false);
 // 냉장고 열고 닫기 (들어올 때마다 닫힌 상태로 시작)
 const fridgeReduce=matchMedia('(prefers-reduced-motion: reduce)');let fTimer=0;
@@ -1536,8 +1551,9 @@ E.inForm.addEventListener('submit',ev=>{ev.preventDefault();
   note('');const id=newId();justId=id;setTimeout(()=>{if(justId===id)justId=null},1500);
   try{put(id,data);for(const s of['iHunt','iTime','iFrag','iFragU','iNow'])E[s].value='';timeHint();live(E.iHunt,'hHunt');sumIn();setSign(1);toast(hunt?'밀프랩을 냉장고에 넣었어요: +'+fmt(hunt):'조각을 기록했어요')}catch(e){justId=null}});
 E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
-  if(cat==='심볼'&&!E.symBox.hidden){const lim=symLimit(),to=+E.sTo.value;
-    if(lim!=null&&(!to||to>lim)){const s=symData[symSel.i];note(lim>s.symbol_level?'업그레이드 실패: 가진 심볼 개수로는 Lv.'+lim+'까지만 올릴 수 있어요.':'업그레이드 실패: 심볼 개수가 부족해요 ('+s.symbol_growth_count+' / '+s.symbol_require_growth_count+'). 개수가 다 차야 올릴 수 있어요.');return}}
+  if(cat==='심볼'&&!E.symBox.hidden){const c=symCur(),to=+E.sTo.value;
+    if(symMax(c)){note('업그레이드 실패: '+SYM[c.p.t].regs[c.p.r]+' 심볼은 이미 만렙이에요. 비용이 들지 않아요.');return}
+    if(c){const s=c.s,lim=symReach(c.s,c.p);if(!to||to>lim){note(lim>s.symbol_level?'업그레이드 실패: 가진 심볼 개수로는 Lv.'+lim+'까지만 올릴 수 있어요.':'업그레이드 실패: 심볼 개수가 부족해요 ('+s.symbol_growth_count+' / '+s.symbol_require_growth_count+'). 개수가 다 차야 올릴 수 있어요.');return}}}
   const amount=parse(E.oAmt.value);
   if(isNaN(amount)||amount<=0){note('뺄 금액을 적어 주세요. 예: 8000만');return}
   const bal=stats().bal;
@@ -1548,10 +1564,10 @@ E.dBody.addEventListener('submit',ev=>{ev.preventDefault();
     // 심볼: 방금 올린 레벨을 "지금 레벨"로 넘겨 다음 강화를 바로 이어서 적게 한다
     if(cat==='심볼'){const to=+E.sTo.value,mx=SYM[E.sType.value].max;
       // 불러온 심볼이면 쓴 개수만큼 빼고 레벨을 올려 둔다
-      if(symLimit()!=null){const s=symData[symSel.i],p=symParse(s.symbol_name);let have=s.symbol_growth_count;
+      const c=symCur();if(c){const s=c.s,p=c.p;let have=s.symbol_growth_count;
         for(let n=s.symbol_level;n<to;n++)have-=n===s.symbol_level?s.symbol_require_growth_count:symNeed(p.t,n);
-        s.symbol_level=to;s.symbol_growth_count=Math.max(0,have);s.symbol_require_growth_count=to<mx?symNeed(p.t,to):0;symDraw()}
-      if(to<mx){E.sFrom.value=String(to);E.sTo.value='';symTo()}else{E.sHint.textContent=SYM[E.sType.value].regs[+E.sReg.value]+' 만렙이에요!';symSel=null}}
+        s.symbol_level=to;s.symbol_growth_count=Math.max(0,have);s.symbol_require_growth_count=to<mx?symNeed(p.t,to):0;symDraw();symFill(true)}
+      else if(to<mx){E.sFrom.value=String(to);E.sTo.value='';symTo()}else{E.sHint.textContent=SYM[E.sType.value].regs[+E.sReg.value]+' 만렙이에요!'}}
     toast(cat+'에 '+fmt(amount)+' 썼어요')}catch(e){}});
 // 페이지 전환 (#more = 기록·통계). 뒤로 가기로 냉장고 화면에 돌아온다
 function showPage(){const p=location.hash==='#more'?'more':'home';if(document.body.dataset.page===p)return;document.body.dataset.page=p;
